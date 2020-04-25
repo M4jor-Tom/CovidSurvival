@@ -4,8 +4,8 @@
 
 #include "generic.h"
 
-#define man 0
-#define woman 1
+#define MAN 0
+#define WOMAN 1
 
 #define wordLength 40
 
@@ -17,7 +17,7 @@ typedef struct location
 
 typedef struct stats
 {
-	int health, mentalHealth, hunger, hygiene;
+	int health, mentalHealth, hunger, hygiene, stamina;
 }stats;
 
 //System enum: Created to know structures [CREATE_STRUCTURE]
@@ -32,31 +32,17 @@ typedef enum actionId
 	working, walking, running, shopping, eating, sleeping, lastActionId
 }actionId;
 
-typedef struct action
-{
-	unsigned int ID;
-	stats consequence;
-}action;
-
-typedef struct event
-{
-	unsigned int transmitterId,
-		receiverId,
-		actionId,
-		eventTime;
-	
-	//Comment ?
-}event;
-
 typedef struct building
 {
 	unsigned int ID, typeId;
+	char adress[wordLength];
 	location loc;
 }building;
 
 typedef struct buildingType
 {
-	
+	unsigned int ID;
+	char name[wordLength];
 }buildingType;
 
 typedef struct item
@@ -71,9 +57,40 @@ typedef enum no_choice_yes
 	no, choice, yes
 }no_choice_yes;
 
+//BRAINSTORM
+typedef enum particularity
+{
+	man, woman, sporty, smoker, remoteWorker
+}particularity;
+
+typedef struct actionConsequenceToParticulartity
+{
+	particularity who;
+	stats consequence;
+}actionConsequenceToParticulartity;
+//BRAINSTORM
+
+typedef struct action
+{
+	unsigned int ID;
+	char name[wordLength];
+	stats consequence;
+}action;
+
+typedef struct event
+{
+	unsigned int ID,
+		transmitterId,
+		receiverId,
+		actionId,
+		eventTime;
+	
+	//Comment ?
+}event;
+
 typedef struct person
 {
-	char name[wordLength];
+	char firstName[wordLength], lastName[wordLength];
 	unsigned int ID, houseId;
 	unsigned short int sportiness;
 	no_choice_yes remoteWorking;
@@ -85,6 +102,7 @@ typedef struct person
 
 typedef union element
 {
+	//[CREATE_STRUCTURE]
 	event event_;
 	building building_;
 	buildingType buildingType_;
@@ -103,6 +121,8 @@ typedef struct link
 typedef struct simulation
 {
 	unsigned int ID;
-	unsigned long int time;
-	link* buildings, persons, items;
+	unsigned long int simuledTime;
+	
+	//[CREATE_STRUCTURE]
+	link* eventPtr, buildingPtr, buildingTypePtr, itemPtr, personPtr;
 }simulation;

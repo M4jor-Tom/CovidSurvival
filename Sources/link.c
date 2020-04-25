@@ -23,19 +23,23 @@ element *newElement(structId type, char* errorMessage)
 	{
 		//[CREATE_STRUCTURE]
 		case _event:
-			strcpy(elementPtr -> event_.name, "\0");
 			break;
 			
 		case _building:
+			strcpy(elementPtr -> building_.adress, "\0");
 			break;
 			
 		case _buildingType:
+			strcpy(elementPtr -> buildingType_.name, "\0");
 			break;
 			
 		case _item:
+			strcpy(elementPtr -> item_.name, "\0");
 			break;
 			
 		case _person:
+			strcpy(elementPtr -> person_.firstName, "\0");
+			strcpy(elementPtr -> person_.lastName, "\0");
 			break;
 			
 		default:
@@ -78,17 +82,58 @@ link* insertLink(link* headLinkPtr, link* toInsertLinkPtr)
 	}
 }
 
-int list_search(link* linksList, element* _elementPtr)
+long int getElementId(element* elementPtr, structId type)
 {
-	int i = 0;
-	while(linksList != NULL)
+	structId last = lastStructId;
+	switch(type)
 	{
-		if(linksList -> elementPtr == _elementPtr)
-			return i;
-		i++;
-		linksList = linksList -> nextLinkPtr;
+		//[CREATE_STRUCTURE]
+		case _event:
+			return elementPtr -> event_.ID;
+			break;
+			
+		case _building:
+			return elementPtr -> building_.ID;
+			break;
+			
+		case _buildingType:
+			return elementPtr -> buildingType_.ID;
+			break;
+			
+		case _item:
+			return elementPtr -> item_.ID;
+			break;
+			
+		case _person:
+			return elementPtr -> person_.ID;
+			break;
+			
+		default:
+			printf("<newElement> Error: Unknown structure type (%d), should be in [%d;%d]\n", type, 0, last);
 	}
 	return - 1;
+}
+
+long int getLinkId(link* linkPtr)
+{
+	return getElementId(linkPtr -> elementPtr, linkPtr -> structType);
+}
+
+
+link* chain_search(link* linkPtr, unsigned int ID)
+{
+	while(linkPtr != NULL)
+	{
+		if(getLinkId(linkPtr) == (long int)ID)
+			//If found
+			return linkPtr;
+			
+		//Next
+		linkPtr = linkPtr -> nextLinkPtr;
+	}
+	
+	//Not found
+	return NULL;
 }
 
 void displayLink(link toDisplay)
