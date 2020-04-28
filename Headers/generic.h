@@ -22,5 +22,3 @@ char toLower(char char_);
 void strToLower(char* str);
 
 int random(int min, int max);
-
-int menu();

@@ -6,4 +6,6 @@
 #include "structures.h"
 #include "link.h"
 
-bool play(simulation game);
+int mainMenu();
+
+bool playGame(simulation game);

@@ -26,7 +26,7 @@ element *newElement(structId type, char* errorMessage)
 			break;
 			
 		case _building:
-			strcpy(elementPtr -> building_.adress, "\0");
+			strcpy(elementPtr -> building_.name, "\0");
 			break;
 			
 		case _buildingType:
