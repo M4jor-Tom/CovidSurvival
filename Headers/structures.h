@@ -86,12 +86,16 @@ typedef struct person
 	stats stats_;
 }person;
 
-typedef struct eventType
+typedef struct eventType // <=> action
 {
 	unsigned int ID;
 	char name[wordLength];
+	
+	//Consequence on stats
 	stats consequence;
-	stats consequenceFor[personParticularitiesCount];
+	
+	//Consequence on stats for specific personParticularities (sum with consequence ?)
+	stats consequenceFor[personParticularitiesCount/* <=> personParticularity :: lastParticularityId*/];
 }eventType;
 
 typedef struct event

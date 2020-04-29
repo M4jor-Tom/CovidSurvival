@@ -1,6 +1,7 @@
 #define wordSize 40
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "../Headers/filesManagement.h"
 
@@ -30,12 +31,13 @@ bool writeChain(link* chain, char *path)
 	return success;
 }
 
-link* readFile(char* path, structId type)
+link* readChain(char* path, structId type)
 {
 	FILE* filePtr = fopen(path, "r+");
+	bool keepReading = true;
 	
 	//Creating empty link
-	link* linkPtr = newLink("readFile/else/while", type, false);
+	link *chainHeadPtr = NULL, *linkPtr = NULL;
 	element* tempElementPtr;
 	
 	if(filePtr == NULL)
@@ -45,25 +47,42 @@ link* readFile(char* path, structId type)
 		#endif
 		return NULL;
 	}
-	else while(fread(tempElementPtr, sizeof(element), 1, filePtr))
-		if(tempElementPtr != NULL)
+	else if(fread(tempElementPtr, sizeof(element), 1, filePtr))
+	{
+		//Reading first element only
+		//Creating first recipient link
+		linkPtr = newLink("readFile/firstLink", type, false);
+		
+		//Keeping an eye to the first link pointer to return it as a chain header
+		chainHeadPtr = linkPtr;
+		
+		//New element writting
+		linkPtr -> elementPtr = tempElementPtr;
+		
+		while(fread(tempElementPtr, sizeof(element), 1, filePtr))
 		{
-			//Read element writting
-			linkPtr -> elementPtr = tempElementPtr;
+			//Reading from second element to end
+			//Creating new recipient link
+			linkPtr -> nextLinkPtr = newLink("readFile/chain", type, false);
 			
-			//Creating next link
-			linkPtr -> nextLinkPtr = newLink("readFile/else/while", type, false);
-			
-			//Going to the next one
+			//Going to next link
 			linkPtr = linkPtr -> nextLinkPtr;
+			
+			//New element writting
+			linkPtr -> elementPtr = tempElementPtr;
 		}
+	}
+		
+	//Undoing last action in while loop
+	//linkPtr = prevLinkPtr;
+	//freeLink(linkPtr -> nextLinkPtr);
 	
 	#ifdef DEBUG
-	if(tempElementPtr == NULL) 
+	if(chainHeadPtr == NULL) 
 		printf("<readFile> Warning: Empty file, null return\n");
 	#endif
 	
 	fclose(filePtr);
 	
-	return linkPtr;
+	return chainHeadPtr;
 }

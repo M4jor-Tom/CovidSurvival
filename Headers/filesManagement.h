@@ -6,4 +6,4 @@
 
 bool writeChain(link* chain, char* path);
 
-link* readFile(char* path, structId Type);
+link* readChain(char* path, structId Type);
