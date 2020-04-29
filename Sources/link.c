@@ -1,51 +1,43 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "../Headers/structures.h"
 #include "../Headers/link.h"
 
-link* newLink(char* errorMessage, structId type)
+link* newLink(char* errorMessage, structId type, bool createElement)
 {
 	link* ret = (link*)safeMalloc(sizeof(link), errorMessage);
 	ret -> elementPtr = NULL;
 	ret -> nextLinkPtr = NULL;
-	ret -> elementPtr = newElement(type, errorMessage);
+	ret -> structType = type;
+	ret -> elementPtr = createElement
+		? newElement(errorMessage)
+		: NULL;
 	return ret;
 }
 
-element *newElement(structId type, char* errorMessage)
+element *newElement(char* errorMessage)
 {
+	//Index of last structure
 	structId last = lastStructId;
+	
+	//Memory allocation
 	element* elementPtr = (element*)safeMalloc(sizeof(element), errorMessage);
-			
-	switch(type)
-	{
-		//[CREATE_STRUCTURE]
-		case _event:
-			break;
-			
-		case _building:
-			strcpy(elementPtr -> building_.name, "\0");
-			break;
-			
-		case _buildingType:
-			strcpy(elementPtr -> buildingType_.name, "\0");
-			break;
-			
-		case _item:
-			strcpy(elementPtr -> item_.name, "\0");
-			break;
-			
-		case _person:
-			strcpy(elementPtr -> person_.firstName, "\0");
-			strcpy(elementPtr -> person_.lastName, "\0");
-			break;
-			
-		default:
-			printf("<newElement> Error: Unknown structure type (%d), should be in [%d;%d]\n", type, 0, last);
-	}
+	
+	//Memory initialisation
+	memset(elementPtr, 0, sizeof(element));
+	
 	return elementPtr;
+}
+
+void freeLink(link* linkPtr)
+{
+	if(linkPtr -> elementPtr)
+		free(linkPtr -> elementPtr);
+	
+	free(linkPtr);
 }
 
 link* lastLink(link* currentLinkPtr)

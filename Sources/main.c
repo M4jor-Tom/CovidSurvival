@@ -13,6 +13,15 @@ int main()
 	srand(time(NULL));
 	
 	savesFiles *globalSavesFiles = initGlobalSavesFiles();
+	
+	//Testing link constructor
+	int i;
+	structId last = lastStructId;
+	for(i = 0; i < last; i++)
+	{
+		link* linkPtr = newLink("test fail", i, true);
+		freeLink(linkPtr);
+	}
 
 	switch(mainMenu())
 	{

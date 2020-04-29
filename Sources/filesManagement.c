@@ -33,8 +33,10 @@ bool writeChain(link* chain, char *path)
 link* readFile(char* path, structId type)
 {
 	FILE* filePtr = fopen(path, "r+");
-	link* recipientHeadListPtr = NULL;
-	element* elementPtr = NULL;
+	
+	//Creating empty link
+	link* linkPtr = newLink("readFile/else/while", type, false);
+	element* tempElementPtr;
 	
 	if(filePtr == NULL)
 	{
@@ -43,17 +45,25 @@ link* readFile(char* path, structId type)
 		#endif
 		return NULL;
 	}
-	else while(fread(elementPtr, sizeof(element), 1, filePtr))
-	{
-		recipientHeadListPtr = newLink("readFile/else/while", type);
-	}
+	else while(fread(tempElementPtr, sizeof(element), 1, filePtr))
+		if(tempElementPtr != NULL)
+		{
+			//Read element writting
+			linkPtr -> elementPtr = tempElementPtr;
+			
+			//Creating next link
+			linkPtr -> nextLinkPtr = newLink("readFile/else/while", type, false);
+			
+			//Going to the next one
+			linkPtr = linkPtr -> nextLinkPtr;
+		}
 	
 	#ifdef DEBUG
-	if(recipientHeadListPtr == NULL) 
-		printf("<readFile> Warning: NULL return\n");
+	if(tempElementPtr == NULL) 
+		printf("<readFile> Warning: Empty file, null return\n");
 	#endif
 	
 	fclose(filePtr);
 	
-	return recipientHeadListPtr;
+	return linkPtr;
 }

@@ -69,11 +69,6 @@ typedef struct item
 	char name[wordLength];
 }item;
 
-typedef enum no_choice_yes
-{
-	no, choice, yes
-}no_choice_yes;
-
 typedef enum personParticularity
 {
 	//[CREATE_PERSON_PARTICULARITY]
@@ -137,6 +132,6 @@ typedef struct simulation
 	
 	savesFiles simulationData;
 	
-	//[CREATE_STRUCTURE]
-	link* /*not eventType, buildingType, itemType*/eventPtr, buildingPtr, itemPtr, personPtr;
+	//Array containing link headers adress to each element type
+	link** dataStructures;
 }simulation;

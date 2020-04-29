@@ -1,14 +1,19 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include "structures.h"
 
 //malloc functions
 
 //Creates a link pointing to an element of the [type] structure. Writes [errorMessage] if can't
-link* newLink(char* errorMessage, structId type);
+link* newLink(char* errorMessage, structId type, bool createElement);
 
 //Creates an element to put in a link. newLink Calls this function
-element *newElement(structId type, char* errorMessage);
+element *newElement(char* errorMessage);
+
+//Frees a link as well as its element if it exists
+void freeLink(link* linkPtr);
 
 //Get to last link from a link's pointer
 link* lastLink(link* currentLinkPtr);
