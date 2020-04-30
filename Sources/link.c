@@ -1,3 +1,5 @@
+#define nullId -1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,8 +11,10 @@
 link* newLink(char* errorMessage, structId type, bool createElement)
 {
 	link* ret = (link*)safeMalloc(sizeof(link), errorMessage);
-	ret -> elementPtr = NULL;
+	
 	ret -> nextLinkPtr = NULL;
+	ret -> ID = nullId;
+	
 	ret -> structType = type;
 	ret -> elementPtr = createElement
 		? newElement(errorMessage)
@@ -34,10 +38,31 @@ element *newElement(char* errorMessage)
 
 void freeLink(link* linkPtr)
 {
-	if(linkPtr -> elementPtr)
-		free(linkPtr -> elementPtr);
-	
-	free(linkPtr);
+	if(linkPtr != NULL)
+	{
+		if(linkPtr -> elementPtr)
+		{
+			//Frees element ifexists
+			memset(linkPtr -> elementPtr, 0, sizeof(element));
+			free(linkPtr -> elementPtr);
+		}
+		
+		//Frees link if exists
+		memset(linkPtr, 0, sizeof(link));
+		free(linkPtr);
+	}
+}
+
+void freeChain(link* chain)
+{
+	if(chain != NULL)
+	{
+		//Recurses to free next link of the chain
+		freeChain(chain -> nextLinkPtr);
+		
+		//Ends up freeing this link
+		freeLink(chain);
+	}
 }
 
 link* lastLink(link* currentLinkPtr)
@@ -77,38 +102,53 @@ link* insertLink(link* headLinkPtr, link* toInsertLinkPtr)
 long int getElementId(element* elementPtr, structId type)
 {
 	structId last = lastStructId;
+	unsigned int elementId = - 1;
 	switch(type)
 	{
 		//[CREATE_STRUCTURE]
 		case _event:
-			return elementPtr -> event_.ID;
+			elementId = elementPtr -> event_.ID;
+			break;
+			
+		case _eventType:
+			elementId = elementPtr -> eventType_.ID;
 			break;
 			
 		case _building:
-			return elementPtr -> building_.ID;
+			elementId = elementPtr -> building_.ID;
 			break;
 			
 		case _buildingType:
-			return elementPtr -> buildingType_.ID;
+			elementId = elementPtr -> buildingType_.ID;
 			break;
 			
 		case _item:
-			return elementPtr -> item_.ID;
+			elementId = elementPtr -> item_.ID;
+			break;
+			
+		case _itemType:
+			elementId = elementPtr -> itemType_.ID;
 			break;
 			
 		case _person:
-			return elementPtr -> person_.ID;
+			elementId = elementPtr -> person_.ID;
+			break;
+			
+		case _simulation:
+			elementId = elementPtr -> simulation_.ID;
 			break;
 			
 		default:
 			printf("<newElement> Error: Unknown structure type (%d), should be in [%d;%d]\n", type, 0, last);
 	}
-	return - 1;
+	return elementId;
 }
 
 long int getLinkId(link* linkPtr)
 {
-	return getElementId(linkPtr -> elementPtr, linkPtr -> structType);
+	if(linkPtr -> ID == nullId)
+		linkPtr -> ID = getElementId(linkPtr -> elementPtr, linkPtr -> structType);
+	return linkPtr -> ID;
 }
 
 
@@ -128,32 +168,124 @@ link* chain_search(link* linkPtr, unsigned int ID)
 	return NULL;
 }
 
+
+
+
+char **initParticularityLabels()
+{
+	personParticularity last = lastPersonParticularityId, cursor = 0;
+	char **particularityLabels = safeMalloc(sizeof(char*) * last, "initParticularityLabels wordsList");
+	
+	int i;
+	for(i = 0; i < last; i++)
+		particularityLabels[i] = safeMalloc(sizeof(char) * wordLength, "initParticularityLabels word");
+	
+	cursor = man;
+	strcpy(particularityLabels[cursor], "man");
+	
+	cursor = sporty;
+	strcpy(particularityLabels[cursor], "sporty");
+	
+	cursor = smoker;
+	strcpy(particularityLabels[cursor], "smoker");
+	
+	cursor = remoteWorker;
+	strcpy(particularityLabels[cursor], "remoteWorker");
+	
+	return particularityLabels;
+}
+
+void displayStats(stats toDisplay, char* tagging)
+{
+	bool mustFreeTagging = false;
+	if(tagging == NULL)
+	{
+		strcpy(tagging, "stats");
+		mustFreeTagging = true;
+	}
+	
+	printf
+	(
+		"[%s]\n\tHealth: %d\n\tHunger: %d\n\tHygiene: %d\n\tmentalHealth: %d\n\tStamina: %d\n",
+		tagging,
+		toDisplay.health,
+		toDisplay.hunger,
+		toDisplay.hygiene,
+		toDisplay.mentalHealth,
+		toDisplay.stamina
+	);
+	
+	if(mustFreeTagging)
+		free(tagging);
+}
+
 void displayLink(link toDisplay)
 {
-	switch(toDisplay.structType)
+	if(toDisplay.elementPtr != NULL)
 	{
-		//[CREATE_STRUCTURE]
-		case _event:
-			//printf("[event] \n", toDisplay.elementPtr -> );
-			break;
-			
-		case _building:
-			break;
-			
-		case _buildingType:
-			break;
-			
-		case _simulation:
-			break;
-			
-		case _item:
-			break;
-			
-		case _person:
-			break;
-			
-		default:
-			printf("<displayLink> Error: invalid data\n");
+			//Ease writting
+		element *elementPtr = toDisplay.elementPtr;
+		personParticularity last = lastPersonParticularityId;
+		
+		//What to display ?
+		switch(toDisplay.structType)
+		{
+			//[CREATE_STRUCTURE]
+			case _event:
+				printf
+				(
+					"[event]\n\tID: %d\n\tType ID: %d\n\treveiver ID: %d\n\tTransmitter ID: %d\n\n",
+					elementPtr -> event_.ID,
+					elementPtr -> event_.eventTypeId,
+					elementPtr -> event_.receiverId,
+					elementPtr -> event_.transmitterId
+				);
+				break;
+				
+			case _eventType:
+				printf
+				(
+					"[eventType]\n\tID: %d\n\tName: %s\n",
+					elementPtr -> eventType_.ID,
+					elementPtr -> eventType_.name
+				);
+				displayStats(elementPtr -> eventType_.consequence, "eventType global consequence");
+				
+				//[CREATE_PERSON_PARTICULARITY]
+				char **particularityLabels = initParticularityLabels();
+				personParticularity cursor = 0;
+				
+				for(cursor = 0; cursor < last; cursor++)
+				{
+					char tag[50];
+					strcpy(tag, "eventType specific consequence for ");
+					strcat(tag, particularityLabels[cursor]);
+					displayStats(elementPtr -> eventType_.consequenceFor[cursor], tag);
+				}
+				printf("\n\n");
+				break;
+				
+			case _building:
+				break;
+				
+			case _buildingType:
+				break;
+				
+			case _item:
+				break;
+				
+			case _itemType:
+				break;
+				
+			case _simulation:
+				break;
+				
+			case _person:
+				break;
+				
+			default:
+				printf("<displayLink> Error: invalid data\n");
+		}
 	}
 }
 

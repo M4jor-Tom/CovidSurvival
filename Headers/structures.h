@@ -11,6 +11,7 @@
 //[CREATE_PERSON_PARTICULARITY]
 #define personParticularitiesCount 4
 #define wordLength 40
+#define smallWordLength 20
 
 //Inheritance structures: Created to be used in other structures
 typedef struct location
@@ -35,12 +36,6 @@ typedef struct savesFiles
 	structId storedElements;
 	char name[wordLength];
 }savesFiles;
-
-
-/*typedef enum eventTypeId
-{
-	working, walking, running, shopping, eating, sleeping, lastActionId
-}eventTypeId;*/
 
 typedef struct building
 {
@@ -71,7 +66,7 @@ typedef struct item
 typedef enum personParticularity
 {
 	//[CREATE_PERSON_PARTICULARITY]
-	man, sporty, smoker, remoteWorker, lastParticularityId
+	man, sporty, smoker, remoteWorker, lastPersonParticularityId
 }personParticularity;
 
 typedef struct person
@@ -108,6 +103,12 @@ typedef struct event
 	//Comment ?
 }event;
 
+typedef struct simulation
+{
+	unsigned int ID;
+	unsigned long int simuledTime;
+}simulation;
+
 typedef union element
 {
 	//[CREATE_STRUCTURE]
@@ -118,23 +119,14 @@ typedef union element
 	itemType itemType_;
 	item item_;
 	person person_;
+	simulation simulation_;
 }element;
 
 typedef struct link
 {
+	long int ID;
 	element* elementPtr;
 	structId structType;
 	
 	struct link* nextLinkPtr;
 }link;
-
-typedef struct simulation
-{
-	unsigned int ID;
-	unsigned long int simuledTime;
-	
-	savesFiles simulationData;
-	
-	//Array containing link headers adress to each element type
-	link** dataStructures;
-}simulation;

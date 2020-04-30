@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "../Headers/filesManagement.h"
 
@@ -85,4 +86,25 @@ link* readChain(char* path, structId type)
 	fclose(filePtr);
 	
 	return chainHeadPtr;
+}
+
+
+savesFiles *initSavesFiles()
+{
+	savesFiles *globalSavesFiles = safeMalloc(sizeof(savesFiles) * lastStructId, "savesFiles initialisation");
+	
+	int structId_;
+	for(structId_ = 0; structId_ < lastStructId; structId_++)
+	{
+		//Unexisting files
+		strcpy(globalSavesFiles[structId_].name, "\0");
+		globalSavesFiles[structId_].storedElements = structId_;
+	}
+	
+	//Existing files
+	strcpy(globalSavesFiles[_eventType].name, "eventTypes.dat");
+	strcpy(globalSavesFiles[_buildingType].name, "buildingTypes.dat");
+	strcpy(globalSavesFiles[_itemType].name, "itemTypes.dat");
+	
+	return globalSavesFiles;
 }
