@@ -24,9 +24,6 @@ link* newLink(char* errorMessage, structId type, bool createElement)
 
 element *newElement(char* errorMessage)
 {
-	//Index of last structure
-	structId last = lastStructId;
-	
 	//Memory allocation
 	element* elementPtr = (element*)safeMalloc(sizeof(element), errorMessage);
 	
@@ -180,6 +177,9 @@ char **initParticularityLabels()
 	for(i = 0; i < last; i++)
 		particularityLabels[i] = safeMalloc(sizeof(char) * wordLength, "initParticularityLabels word");
 	
+	
+	//[CREATE_PERSON_PARTICULARITY]
+	
 	cursor = gender;
 	strcpy(particularityLabels[cursor], "man");
 	
@@ -195,7 +195,53 @@ char **initParticularityLabels()
 	return particularityLabels;
 }
 
-void displayStats(stats toDisplay, char* tagging)
+
+
+link grabLink(structId structType)
+{
+	switch(structType)
+	{
+		//[CREATE_STRUCTURE]
+		
+	}
+}
+
+link* grabChain(structId structType)
+{
+	int keepGrabbing = 1;
+	while(keepGrabbing)
+	{
+		//Operate
+		grabLink(structType);
+		
+		//Restart ?
+		printf("\nKeep grabbing ? 1/0\n");
+		
+		scanf("%d", &keepGrabbing);
+		getchar();
+		
+		system("cls");
+	}
+	
+}
+
+
+void displayLocation(location toDisplay, char *tagging)
+{
+	bool mustFreeTagging = false;
+	if(tagging == NULL)
+	{
+		strcpy(tagging, "location");
+		mustFreeTagging = true;
+	}
+	printf("[%s]\n\tx: %d\n\ty: %d\n", tagging, toDisplay.x, toDisplay.y);
+	
+	
+	if(mustFreeTagging)
+		free(tagging);
+}
+
+void displayStats(stats toDisplay, char *tagging)
 {
 	bool mustFreeTagging = false;
 	if(tagging == NULL)
@@ -204,6 +250,7 @@ void displayStats(stats toDisplay, char* tagging)
 		mustFreeTagging = true;
 	}
 	
+	//[CREATE_STATS]
 	printf
 	(
 		"[%s]\n\tHealth: %d\n\tHunger: %d\n\tHygiene: %d\n\tmentalHealth: %d\n\tStamina: %d\n",
@@ -223,9 +270,11 @@ void displayLink(link toDisplay)
 {
 	if(toDisplay.elementPtr != NULL)
 	{
-			//Ease writting
+		//Ease writting
 		element *elementPtr = toDisplay.elementPtr;
 		personParticularity last = lastPersonParticularityId;
+		
+		char manWoman[6] = "\0", smokerString[4] = "\0", remoteWorkingString[4] = "\0";
 		
 		//What to display ?
 		switch(toDisplay.structType)
@@ -245,20 +294,20 @@ void displayLink(link toDisplay)
 			case _eventType:
 				printf
 				(
-					"[eventType]\n\tID: %d\n\tName: %s\n",
+					"[event type]\n\tID: %d\n\tName: %s\n",
 					elementPtr -> eventType_.ID,
 					elementPtr -> eventType_.name
 				);
-				displayStats(elementPtr -> eventType_.consequence, "eventType global consequence");
+				displayStats(elementPtr -> eventType_.consequence, "event type global consequence");
 				
-				//[CREATE_PERSON_PARTICULARITY]
+				
 				char **particularityLabels = initParticularityLabels();
 				personParticularity cursor = 0;
 				
 				for(cursor = 0; cursor < last; cursor++)
 				{
 					char tag[50];
-					strcpy(tag, "eventType specific consequence for ");
+					strcpy(tag, "event type specific consequence for ");
 					strcat(tag, particularityLabels[cursor]);
 					displayStats(elementPtr -> eventType_.consequenceFor[cursor], tag);
 				}
@@ -266,21 +315,84 @@ void displayLink(link toDisplay)
 				break;
 				
 			case _building:
+				printf
+				(
+					"[building]\n\tID: %d\n\tName: %s\n\tType ID: %d\n",
+					elementPtr -> building_.ID,
+					elementPtr -> building_.name,
+					elementPtr -> building_.typeId
+				);
+				displayLocation(elementPtr -> building_.loc, "building location");
+				printf("\n\n");
 				break;
 				
 			case _buildingType:
+				printf
+				(
+					"[building type]\n\tID: %d\n\tName: %s\n\n",
+					elementPtr -> buildingType_.ID,
+					elementPtr -> buildingType_.name
+				);
 				break;
 				
 			case _item:
+				printf
+				(
+					"[item]\n\tID: %d\n\tProprietary ID: %d\n\tName: %s\n\n",
+					elementPtr -> item_.ID,
+					elementPtr -> item_.proprietaryId,
+					elementPtr -> item_.name
+				);
 				break;
 				
 			case _itemType:
+				printf
+				(
+					"[item type]\n\tID: %d\n\tName: %s\n\n",
+					elementPtr -> itemType_.ID,
+					elementPtr -> itemType_.name
+				);
 				break;
 				
 			case _simulation:
+				printf
+				(
+					"[simulation]\n\tID: %d\n\tSimuled time: %\n\n",
+					elementPtr -> simulation_.ID
+				);
 				break;
 				
 			case _person:
+				if(elementPtr -> person_.gender = MAN)
+					strcpy(manWoman, "man");
+				else strcpy(manWoman, "woman");
+				
+				if(elementPtr -> person_.smoker)
+					strcpy(smokerString, "yes");
+				else strcpy(smokerString, "no");
+				
+				if(elementPtr -> person_.remoteWorking)
+					strcpy(remoteWorkingString, "yes");
+				else strcpy(remoteWorkingString, "no");
+				
+				//[CREATE_PERSON_PARTICULARITY]
+				printf
+				(
+					"[person]\n\tID: %d\n\tFirst Name: %s\n\tLast Name: %s\n\tHouse ID: %d\n\tSportiness level: %d/2\n\tGender: %s\n\tSmoker: %s\n\tRemote worker: %s\n\tSalary: %.2f\n\tMoney: %.2f\n",
+					elementPtr -> person_.ID,
+					elementPtr -> person_.firstName,
+					elementPtr -> person_.lastName,
+					elementPtr -> person_.houseId,
+					elementPtr -> person_.sportiness,
+					manWoman,
+					smokerString,
+					remoteWorkingString,
+					elementPtr -> person_.salary,
+					elementPtr -> person_.money
+				);
+				
+				displayStats(elementPtr -> person_.stats_, "person stats");
+				printf("\n\n");
 				break;
 				
 			default:

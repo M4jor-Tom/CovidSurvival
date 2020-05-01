@@ -14,12 +14,20 @@ void mainMenu()
 
 void editionMenu()
 {
-	//[EDIT_MENU_OPTIONS]
+	//[EDITION_MENU_OPTIONS]
 	printf("\t-----\tEdition menu\t-----\t\n\n");
 	printf("\t   Add Elements-------------1\n");
 	printf("\t   Edit Elements------------2\n");
 	printf("\t   Delete Elements----------3\n");
 	printf("\t   Back to the main menu----4\n");
+	printf("\n\t  Please make a choice\n");
+}
+
+void elementsMenu()
+{
+	//[ELEMENTS_MENU_OPTIONS]
+	printf("\t-----\tElements menu\t-----\t\n\n");
+	printf("\t   Back to the edition menu----4\n");
 	printf("\n\t  Please make a choice\n");
 }
 
@@ -30,12 +38,16 @@ int menu(int menuType)
 	
 	switch(menuType)
 	{
-		case 1:
+		case start:
 			mainMenu();
 			break;
 			
-		case 2:
+		case edition:
 			editionMenu();
+			break;
+			
+		case elements:
+			elementsMenu();
 			break;
 	}
 		
@@ -50,5 +62,7 @@ int menu(int menuType)
 
 bool playGame(simulation game)
 {
+	bool keepPlaying = true;
 	
+	return keepPlaying;
 }

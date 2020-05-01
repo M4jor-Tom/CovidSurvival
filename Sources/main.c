@@ -6,6 +6,7 @@
 #include "../Headers/generic.h"
 #include "../Headers/link.h"
 #include "../Headers/filesManagement.h"
+#include "../Headers/game.h"
 
 void test(bool print);
 
@@ -17,36 +18,42 @@ int main()
 	
 	test(false);
 	
-	int select = 0, editionSelect = 0;
+	int select = 0, editionSelect = 0, elementSelect = 0;
 	
 	do
 	{
-		select = menu(1);
+		select = menu(start);
+		simulation sim;
 		switch(select)
 		{
 			case 1:
-				while(playGame());
+				while(playGame(sim));
 				break;
 			
 			case 2:
 				do
 				{	
-					editionSelect = menu(2);
+					editionSelect = menu(edition);
 					switch(editionSelect)
 					{
 						case 1:
 							//Create
-							
-							break;
-							
 						case 2:
 							//Edit
-							
-							break;
-							
 						case 3:
 							//Delete
-							
+							do
+							{
+								elementSelect = menu(elements);
+								switch(elementSelect)
+								{
+									case 4:
+										break;
+									
+									default:
+										printf("Select again\n\n");
+								}
+							}while(elementSelect != 4);
 							break;
 							
 						case 4:
@@ -75,7 +82,7 @@ void test(bool print)
 {
 	//Testing link constructor
 	int i;
-	structId last = lastStructId, structType_ = _eventType;
+	structId last = lastStructId, structType_ = 0;
 	for(i = 0; i < last; i++)
 	{
 		link* linkPtr = newLink("test fails on empty link", structType_, false);
@@ -88,51 +95,31 @@ void test(bool print)
 	//Testing eventType displaying
 	link 
 		*linkPtr_ = newLink("second test fails on link with element", structType_, true),
-		*eventTypes = linkPtr_;
-	linkPtr_ -> structType = structType_;
+		*chain = linkPtr_;
 	
-	for(i = 0; i < 5; i++)
+	for(structType_ = 0; structType_ < last; structType_++)
 	{
-		//Next Link
-		linkPtr_ -> nextLinkPtr = newLink("second test fails on link with element in loop", structType_, true);
-		linkPtr_ = linkPtr_ -> nextLinkPtr;
-		linkPtr_ -> elementPtr -> eventType_.ID = i + 1;
+		for(i = 0; i < 3; i++)
+		{
+			//Next Link
+			linkPtr_ -> nextLinkPtr = newLink("second test fails on link with element in loop", structType_, true);
+			linkPtr_ = linkPtr_ -> nextLinkPtr;
+			linkPtr_ -> elementPtr -> eventType_.ID = i + 1;
+		}
+		linkPtr_ -> structType = structType_;
 	}
 	
 	if(print)
 	{
-		printf("Existing eventTypes: \n");
-		displayChain(eventTypes);
+		printf("Existing structures: \n");
+		displayChain(chain);
 	}
 		
-	freeChain(eventTypes);
+	freeChain(chain);
 	
 	if(print)
 	{
-		printf("Deleted eventTypes: \n");
-		displayChain(eventTypes);
+		printf("Deleted structures: \n");
+		displayChain(chain);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-CHOISIR UN TYPE D'ELEMENT
--items <
--immeubles
--
--
-
-*/
