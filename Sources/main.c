@@ -8,15 +8,15 @@
 #include "../Headers/filesManagement.h"
 #include "../Headers/game.h"
 
-void test(bool print);
+void test(bool scan, bool print);
 
 int main()
 {
 	srand(time(NULL));
 	
-	savesFiles *globalSavesFiles = initSavesFiles();
+	savesFiles *savesFiles_ = initSavesFiles();
 	
-	test(false);
+	test(false, false);
 	
 	int select = 0, editionSelect = 0, elementSelect = 0;
 	
@@ -47,6 +47,12 @@ int main()
 								elementSelect = menu(elements);
 								switch(elementSelect)
 								{
+									case 1:
+										//itemType
+									case 2:
+										//buildingType
+									case 3:
+										//eventType
 									case 4:
 										break;
 									
@@ -78,8 +84,16 @@ int main()
 	return 0;
 }
 
-void test(bool print)
+void test(bool scan, bool print)
 {
+	//Testing grabLink function
+	if(scan)
+	{
+		link link_ = grabLink(_eventType);
+		if(print)
+			displayLink(link_);
+	}
+	
 	//Testing link constructor
 	int i;
 	structId last = lastStructId, structType_ = 0;
@@ -97,6 +111,7 @@ void test(bool print)
 		*linkPtr_ = newLink("second test fails on link with element", structType_, true),
 		*chain = linkPtr_;
 	
+	//Creating a chain of 3 links of each type of element
 	for(structType_ = 0; structType_ < last; structType_++)
 	{
 		for(i = 0; i < 3; i++)

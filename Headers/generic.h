@@ -8,6 +8,10 @@ void *safeRealloc(void *ptr, int sizeof_, char* errorMessage);
 
 void *safeAlloc(void * ptr, int sizeof_, char* errorMessage);
 
+//void freeHyper(int *mainHeader, unsigned int *lengths, unsigned int dimentions);
+
+void freeMatress(void **mainHeader, unsigned int headersLength);
+
 int array_search(char needle, char *haystack, int length);
 
 char toLower(char char_);

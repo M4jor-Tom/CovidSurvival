@@ -41,6 +41,27 @@ void *safeAlloc(void *ptr, int sizeof_, char *errorMessage)
 	}
 }
 
+/*void freeHyper(int *mainHeader, unsigned int *lengths, unsigned int dimentions)
+{
+	if(dimentions > 0)
+	{
+		int i;
+		for(i = 0; i < lengths[0]; i++)
+		{
+			freeHyper(mainHeader[i], &lengths[1], dimentions - 1);
+			free(mainHeader);
+		}
+	}
+}*/
+
+void freeMatress(void **mainHeader, unsigned int headersLength)
+{
+	int i;
+	for(i = 0; i < headersLength; i++)
+		free(mainHeader[i]);
+	//freeHyper(mainHeader, &headersLength, 2);
+}
+
 int array_search(char needle, char *haystack, int length)
 {
 	int i;

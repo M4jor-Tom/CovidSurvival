@@ -99,7 +99,7 @@ link* insertLink(link* headLinkPtr, link* toInsertLinkPtr)
 long int getElementId(element* elementPtr, structId type)
 {
 	structId last = lastStructId;
-	unsigned int elementId = - 1;
+	unsigned int elementId = nullId;
 	switch(type)
 	{
 		//[CREATE_STRUCTURE]
@@ -196,23 +196,118 @@ char **initParticularityLabels()
 }
 
 
+int grabInt(char *instructions)
+{
+	int ret = 0;
+	
+	if(instructions != NULL)
+		printf(instructions);
+		
+	scanf("%d", &ret);
+	getchar();
+	
+	return ret;
+}
+
+stats grabStats(char *instructions)
+{
+	stats recipient;
+	memset(&recipient, 0, sizeof(recipient));
+	
+	if(instructions != NULL)
+		printf(instructions);
+	
+	//[CREATE_STATS]
+	recipient.health = grabInt("health: ");
+	recipient.hunger = grabInt("hunger: ");
+	recipient.hygiene = grabInt("hygiene: ");
+	recipient.mentalHealth = grabInt("mentalHealth: ");
+	recipient.stamina = grabInt("stamina: ");
+	
+	return recipient;
+}
 
 link grabLink(structId structType)
 {
+	link link_;
+	memset(&link_, 0, sizeof(link));
+	link_.structType = structType;
+	link_.elementPtr = newElement("grabLink");
+	
+	element *recipient = link_.elementPtr;
+	structId lastStructId_ = lastStructId;
+	
+	//Only for eventTypes
+	personParticularity lastPersonParticularityId_ = lastPersonParticularityId;
+	char 
+		choice[2] = "\0",
+		*instructions = safeMalloc(sizeof(char) * 60, "grabLink/instruction"),
+		**particularityLabels = initParticularityLabels();
+	personParticularity cursor = 0;
+	
 	switch(structType)
 	{
 		//[CREATE_STRUCTURE]
-		
+		case _eventType:
+			printf("[event type]\n\tName: ");
+			scanf("%s", recipient -> eventType_.name);
+			
+			//General case consequences
+			recipient -> eventType_.consequence = grabStats("\tStats added to user's:\n");
+			
+			//Particular cases consequences
+			for(cursor = 0; cursor < lastPersonParticularityId_; cursor++)
+			{
+				//Particular case consequences
+				printf("\tCreate a particular case for %s ? (y/any)\n", particularityLabels[cursor]);
+				scanf("%s", &choice);
+				
+				if(strcmp(choice, "y") == 0)
+				{
+					//Particularities for each ones
+					strcpy(instructions, "\tStats added to user's in addition for ");
+					strcat(instructions, particularityLabels[cursor]);
+					strcat(instructions, "\n");
+					
+					recipient -> eventType_.consequenceFor[cursor] = grabStats(instructions);
+				}
+				else
+					memset(&recipient -> eventType_.consequenceFor[cursor], 0, sizeof(stats));
+			}
+			break;
+			
+		case _buildingType:
+			printf("[building type]\n\tName: ");
+			scanf("%s", recipient -> buildingType_.name);
+			break;
+			
+		case _itemType:
+			printf("[item type]\n\tName: ");
+			scanf("%s", recipient -> itemType_.name);
+			break;
+			
+		default:
+			printf("<newElement> Error: Unknown structure type (%d), should be in [%d;%d]\n", structType, 0, lastStructId_);
 	}
+	
+	//For eventTypes only
+	free(instructions);
+	freeMatress(particularityLabels, lastPersonParticularityId_);
+	
+	return link_;
 }
 
 link* grabChain(structId structType)
 {
 	int keepGrabbing = 1;
+	link
+		*chain = safeMalloc(sizeof(link), "grabChain init"), 
+		*linkPtr = chain;
+	
 	while(keepGrabbing)
 	{
 		//Operate
-		grabLink(structType);
+		*linkPtr = grabLink(structType);
 		
 		//Restart ?
 		printf("\nKeep grabbing ? 1/0\n");
@@ -221,8 +316,15 @@ link* grabChain(structId structType)
 		getchar();
 		
 		system("cls");
+		
+		if(keepGrabbing)
+		{
+			linkPtr -> nextLinkPtr = safeMalloc(sizeof(link), "grabChain next");
+			linkPtr = linkPtr -> nextLinkPtr;
+		}
 	}
 	
+	return chain;
 }
 
 
