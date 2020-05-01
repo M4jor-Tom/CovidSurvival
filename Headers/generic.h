@@ -2,13 +2,6 @@
 
 #define DEBUG
 
-typedef enum menuOptions
-{
-	play,
-	Edit,
-	Quit
-}menuOptions;
-
 void *safeMalloc(int sizeof_, char* errorMessage);
 
 void *safeRealloc(void *ptr, int sizeof_, char* errorMessage);

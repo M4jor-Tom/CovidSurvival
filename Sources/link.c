@@ -180,7 +180,7 @@ char **initParticularityLabels()
 	for(i = 0; i < last; i++)
 		particularityLabels[i] = safeMalloc(sizeof(char) * wordLength, "initParticularityLabels word");
 	
-	cursor = man;
+	cursor = gender;
 	strcpy(particularityLabels[cursor], "man");
 	
 	cursor = sporty;

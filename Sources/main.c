@@ -1,5 +1,6 @@
 #include <time.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "../Headers/structures.h"
 #include "../Headers/generic.h"
@@ -15,16 +16,56 @@ int main()
 	savesFiles *globalSavesFiles = initSavesFiles();
 	
 	test(false);
-
-	switch(mainMenu())
+	
+	int select = 0, editionSelect = 0;
+	
+	do
 	{
-		case 1:
-			while(playGame());
-			break;
+		select = menu(1);
+		switch(select)
+		{
+			case 1:
+				while(playGame());
+				break;
 			
-		case 2:
-			break;
-	}
+			case 2:
+				do
+				{	
+					editionSelect = menu(2);
+					switch(editionSelect)
+					{
+						case 1:
+							//Create
+							
+							break;
+							
+						case 2:
+							//Edit
+							
+							break;
+							
+						case 3:
+							//Delete
+							
+							break;
+							
+						case 4:
+							break;
+							
+						default:
+							printf("Select again\n\n");
+					}
+				}while(editionSelect != 4);
+				break;
+				
+			case 3:
+				break;
+				
+			default:
+				printf("Select again\n\n");
+		}
+	}while(select != 3);
+	
 	//structId structure = _item;
 	//displayChain(readFile("items.dat", _item));
 	return 0;
@@ -72,3 +113,26 @@ void test(bool print)
 		displayChain(eventTypes);
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+CHOISIR UN TYPE D'ELEMENT
+-items <
+-immeubles
+-
+-
+
+*/

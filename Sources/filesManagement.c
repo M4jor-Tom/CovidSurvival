@@ -21,7 +21,7 @@ bool writeChain(link* chain, char *path)
 		while(chain != NULL)
 		{
 			//Saving
-			success = (bool)fwrite(chain, sizeof(element), 1, filePtr);
+			success = (bool)fwrite(chain -> elementPtr, sizeof(element), 1, filePtr);
 			
 			//Next link
 			chain = chain -> nextLinkPtr;

@@ -6,6 +6,10 @@
 #include "structures.h"
 #include "link.h"
 
-int mainMenu();
+void mainMenu();
+
+void editionMenu();
+
+int menu(int menuType);
 
 bool playGame(simulation game);

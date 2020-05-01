@@ -34,7 +34,7 @@ typedef enum structId
 typedef struct savesFiles
 {
 	structId storedElements;
-	char name[wordLength];
+	char path[wordLength], name[wordLength];
 }savesFiles;
 
 typedef struct building
@@ -66,7 +66,7 @@ typedef struct item
 typedef enum personParticularity
 {
 	//[CREATE_PERSON_PARTICULARITY]
-	man, sporty, smoker, remoteWorker, lastPersonParticularityId
+	gender, sporty, smoker, remoteWorker, lastPersonParticularityId
 }personParticularity;
 
 typedef struct person
@@ -112,11 +112,13 @@ typedef struct simulation
 typedef union element
 {
 	//[CREATE_STRUCTURE]
+	
 	eventType eventType_;
-	event event_;
-	building building_;
 	buildingType buildingType_;
 	itemType itemType_;
+	
+	event event_;
+	building building_;
 	item item_;
 	person person_;
 	simulation simulation_;
