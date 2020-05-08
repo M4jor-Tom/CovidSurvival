@@ -25,7 +25,7 @@ typedef enum structId
 typedef struct savesFiles
 {
 	structId storedElements;
-	char path[wordLength], name[wordLength];
+	char path[70], name[wordLength], file[wordLength];
 }savesFiles;
 
 typedef struct building

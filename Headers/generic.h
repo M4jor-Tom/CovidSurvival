@@ -21,7 +21,7 @@ void strToLower(char *str);
 int random(int min, int max);
 
 //Uses mkdir for each time there's a new shash in the string
-int mkSdir(char *path, bool includeIfPoint);
+int mkSdir(char *path);
 
 //Translates a duration in seconds to its corresponding time unity in an amount that can't be over its superior-unit increment
 //Returns 0 if this unit contains more seconds than inputed
