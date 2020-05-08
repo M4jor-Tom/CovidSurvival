@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 #include "../Headers/main.h"
 
@@ -14,7 +17,10 @@ void *safeMalloc(int sizeof_, char *errorMessage)
 		#endif
 		return 0;
 	}
-	else return malloc_;
+	else 
+	{
+		return malloc_;
+	}
 }
 
 void *safeRealloc(void *ptr, int sizeof_, char *errorMessage)
@@ -106,6 +112,70 @@ int random(int min, int max)
 	{
 		return (rand() % (max - min)) + min;
 	}
+}
+
+int mkSdir(char *path, bool includeIfPoint)
+{
+	if(sizeof(path) > 1024)
+	{
+		printf("<mkSdir> Error: Path length shall be 1024 characters long, it's %d to much (%d)\n[path]: %s\n", sizeof(path) - 1024, sizeof(path), path);
+	}
+	
+	char 
+		*folder = NULL,
+		existingPath[1024] = "\0", 
+		separator[2] = "/",
+		point = '.',
+		*_path = safeMalloc(sizeof(path), "mkSdir/path copy");
+	int ret = 0, sizeofExistingPath = 0;
+	DIR *dir_;
+	
+	strcpy(_path, path);
+	
+	folder = strtok(_path, separator);
+	while(folder != NULL)
+	{
+		if(strchr(folder, point) != NULL && !includeIfPoint)
+		{
+			//Leave while loop, file name got
+			#ifdef DEBUG
+			printf("<mkSdir> broke loop to avoid creating %s as a folder, but as a file\n\n", folder);
+			#endif
+			break;
+		}
+		strcat(existingPath, folder);
+		strcat(existingPath, separator);
+		//printf("-%s\n", existingPath);
+		
+		if(dir_ = opendir(existingPath))
+		{
+			//If the file exists
+			#ifdef DEBUG
+			printf("<mkSdir> %s exists\n", existingPath);
+			#endif
+			
+			closedir(dir_);
+		}
+		else
+		{
+			//If it needs to be created
+			ret = mkdir(existingPath);
+			
+			#ifdef DEBUG
+			if(ret != -1)
+				printf("<mkSdir> %s created\n", existingPath);
+			else
+				printf("<mkSdir> Error: couldn't create %s\n", existingPath);
+			#endif
+		}
+		
+		
+		folder = strtok(NULL, separator);
+	}
+	
+	free(_path);
+	
+	return ret;
 }
 
 unsigned int secondsTo(char *returnType, unsigned int duration_s)

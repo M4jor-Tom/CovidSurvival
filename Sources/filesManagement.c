@@ -28,7 +28,7 @@ savesFiles
 		{
 			.storedElements = _simulation,
 			.name = "Simulations",
-			.path = "saves/simulations.txt"
+			.path = "saves/simulation.txt"
 		}
 	},
 	
@@ -60,9 +60,8 @@ bool writeChain(link* chain, char *path)
 {
 	bool success = false;
 	
-	//strtok(path, "/");
-	/*if(mkdir("test/") == -1)
-		printf("<writeChain> Warning: Failed to create folder\n");*/
+	if(mkSdir(path, false) == -1)
+		printf("<writeChain> Warning: Failed to create folder\n");
 	
 	#ifdef DEBUG
 	if(chain == NULL)
