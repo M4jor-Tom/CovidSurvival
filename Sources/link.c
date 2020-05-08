@@ -1,12 +1,9 @@
-#define nullId -1
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
-#include "../Headers/structures.h"
-#include "../Headers/link.h"
+#include "../Headers/main.h"
 
 link* newLink(char* errorMessage, structId type, bool createElement)
 {
@@ -135,8 +132,10 @@ long int getElementId(element* elementPtr, structId type)
 			elementId = elementPtr -> simulation_.ID;
 			break;
 			
+		#ifdef DEBUG
 		default:
-			printf("<newElement> Error: Unknown structure type (%d), should be in [%d;%d]\n", type, 0, last);
+			printf("<getElementId> Error: Unknown structure type (%d), should be in [%d;%d]\n", type, 0, last);
+		#endif
 	}
 	return elementId;
 }
@@ -252,28 +251,42 @@ link grabLink(structId structType)
 			printf("[event type]\n\tName: ");
 			scanf("%s", recipient -> eventType_.name);
 			
+			printf("[event type]\n\tDuration: ");
+			scanf("%u", &recipient -> eventType_.duration_s);
+			
 			//General case consequences
 			recipient -> eventType_.consequence = grabStats("\tStats added to user's:\n");
 			
 			//Particular cases consequences
-			for(cursor = 0; cursor < lastPersonParticularityId_; cursor++)
+			printf("Create particular cases ? (y/any)\n");
+			scanf("%s", &choice);
+			
+			if(!strcmp(choice, "y"))
 			{
-				//Particular case consequences
-				printf("\tCreate a particular case for %s ? (y/any)\n", particularityLabels[cursor]);
-				scanf("%s", &choice);
-				
-				if(strcmp(choice, "y") == 0)
+				//Empty choice
+				strcpy(choice, "\0");
+				for(cursor = 0; cursor < lastPersonParticularityId_; cursor++)
 				{
-					//Particularities for each ones
-					strcpy(instructions, "\tStats added to user's in addition for ");
-					strcat(instructions, particularityLabels[cursor]);
-					strcat(instructions, "\n");
+					//Particular case consequences
+					printf("\tCreate a particular case for %s ? (y/any)\n", particularityLabels[cursor]);
+					scanf("%s", &choice);
 					
-					recipient -> eventType_.consequenceFor[cursor] = grabStats(instructions);
+					if(!strcmp(choice, "y"))
+					{
+						//Particularities for each ones
+						strcpy(instructions, "\tStats added to user's in addition for ");
+						strcat(instructions, particularityLabels[cursor]);
+						strcat(instructions, "\n");
+						
+						recipient -> eventType_.consequenceFor[cursor] = grabStats(instructions);
+					}
+					else
+						memset(&recipient -> eventType_.consequenceFor[cursor], 0, sizeof(stats));
 				}
-				else
-					memset(&recipient -> eventType_.consequenceFor[cursor], 0, sizeof(stats));
 			}
+			
+			//Empty choice
+			strcpy(choice, "\0");
 			break;
 			
 		case _buildingType:
@@ -286,13 +299,15 @@ link grabLink(structId structType)
 			scanf("%s", recipient -> itemType_.name);
 			break;
 			
+		#ifdef DEBUG
 		default:
 			printf("<newElement> Error: Unknown structure type (%d), should be in [%d;%d]\n", structType, 0, lastStructId_);
+		#endif
 	}
 	
 	//For eventTypes only
 	free(instructions);
-	freeMatress(particularityLabels, lastPersonParticularityId_);
+	freeMatress((void**)particularityLabels, lastPersonParticularityId_);
 	
 	return link_;
 }
@@ -385,7 +400,7 @@ void displayLink(link toDisplay)
 			case _event:
 				printf
 				(
-					"[event]\n\tID: %d\n\tType ID: %d\n\treveiver ID: %d\n\tTransmitter ID: %d\n\n",
+					"[event]\n\tID: %u\n\tType ID: %d\n\treveiver ID: %d\n\tTransmitter ID: %d\n\n",
 					elementPtr -> event_.ID,
 					elementPtr -> event_.eventTypeId,
 					elementPtr -> event_.receiverId,
@@ -396,9 +411,13 @@ void displayLink(link toDisplay)
 			case _eventType:
 				printf
 				(
-					"[event type]\n\tID: %d\n\tName: %s\n",
+					"[event type]\n\tID: %u\n\tName: %s\n\tDuration: %u days, %u hours, %u minutes and %u seconds\n",
 					elementPtr -> eventType_.ID,
-					elementPtr -> eventType_.name
+					elementPtr -> eventType_.name,
+					secondsTo("days", elementPtr -> eventType_.duration_s),
+					secondsTo("hours", elementPtr -> eventType_.duration_s),
+					secondsTo("minutes", elementPtr -> eventType_.duration_s),
+					secondsTo("seconds", elementPtr -> eventType_.duration_s)
 				);
 				displayStats(elementPtr -> eventType_.consequence, "event type global consequence");
 				
@@ -419,7 +438,7 @@ void displayLink(link toDisplay)
 			case _building:
 				printf
 				(
-					"[building]\n\tID: %d\n\tName: %s\n\tType ID: %d\n",
+					"[building]\n\tID: %u\n\tName: %s\n\tType ID: %u\n",
 					elementPtr -> building_.ID,
 					elementPtr -> building_.name,
 					elementPtr -> building_.typeId
@@ -431,7 +450,7 @@ void displayLink(link toDisplay)
 			case _buildingType:
 				printf
 				(
-					"[building type]\n\tID: %d\n\tName: %s\n\n",
+					"[building type]\n\tID: %u\n\tName: %s\n\n",
 					elementPtr -> buildingType_.ID,
 					elementPtr -> buildingType_.name
 				);
@@ -440,7 +459,7 @@ void displayLink(link toDisplay)
 			case _item:
 				printf
 				(
-					"[item]\n\tID: %d\n\tProprietary ID: %d\n\tName: %s\n\n",
+					"[item]\n\tID: %u\n\tProprietary ID: %u\n\tName: %s\n\n",
 					elementPtr -> item_.ID,
 					elementPtr -> item_.proprietaryId,
 					elementPtr -> item_.name
@@ -450,7 +469,7 @@ void displayLink(link toDisplay)
 			case _itemType:
 				printf
 				(
-					"[item type]\n\tID: %d\n\tName: %s\n\n",
+					"[item type]\n\tID: %u\n\tName: %s\n\n",
 					elementPtr -> itemType_.ID,
 					elementPtr -> itemType_.name
 				);
@@ -459,7 +478,7 @@ void displayLink(link toDisplay)
 			case _simulation:
 				printf
 				(
-					"[simulation]\n\tID: %d\n\tSimuled time: %\n\n",
+					"[simulation]\n\tID: %u\n\tSimuled time: %\n\n",
 					elementPtr -> simulation_.ID
 				);
 				break;
@@ -497,8 +516,10 @@ void displayLink(link toDisplay)
 				printf("\n\n");
 				break;
 				
+			#ifdef DEBUG
 			default:
 				printf("<displayLink> Error: invalid data\n");
+			#endif
 		}
 	}
 }

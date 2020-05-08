@@ -2,29 +2,31 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../Headers/structures.h"
-#include "../Headers/generic.h"
-#include "../Headers/link.h"
-#include "../Headers/filesManagement.h"
-#include "../Headers/game.h"
+#include "../Headers/main.h"
 
-void test(bool scan, bool print);
+void test(bool file, bool print);
 
 int main()
 {
 	srand(time(NULL));
 	
-	savesFiles *savesFiles_ = initSavesFiles();
-	
 	test(false, false);
 	
-	int select = 0, editionSelect = 0, elementSelect = 0;
+	extern savesFiles globalFiles[];
+	extern savesFiles gameFiles[];
+	
+	int 
+		mainSelect = 0,
+		editionSelect = 0,
+		elementSelect = 0;
+		
+	link *existingChain = NULL, *newLinkPtr = NULL;
 	
 	do
 	{
-		select = menu(start);
+		mainSelect = menu(start);
 		simulation sim;
-		switch(select)
+		switch(mainSelect)
 		{
 			case 1:
 				while(playGame(sim));
@@ -54,15 +56,38 @@ int main()
 									case 3:
 										//eventType
 									case 4:
+										//simulation
+										existingChain = readChain(globalFiles[elementSelect - 1].path, elementSelect);
+										switch(editionSelect)
+										{
+											case 1:
+												//Create
+												newLinkPtr = newLink("main/create element", elementSelect, false);
+												*newLinkPtr = grabLink(elementSelect);
+												
+												existingChain = insertLink(existingChain, newLinkPtr);
+												writeChain(existingChain, globalFiles[elementSelect - 1].path);
+												break;
+											case 2:
+												//Edit
+											case 3:
+												//Delete
+												displayChain(existingChain);
+										}
+										break;
+										
+									case 5:
+										//Leave
 										break;
 									
 									default:
 										printf("Select again\n\n");
 								}
-							}while(elementSelect != 4);
+							}while(elementSelect != globalStructuresCount + 1);
 							break;
 							
 						case 4:
+							//Leave
 							break;
 							
 						default:
@@ -72,28 +97,24 @@ int main()
 				break;
 				
 			case 3:
+				//Leave
 				break;
 				
 			default:
 				printf("Select again\n\n");
 		}
-	}while(select != 3);
+	}while(mainSelect != 3);
 	
+	freeChain(existingChain);
+	freeLink(newLinkPtr);
+												
 	//structId structure = _item;
 	//displayChain(readFile("items.dat", _item));
 	return 0;
 }
 
-void test(bool scan, bool print)
+void test(bool file, bool print)
 {
-	//Testing grabLink function
-	if(scan)
-	{
-		link link_ = grabLink(_eventType);
-		if(print)
-			displayLink(link_);
-	}
-	
 	//Testing link constructor
 	int i;
 	structId last = lastStructId, structType_ = 0;
@@ -106,35 +127,37 @@ void test(bool scan, bool print)
 		freeLink(linkPtr);
 	}
 	
-	//Testing eventType displaying
+	//Testing displaying
 	link 
 		*linkPtr_ = newLink("second test fails on link with element", structType_, true),
 		*chain = linkPtr_;
 	
 	//Creating a chain of 3 links of each type of element
-	for(structType_ = 0; structType_ < last; structType_++)
+	for(i = 0; i < 20; i++)
 	{
-		for(i = 0; i < 3; i++)
-		{
-			//Next Link
-			linkPtr_ -> nextLinkPtr = newLink("second test fails on link with element in loop", structType_, true);
-			linkPtr_ = linkPtr_ -> nextLinkPtr;
-			linkPtr_ -> elementPtr -> eventType_.ID = i + 1;
-		}
-		linkPtr_ -> structType = structType_;
+		//Next Link
+		linkPtr_ -> nextLinkPtr = newLink("second test fails on link with element in loop", 0/*structType_*/, true);
+		linkPtr_ = linkPtr_ -> nextLinkPtr;
+		linkPtr_ -> elementPtr -> eventType_.ID = i + 1;
 	}
+	linkPtr_ -> structType = structType_;
 	
 	if(print)
 	{
 		printf("Existing structures: \n");
 		displayChain(chain);
 	}
-		
+	
+	if(file)
+		writeChain(chain, "test/test.test");
 	freeChain(chain);
 	
 	if(print)
 	{
-		printf("Deleted structures: \n");
-		displayChain(chain);
+		/*printf("Deleted structures: \n");
+		displayChain(chain);*/
+		printf("Read structures: \n");
+		displayChain(readChain("test.test", 0));
+		
 	}
 }

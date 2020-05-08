@@ -2,15 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../Headers/structures.h"
-#include "../Headers/generic.h"
+#include "../Headers/main.h"
 
 void *safeMalloc(int sizeof_, char *errorMessage)
 {
 	void *malloc_ = malloc(sizeof_);
 	if(malloc_ == NULL)
 	{
+		#ifdef DEBUG
 		printf("<safeMalloc> Error: %s\n", errorMessage);
+		#endif
 		return 0;
 	}
 	else return malloc_;
@@ -21,7 +22,9 @@ void *safeRealloc(void *ptr, int sizeof_, char *errorMessage)
 	void *realloc_ = realloc(ptr, sizeof_);
 	if(realloc_ == NULL)
 	{
+		#ifdef DEBUG
 		printf("<safeRealloc> Error: %s\n", errorMessage);
+		#endif
 		return 0;
 	}
 	else return realloc_;
@@ -94,11 +97,47 @@ int random(int min, int max)
 {
 	if(min > max)
 	{
+		#ifdef DEBUG
 		printf("min: %d\nmax: %d\n", min, max);
+		#endif
 		return 0;
 	}
 	else
 	{
 		return (rand() % (max - min)) + min;
 	}
+}
+
+unsigned int secondsTo(char *returnType, unsigned int duration_s)
+{
+	unsigned int ret = 0;
+	
+	//strToLower(returnType);
+	
+	if(!strcmp(returnType, "day") || !strcmp(returnType, "days"))
+	{
+		ret = duration_s / SECONDS_PER_DAY;
+	}
+	else if(!strcmp(returnType, "hour") || !strcmp(returnType, "hours"))
+	{
+		duration_s = duration_s % SECONDS_PER_DAY;
+		ret = duration_s / SECONDS_PER_HOUR;
+	}
+	else if(!strcmp(returnType, "minute") || !strcmp(returnType, "minutes"))
+	{
+		duration_s = duration_s % SECONDS_PER_HOUR;
+		ret = duration_s / SECONDS_PER_MINUTE;
+	}
+	else if(!strcmp(returnType, "second") || !strcmp(returnType, "seconds"))
+	{
+		ret = duration_s % SECONDS_PER_MINUTE;
+	}
+	else 
+	{
+		#ifdef DEBUG
+		printf("<secondsTo> unknown time unity: %s\n", returnType);
+		#endif
+	}
+	
+	return ret;
 }

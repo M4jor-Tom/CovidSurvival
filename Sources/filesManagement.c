@@ -1,45 +1,103 @@
-#define wordSize 40
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
-#include "../Headers/filesManagement.h"
+#include "../Headers/main.h"
+
+//[CREATE_STRUCTURE]
+savesFiles
+	globalFiles[] = 
+	{
+		{
+			.storedElements = _itemType,
+			.name = "Item types",
+			.path = "ressources/itemType.txt"
+		},
+		{
+			.storedElements = _buildingType,
+			.name = "Building types",
+			.path = "ressources/buildingType.txt"
+		},
+		{
+			.storedElements = _eventType,
+			.name = "Event types",
+			.path = "ressources/eventType.txt"
+		},
+		{
+			.storedElements = _simulation,
+			.name = "Simulations",
+			.path = "saves/simulations.txt"
+		}
+	},
+	
+	gamesFiles[] = 
+	{
+		{
+			.storedElements = _item,
+			.name = "Items",
+			.path = "saves/%d/item.txt"
+		},
+		{
+			.storedElements = _building,
+			.name = "Buildings",
+			.path = "saves/%d/building.txt"
+		},
+		{
+			.storedElements = _event,
+			.name = "Events",
+			.path = "saves/%d/event.txt"
+		},
+		{
+			.storedElements = _person,
+			.name = "Persons",
+			.path = "saves/simulation_%d/person.txt"
+		}
+	};
 
 bool writeChain(link* chain, char *path)
 {
 	bool success = false;
 	
+	//strtok(path, "/");
+	/*if(mkdir("test/") == -1)
+		printf("<writeChain> Warning: Failed to create folder\n");*/
+	
 	#ifdef DEBUG
 	if(chain == NULL)
 		printf("<writeChain> Warning: Null chain\n");
-	#endif
-	
+		
 	else
+	#endif
 	{
-		FILE* filePtr = fopen(path, "w+");
+		FILE *filePtr = fopen(path, "w");
+		//FILE *fileTxtPtr = fopen("logs.txt", "ab");
 		while(chain != NULL)
 		{
 			//Saving
 			success = (bool)fwrite(chain -> elementPtr, sizeof(element), 1, filePtr);
+			//fprintf(fileTxtPtr, "Wrote: Element of ID = %d and type ID = %d in %s;\n", getLinkId(chain), chain -> structType, path);
 			
 			//Next link
 			chain = chain -> nextLinkPtr;
 		}
 		fclose(filePtr);
+		//fclose(fileTxtPtr);
 	}
 	
 	return success;
 }
 
-link* readChain(char* path, structId type)
+link *readChain(char* path, structId type)
 {
-	FILE* filePtr = fopen(path, "r+");
+	FILE* filePtr = fopen(path, "r");
 	bool keepReading = true;
 	
 	//Creating empty link
 	link *chainHeadPtr = NULL, *linkPtr = NULL;
-	element* tempElementPtr;
+	element *elementsBufferPtr = NULL;
+	link **chain;
 	
 	if(filePtr == NULL)
 	{
@@ -48,29 +106,39 @@ link* readChain(char* path, structId type)
 		#endif
 		return NULL;
 	}
-	else if(fread(tempElementPtr, sizeof(element), 1, filePtr))
+	else 
 	{
-		//Reading first element only
-		//Creating first recipient link
-		linkPtr = newLink("readFile/firstLink", type, false);
+		//Analysing file
+		fseek(filePtr, 0, SEEK_END);
+		unsigned int 
+			size = ftell(filePtr),
+			elementsCount = size / sizeof(element);
+		fseek(filePtr, 0, SEEK_SET);
 		
-		//Keeping an eye to the first link pointer to return it as a chain header
-		chainHeadPtr = linkPtr;
+		//Allocating memory
+		elementsBufferPtr = safeMalloc(size, "readChain/elementsBuffer");
+		chain = safeMalloc(elementsCount * sizeof(link*), "readChain/linksArray");
 		
-		//New element writting
-		linkPtr -> elementPtr = tempElementPtr;
+		//Reading
+		fread(elementsBufferPtr, 1, size, filePtr);
 		
-		while(fread(tempElementPtr, sizeof(element), 1, filePtr))
+		//Chain structuration
+		unsigned int i;
+		for(i = 0; i < elementsCount; i++)
 		{
-			//Reading from second element to end
-			//Creating new recipient link
-			linkPtr -> nextLinkPtr = newLink("readFile/chain", type, false);
+			//Creating a new link in the chain, with read element
+			chain[i] = newLink("readChain/single link", type, false);
+			chain[i] -> elementPtr = &elementsBufferPtr[i];
 			
-			//Going to next link
-			linkPtr = linkPtr -> nextLinkPtr;
-			
-			//New element writting
-			linkPtr -> elementPtr = tempElementPtr;
+			if(i)
+			{
+				//Chaining links
+				chain[i - 1] -> nextLinkPtr = chain[i];
+			}
+			else if(i + 1 == elementsCount)
+			{
+				chain[i] -> nextLinkPtr = NULL;
+			}
 		}
 	}
 		
@@ -79,32 +147,11 @@ link* readChain(char* path, structId type)
 	//freeLink(linkPtr -> nextLinkPtr);
 	
 	#ifdef DEBUG
-	if(chainHeadPtr == NULL) 
+	if(elementsBufferPtr == NULL) 
 		printf("<readFile> Warning: Empty file, null return\n");
 	#endif
 	
 	fclose(filePtr);
 	
-	return chainHeadPtr;
-}
-
-
-savesFiles *initSavesFiles()
-{
-	savesFiles *globalSavesFiles = safeMalloc(sizeof(savesFiles) * lastStructId, "savesFiles initialisation");
-	
-	int structId_;
-	for(structId_ = 0; structId_ < lastStructId; structId_++)
-	{
-		//Unexisting files
-		strcpy(globalSavesFiles[structId_].name, "\0");
-		globalSavesFiles[structId_].storedElements = structId_;
-	}
-	
-	//Existing files
-	strcpy(globalSavesFiles[_eventType].name, "eventTypes.dat");
-	strcpy(globalSavesFiles[_buildingType].name, "buildingTypes.dat");
-	strcpy(globalSavesFiles[_itemType].name, "itemTypes.dat");
-	
-	return globalSavesFiles;
+	return chain[0];
 }
