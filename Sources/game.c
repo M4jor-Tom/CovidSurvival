@@ -41,8 +41,7 @@ void elementsMenu()
 
 int menu(int menuType)
 {
-	
-	int select = 0;
+	int select;
 	
 	switch(menuType)
 	{

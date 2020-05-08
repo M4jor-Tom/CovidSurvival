@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 void *safeMalloc(int sizeof_, char *errorMessage);
 
 void *safeRealloc(void *ptr, int sizeof_, char *errorMessage);
@@ -17,6 +19,9 @@ char toLower(char char_);
 void strToLower(char *str);
 
 int random(int min, int max);
+
+//Uses mkdir for each time there's a new shash in the string
+int mkSdir(char *path, bool includeIfPoint);
 
 //Translates a duration in seconds to its corresponding time unity in an amount that can't be over its superior-unit increment
 //Returns 0 if this unit contains more seconds than inputed

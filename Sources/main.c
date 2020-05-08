@@ -18,7 +18,8 @@ int main()
 	int 
 		mainSelect = 0,
 		editionSelect = 0,
-		elementSelect = 0;
+		elementSelect = 0,
+		elementType = 0;
 		
 	link *existingChain = NULL, *newLinkPtr = NULL;
 	
@@ -57,16 +58,18 @@ int main()
 										//eventType
 									case 4:
 										//simulation
-										existingChain = readChain(globalFiles[elementSelect - 1].path, elementSelect);
+										
+										elementType = elementSelect - 1;
+										existingChain = readChain(globalFiles[elementType].path, elementSelect);
 										switch(editionSelect)
 										{
 											case 1:
 												//Create
 												newLinkPtr = newLink("main/create element", elementSelect, false);
-												*newLinkPtr = grabLink(elementSelect);
+												*newLinkPtr = grabLink(elementType);
 												
 												existingChain = insertLink(existingChain, newLinkPtr);
-												writeChain(existingChain, globalFiles[elementSelect - 1].path);
+												writeChain(existingChain, globalFiles[elementType].path);
 												break;
 											case 2:
 												//Edit
@@ -105,11 +108,9 @@ int main()
 		}
 	}while(mainSelect != 3);
 	
-	freeChain(existingChain);
-	freeLink(newLinkPtr);
-												
-	//structId structure = _item;
-	//displayChain(readFile("items.dat", _item));
+	//freeChain(existingChain);
+	//freeLink(newLinkPtr);
+	
 	return 0;
 }
 
