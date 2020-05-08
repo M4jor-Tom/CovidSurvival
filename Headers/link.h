@@ -2,8 +2,6 @@
 
 #include <stdbool.h>
 
-#include "structures.h"
-
 // --- Memory functions ---
 
 //Creates a link pointing to an element of the [type] structure. Writes [errorMessage] if can't

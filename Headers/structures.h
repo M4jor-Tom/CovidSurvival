@@ -2,17 +2,6 @@
 
 #include <stdbool.h>
 
-#include "generic.h"
-
-#define MAN false
-#define WOMAN true
-
-//Needs files conversion if changes
-//[CREATE_PERSON_PARTICULARITY]
-#define personParticularitiesCount 4
-#define wordLength 40
-#define smallWordLength 20
-
 //Inheritance structures: Created to be used in other structures
 typedef struct location
 {
@@ -27,7 +16,9 @@ typedef struct stats
 //System enum: Created to know structures [CREATE_STRUCTURE]
 typedef enum structId
 {
-	_eventType, _event, _building, _buildingType, _simulation, _itemType, _item, _person, lastStructId
+	_itemType,  _buildingType, _eventType, _simulation, //global structures
+	_event, _building, _item, _person, //games structures
+	lastStructId
 }structId;
 
 //Simulator structures: They are the simulator's core
@@ -82,7 +73,7 @@ typedef struct person
 
 typedef struct eventType // <=> action
 {
-	unsigned int ID;
+	unsigned int ID, duration_s;
 	char name[wordLength];
 	
 	//Consequence on stats

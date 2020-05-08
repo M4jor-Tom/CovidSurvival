@@ -1,6 +1,9 @@
 #include <stdio.h>
 
-#include "../Headers/game.h"
+#include "../Headers/main.h"
+
+extern savesFiles globalFiles[];
+extern savesFiles gameFiles[];
 
 void mainMenu()
 {
@@ -26,8 +29,13 @@ void editionMenu()
 void elementsMenu()
 {
 	//[ELEMENTS_MENU_OPTIONS]
+	//[CREATE_STRUCTURE]
 	printf("\t-----\tElements menu\t-----\t\n\n");
-	printf("\t   Back to the edition menu----4\n");
+	int i, j;
+	for(i = 1, j = 0; j < globalStructuresCount; i++, j++)
+		printf("\t   Edit %s----%d\n", globalFiles[j].name, i);
+	
+	printf("\t   Back to the edition menu----%d\n", globalStructuresCount + 1);
 	printf("\n\t  Please make a choice\n");
 }
 
