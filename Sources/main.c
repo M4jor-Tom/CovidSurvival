@@ -60,16 +60,16 @@ int main()
 										//simulation
 										
 										elementType = elementSelect - 1;
-										existingChain = readChain(globalFiles[elementType].path, elementSelect);
+										existingChain = readChain(globalFiles[elementType], elementType);
 										switch(editionSelect)
 										{
 											case 1:
 												//Create
-												newLinkPtr = newLink("main/create element", elementSelect, false);
+												newLinkPtr = newLink("main/create element", elementType, false);
 												*newLinkPtr = grabLink(elementType);
 												
 												existingChain = insertLink(existingChain, newLinkPtr);
-												writeChain(existingChain, globalFiles[elementType].path);
+												writeChain(existingChain, globalFiles[elementType]);
 												break;
 											case 2:
 												//Edit
@@ -109,7 +109,7 @@ int main()
 	}while(mainSelect != 3);
 	
 	//freeChain(existingChain);
-	//freeLink(newLinkPtr);
+	freeLink(newLinkPtr);
 	
 	return 0;
 }
@@ -150,15 +150,15 @@ void test(bool file, bool print)
 	}
 	
 	if(file)
-		writeChain(chain, "test/test.test");
+		//writeChain(chain, "test/test.test");
 	freeChain(chain);
 	
 	if(print)
 	{
 		/*printf("Deleted structures: \n");
 		displayChain(chain);*/
-		printf("Read structures: \n");
-		displayChain(readChain("test.test", 0));
+		//printf("Read structures: \n");
+		//displayChain(readChain("test.test", 0));
 		
 	}
 }

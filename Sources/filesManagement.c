@@ -13,22 +13,26 @@ savesFiles
 		{
 			.storedElements = _itemType,
 			.name = "Item types",
-			.path = "ressources/itemType.txt"
+			.path = "ressources/",
+			.file = "itemType.txt"
 		},
 		{
 			.storedElements = _buildingType,
 			.name = "Building types",
-			.path = "ressources/buildingType.txt"
+			.path = "ressources/",
+			.file = "buildingType.txt"
 		},
 		{
 			.storedElements = _eventType,
 			.name = "Event types",
-			.path = "ressources/eventType.txt"
+			.path = "ressources/",
+			.file = "eventType.txt"
 		},
 		{
 			.storedElements = _simulation,
 			.name = "Simulations",
-			.path = "saves/simulation.txt"
+			.path = "saves/",
+			.file = "simulation.txt"
 		}
 	},
 	
@@ -37,31 +41,44 @@ savesFiles
 		{
 			.storedElements = _item,
 			.name = "Items",
-			.path = "saves/%d/item.txt"
+			.path = "saves/%d/",
+			.file = "item.txt"
 		},
 		{
 			.storedElements = _building,
 			.name = "Buildings",
-			.path = "saves/%d/building.txt"
+			.path = "saves/%d/",
+			.file = "building.txt"
 		},
 		{
 			.storedElements = _event,
 			.name = "Events",
-			.path = "saves/%d/event.txt"
+			.path = "saves/%d/",
+			.file = "event.txt"
 		},
 		{
 			.storedElements = _person,
 			.name = "Persons",
-			.path = "saves/simulation_%d/person.txt"
+			.path = "saves/simulation_%d/",
+			.file = "person.txt"
 		}
 	};
 
-bool writeChain(link* chain, char *path)
+bool writeChain(link* chain, savesFiles save)
 {
 	bool success = false;
 	
-	if(mkSdir(path, false) == -1)
-		printf("<writeChain> Warning: Failed to create folder\n");
+	#ifdef DEBUG
+	if
+	(
+	#endif
+		mkSdir(save.path)
+	#ifdef DEBUG
+		 == -1
+	)
+		printf("<writeChain> Warning: Failed to create folder\n")
+	#endif
+	;
 	
 	#ifdef DEBUG
 	if(chain == NULL)
@@ -70,7 +87,12 @@ bool writeChain(link* chain, char *path)
 	else
 	#endif
 	{
-		FILE *filePtr = fopen(path, "w");
+		char baseName[70] = "\0";
+		strcpy(baseName, save.path);
+		strcat(baseName, save.file);
+		
+		FILE *filePtr = fopen(baseName, "w");
+		
 		//FILE *fileTxtPtr = fopen("logs.txt", "ab");
 		while(chain != NULL)
 		{
@@ -88,9 +110,13 @@ bool writeChain(link* chain, char *path)
 	return success;
 }
 
-link *readChain(char* path, structId type)
+link *readChain(savesFiles save, structId type)
 {
-	FILE* filePtr = fopen(path, "r");
+	char baseName[70] = "\0";
+	strcat(baseName, save.path);
+	strcat(baseName, save.file);
+	
+	FILE* filePtr = fopen(baseName, "r");
 	bool keepReading = true;
 	
 	//Creating empty link
@@ -101,7 +127,7 @@ link *readChain(char* path, structId type)
 	if(filePtr == NULL)
 	{
 		#ifdef DEBUG
-		printf("<readFile> Warning: File not found\n");
+		printf("<readFile> Warning: File %s not found\n", baseName);
 		#endif
 		return NULL;
 	}
