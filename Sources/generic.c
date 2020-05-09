@@ -114,22 +114,27 @@ int random(int min, int max)
 	}
 }
 
-static void _mkdir(const char *dir) {
-        char tmp[256];
-        char *p = NULL;
-        size_t len;
+static void _mkdir(const char *dir) 
+{
+    char tmp[256];
+    char *p = NULL;
+    size_t len;
 
-        snprintf(tmp, sizeof(tmp),"%s",dir);
-        len = strlen(tmp);
-        if(tmp[len - 1] == '/')
-                tmp[len - 1] = 0;
-        for(p = tmp + 1; *p; p++)
-                if(*p == '/') {
-                        *p = 0;
-                        mkdir(tmp);
-                        *p = '/';
-                }
-        mkdir(tmp);
+    snprintf(tmp, sizeof(tmp), "%s", dir);
+    
+    len = strlen(tmp);
+    
+    if(tmp[len - 1] == '/')
+        tmp[len - 1] = 0;
+    
+	for(p = tmp + 1; *p; p++)
+    	if(*p == '/') 
+		{
+            *p = 0;
+            mkdir(tmp);
+            *p = '/';
+        }
+    mkdir(tmp);
 }
 
 int mkSdir(char *path)
@@ -143,7 +148,6 @@ int mkSdir(char *path)
 		*folder = NULL,
 		existingPath[1024] = "\0", 
 		separator[2] = "/",
-		//point = '.',
 		*_path = safeMalloc(sizeof(path), "mkSdir/path copy");
 	int ret = 0, sizeofExistingPath = 0;
 	DIR *dir_;
@@ -153,14 +157,6 @@ int mkSdir(char *path)
 	folder = strtok(_path, separator);
 	while(folder != NULL)
 	{
-		/*if(strchr(folder, point) != NULL && !includeIfPoint)
-		{
-			//Leave while loop, file name got
-			#ifdef DEBUG
-			printf("<mkSdir> broke loop to avoid creating %s as a folder, but as a file\n\n", folder);
-			#endif
-			break;
-		}*/
 		strcat(existingPath, folder);
 		strcat(existingPath, separator);
 		//printf("-%s\n", existingPath);
@@ -180,7 +176,6 @@ int mkSdir(char *path)
 			ret = mkdir(existingPath);
 			
 			#ifdef DEBUG
-			printf("test");
 			if(ret != -1)
 				printf("<mkSdir> %s created\n", existingPath);
 			else

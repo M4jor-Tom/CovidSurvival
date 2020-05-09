@@ -8,59 +8,71 @@
 
 //[CREATE_STRUCTURE]
 savesFiles
-	globalFiles[] = 
+	globalFiles[structuresCount] = 
 	{
 		{
 			.storedElements = _itemType,
-			.name = "Item types",
+			.name = "Item type",
 			.path = "ressources/",
-			.file = "itemType.txt"
+			.file = "itemType.covid"
 		},
 		{
 			.storedElements = _buildingType,
-			.name = "Building types",
+			.name = "Building type",
 			.path = "ressources/",
-			.file = "buildingType.txt"
+			.file = "buildingType.covid"
 		},
 		{
 			.storedElements = _eventType,
-			.name = "Event types",
+			.name = "Event type",
 			.path = "ressources/",
-			.file = "eventType.txt"
+			.file = "eventType.covid"
 		},
 		{
 			.storedElements = _simulation,
-			.name = "Simulations",
+			.name = "Simulation",
 			.path = "saves/",
-			.file = "simulation.txt"
+			.file = "simulation.covid"
 		}
 	},
 	
-	gamesFiles[] = 
+	gamesFiles[structuresCount] = 
 	{
 		{
-			.storedElements = _item,
-			.name = "Items",
-			.path = "saves/%d/",
-			.file = "item.txt"
+			
 		},
 		{
-			.storedElements = _building,
-			.name = "Buildings",
-			.path = "saves/%d/",
-			.file = "building.txt"
+			
+		},
+		{
+			
+		},
+		{
+			
 		},
 		{
 			.storedElements = _event,
 			.name = "Events",
-			.path = "saves/%d/",
-			.file = "event.txt"
+			.path = "saves/simulation_%d/",
+			.file = "event.surviver"
+		},
+		{
+			.storedElements = _building,
+			.name = "Buildings",
+			.path = "saves/simulation_%d/",
+			.file = "building.surviver"
+		},
+		{
+			.storedElements = _item,
+			.name = "Items",
+			.path = "saves/simulation_%d/",
+			.file = "item.surviver"
 		},
 		{
 			.storedElements = _person,
 			.name = "Persons",
 			.path = "saves/simulation_%d/",
-			.file = "person.txt"
+			.file = "person.surviver"
 		}
 	};
 
@@ -80,32 +92,40 @@ bool writeChain(link* chain, savesFiles save)
 	#endif
 	;
 	
-	#ifdef DEBUG
+	
+	char baseName[70] = "\0";
+	strcpy(baseName, save.path);
+	strcat(baseName, save.file);
+	
+	FILE *filePtr = fopen(baseName, "w");
+	
+	//FILE *fileTxtPtr = fopen("logs.txt", "ab");
 	if(chain == NULL)
-		printf("<writeChain> Warning: Null chain\n");
-		
-	else
-	#endif
 	{
-		char baseName[70] = "\0";
-		strcpy(baseName, save.path);
-		strcat(baseName, save.file);
-		
-		FILE *filePtr = fopen(baseName, "w");
-		
-		//FILE *fileTxtPtr = fopen("logs.txt", "ab");
-		while(chain != NULL)
-		{
-			//Saving
-			success = (bool)fwrite(chain -> elementPtr, sizeof(element), 1, filePtr);
-			//fprintf(fileTxtPtr, "Wrote: Element of ID = %d and type ID = %d in %s;\n", getLinkId(chain), chain -> structType, path);
-			
-			//Next link
-			chain = chain -> nextLinkPtr;
-		}
+		//Null chain, delete file
+		#ifdef DEBUG
+		printf("<writeChain> Warning: Null chain, deleting file %s\n", baseName);
+		#endif
 		fclose(filePtr);
-		//fclose(fileTxtPtr);
+		if(remove(baseName) == 0)
+		{
+			#ifdef DEBUG
+			printf("<writeChain> file %s deleted\n", baseName);
+			#endif
+		}
 	}
+	else while(chain != NULL)
+	{
+		//Saving
+		success = (bool)fwrite(chain -> elementPtr, sizeof(element), 1, filePtr);
+		//fprintf(fileTxtPtr, "Wrote: Element of ID = %d and type ID = %d in %s;\n", getLinkId(chain), chain -> structType, path);
+		
+		//Next link
+		chain = chain -> nextLinkPtr;
+	}
+	
+	fclose(filePtr);
+	//fclose(fileTxtPtr);
 	
 	return success;
 }

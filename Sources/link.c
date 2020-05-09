@@ -74,12 +74,44 @@ link* lastLink(link* currentLinkPtr)
 	else return NULL;
 }
 
+link* deleteLink(link *chain, unsigned int Id)
+{
+	link *previousLinkPtr = NULL, *chainHeaderPtr;
+	bool deleted = false;
+	chainHeaderPtr = chain;
+	
+	while(chain != NULL && deleted == false)
+	{
+		//While chain's running and nothing's deleted
+		if(getLinkId(chain) == Id)
+		{
+			//Must delete
+			//Next link for who's deleted becomes it for the previous one
+			if(previousLinkPtr != NULL)
+				//If it's not the first to delete
+				previousLinkPtr -> nextLinkPtr = chain -> nextLinkPtr;
+			else
+				//If it's the frst to delete, returned header becomes the second one
+				chainHeaderPtr = chain -> nextLinkPtr;
+			
+			//freeLink(chain);
+			deleted = true;
+		}
+		
+		//To next link
+		previousLinkPtr = chain;
+		chain = chain -> nextLinkPtr;
+	}
+	
+	return chainHeaderPtr;
+}
+
 link* insertLink(link* headLinkPtr, link* toInsertLinkPtr)
 {
 	if(headLinkPtr == NULL)
 	{
 		//Null list
-		toInsertLinkPtr -> nextLinkPtr = NULL;
+		setLinkId(toInsertLinkPtr, 1);
 		return toInsertLinkPtr;
 	}
 	else
@@ -89,7 +121,64 @@ link* insertLink(link* headLinkPtr, link* toInsertLinkPtr)
 
 		//Putting new link
 		lastLinkPtr -> nextLinkPtr = toInsertLinkPtr;
+		
+		//Identifying the link by Id (auto increment)
+		setLinkId(toInsertLinkPtr, getLinkId(lastLinkPtr) + 1);
 		return headLinkPtr;
+	}
+}
+
+void setLinkId(link* linkPtr, unsigned int Id)
+{
+	linkPtr -> ID = Id;
+	setElementId(linkPtr -> elementPtr, linkPtr -> structType, Id);
+}
+
+void setElementId(element* elementPtr, structId type, unsigned int Id)
+{
+	structId last = lastStructId;
+	unsigned int elementId = nullId;
+	
+	switch(type)
+	{
+		//[CREATE_STRUCTURE]
+			
+		case _eventType:
+			elementPtr -> eventType_.ID = Id;
+			break;
+			
+		case _buildingType:
+			elementPtr -> buildingType_.ID = Id;
+			break;
+			
+		case _itemType:
+			elementPtr -> itemType_.ID = Id;
+			break;
+			
+		case _event:
+			elementPtr -> event_.ID = Id;
+			break;
+			
+		case _building:
+			elementPtr -> building_.ID = Id;
+			break;
+			
+		case _item:
+			elementPtr -> item_.ID = Id;
+			break;
+			
+		case _person:
+			elementPtr -> person_.ID = Id;
+			break;
+			
+		case _simulation:
+			elementPtr -> simulation_.ID = Id;
+			break;
+			
+		#ifdef DEBUG
+		default:
+			printf("<getElementId> Error: Unknown structure type (%d), should be in [%d;%d]\n", type, 0, last);
+		#endif
 	}
 }
 

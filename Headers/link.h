@@ -22,8 +22,17 @@ void freeChain(link* chain);
 //Get to last link from a link's pointer
 link* lastLink(link* currentLinkPtr);
 
+//Deletes a link by Id and returns the list head (which can be different if the first link is the one deleted)
+link* deleteLink(link *chain, unsigned int Id);
+
 //Inserts a created link et the end of a chain
 link* insertLink(link* headLinkPtr, link *toInsertLinkPtr);
+
+//Gives an Id to both link and corresponding element
+void setLinkId(link* linkPtr, unsigned int Id);
+
+//Gives an Id to the corresponding element
+void setElementId(element* elementPtr, structId type, unsigned int Id);
 
 //Gets a link's element Id from the link's pointer
 long int getLinkId(link* linkPtr);

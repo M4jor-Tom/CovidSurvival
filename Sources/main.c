@@ -1,6 +1,7 @@
 #include <time.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "../Headers/main.h"
 
@@ -19,14 +20,23 @@ int main()
 		mainSelect = 0,
 		editionSelect = 0,
 		elementSelect = 0,
-		elementType = 0;
+		elementType = 0,
+		idChoice = 0;
 		
-	link *existingChain = NULL, *newLinkPtr = NULL;
+	structId elementChoice = lastStructId;
+		
+	link 
+		*existingChain = NULL, 
+		*newLinkPtr = NULL,
+		*selectedLinkPtr = NULL,
+		*selectedLinkNextPtr = NULL;
+	
+	char editionLabel[15] = "\0";
 	
 	do
 	{
-		mainSelect = menu(start);
-		simulation sim;
+		mainSelect = menu(start, NULL);
+		simulation sim = setupGame();
 		switch(mainSelect)
 		{
 			case 1:
@@ -36,56 +46,112 @@ int main()
 			case 2:
 				do
 				{	
-					editionSelect = menu(edition);
+					editionSelect = menu(edition, NULL);
 					switch(editionSelect)
 					{
 						case 1:
 							//Create
+							if(!strcmp(editionLabel, "\0"))
+								strcpy(editionLabel, "Create");
 						case 2:
 							//Edit
+							if(!strcmp(editionLabel, "\0"))
+								strcpy(editionLabel, "Edit");
 						case 3:
 							//Delete
+							if(!strcmp(editionLabel, "\0"))
+								strcpy(editionLabel, "Delete");
 							do
 							{
-								elementSelect = menu(elements);
+								elementSelect = menu(elements, editionLabel);
 								switch(elementSelect)
 								{
 									case 1:
 										//itemType
+										if(elementChoice == lastStructId)
+											elementChoice = _itemType;
 									case 2:
 										//buildingType
+										if(elementChoice == lastStructId)
+											elementChoice = _buildingType;
 									case 3:
 										//eventType
+										if(elementChoice == lastStructId)
+											elementChoice = _eventType;
 									case 4:
 										//simulation
+										if(elementChoice == lastStructId)
+											elementChoice = _simulation;
 										
-										elementType = elementSelect - 1;
-										existingChain = readChain(globalFiles[elementType], elementType);
+										//freeChain(existingChain);
+										existingChain = readChain(globalFiles[elementChoice], elementChoice);
 										switch(editionSelect)
 										{
 											case 1:
 												//Create
-												newLinkPtr = newLink("main/create element", elementType, false);
-												*newLinkPtr = grabLink(elementType);
+												//freeLink(newLinkPtr);
+												newLinkPtr = newLink("main/create element", elementChoice, false);
+												*newLinkPtr = grabLink(elementChoice);
 												
 												existingChain = insertLink(existingChain, newLinkPtr);
-												writeChain(existingChain, globalFiles[elementType]);
+												writeChain(existingChain, globalFiles[elementChoice]);
 												break;
+												
 											case 2:
 												//Edit
 											case 3:
 												//Delete
+												
+												//Display chain so user can see before choosing
 												displayChain(existingChain);
+												
+												//User selection
+												printf("Select %s of Id: ", globalFiles[elementChoice].name);
+												scanf("%d", &idChoice);
+												getchar();
+												
+												//Fetching
+												selectedLinkPtr = chain_search(existingChain, idChoice);
+												if(selectedLinkPtr != NULL && editionSelect == 2)
+												{
+													//If Id exists in chain AND is edited
+													
+													//Save a way to the rest of the chain
+													selectedLinkNextPtr = selectedLinkPtr -> nextLinkPtr;
+													
+													//elementPtr is going to be re-malloc'd by grabLink
+													//free(selectedLinkPtr -> elementPtr);
+													
+													//Give new data to this link
+													*selectedLinkPtr = grabLink(elementChoice);
+													
+													//Give back Id and nextLinkPtr to selectedLink
+													setLinkId(selectedLinkPtr, idChoice);
+													selectedLinkPtr -> nextLinkPtr = selectedLinkNextPtr;
+												}
+												else if(selectedLinkPtr != NULL && editionSelect == 3)
+												{
+													//If Id exists in chain AND is deleted
+													existingChain = deleteLink(existingChain, idChoice);
+												}
+												else
+												{
+													//Null result
+													printf("Unknown %s Id: %d\n", globalFiles[elementChoice].name, idChoice);
+												}
+												writeChain(existingChain, globalFiles[elementChoice]);
 										}
 										break;
 										
 									case 5:
 										//Leave
+										strcpy(editionLabel, "\0");
 										break;
 									
 									default:
 										printf("Select again\n\n");
 								}
+								
 							}while(elementSelect != globalStructuresCount + 1);
 							break;
 							
@@ -107,9 +173,6 @@ int main()
 				printf("Select again\n\n");
 		}
 	}while(mainSelect != 3);
-	
-	//freeChain(existingChain);
-	freeLink(newLinkPtr);
 	
 	return 0;
 }

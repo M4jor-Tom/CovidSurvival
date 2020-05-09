@@ -6,6 +6,10 @@ void mainMenu();
 
 void editionMenu();
 
-int menu(int menuType);
+void elementsMenu(char *optionsLabel);
+
+int menu(int menuType, char *optionsLabel);
+
+simulation setupGame();
 
 bool playGame(simulation game);

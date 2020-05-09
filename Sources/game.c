@@ -26,20 +26,20 @@ void editionMenu()
 	printf("\n\t  Please make a choice\n");
 }
 
-void elementsMenu()
+void elementsMenu(char *optionsLabel)
 {
 	//[ELEMENTS_MENU_OPTIONS]
 	//[CREATE_STRUCTURE]
 	printf("\t-----\tElements menu\t-----\t\n\n");
 	int i, j;
 	for(i = 1, j = 0; j < globalStructuresCount; i++, j++)
-		printf("\t   Edit %s----%d\n", globalFiles[j].name, i);
+		printf("\t   %s %s----%d\n", optionsLabel, globalFiles[j].name, i);
 	
 	printf("\t   Back to the edition menu----%d\n", globalStructuresCount + 1);
 	printf("\n\t  Please make a choice\n");
 }
 
-int menu(int menuType)
+int menu(int menuType, char *optionsLabel)
 {
 	int select;
 	
@@ -54,7 +54,7 @@ int menu(int menuType)
 			break;
 			
 		case elements:
-			elementsMenu();
+			elementsMenu(optionsLabel);
 			break;
 	}
 		
@@ -66,6 +66,12 @@ int menu(int menuType)
 	return select;
 }
 
+
+simulation setupGame()
+{
+	simulation sim;
+	return sim;
+}
 
 bool playGame(simulation game)
 {

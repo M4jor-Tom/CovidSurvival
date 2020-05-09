@@ -13,6 +13,7 @@
 //[CREATE_PERSON_PARTICULARITY]
 #define personParticularitiesCount 4
 #define globalStructuresCount 4
+#define structuresCount 8
 
 #define wordLength 40
 #define smallWordLength 20

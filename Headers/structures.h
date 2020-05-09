@@ -16,7 +16,7 @@ typedef struct stats
 //System enum: Created to know structures [CREATE_STRUCTURE]
 typedef enum structId
 {
-	_itemType,  _buildingType, _eventType, _simulation, //global structures
+	_itemType, _buildingType, _eventType, _simulation, //global structures
 	_event, _building, _item, _person, //games structures
 	lastStructId
 }structId;
