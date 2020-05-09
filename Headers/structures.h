@@ -107,12 +107,12 @@ typedef union element
 	eventType eventType_;
 	buildingType buildingType_;
 	itemType itemType_;
+	simulation simulation_;
 	
 	event event_;
 	building building_;
 	item item_;
 	person person_;
-	simulation simulation_;
 }element;
 
 typedef struct link

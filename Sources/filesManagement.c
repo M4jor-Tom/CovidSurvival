@@ -165,24 +165,40 @@ link *readChain(savesFiles save, structId type)
 		chain = safeMalloc(elementsCount * sizeof(link*), "readChain/linksArray");
 		
 		//Reading
-		fread(elementsBufferPtr, 1, size, filePtr);
-		
 		//Chain structuration
-		unsigned int i;
-		for(i = 0; i < elementsCount; i++)
+		if(fread(elementsBufferPtr, 1, size, filePtr))
 		{
-			//Creating a new link in the chain, with read element
-			chain[i] = newLink("readChain/single link", type, false);
-			chain[i] -> elementPtr = &elementsBufferPtr[i];
-			
-			if(i)
+			unsigned int i;
+			for(i = 0; i < elementsCount; i++)
 			{
-				//Chaining links
-				chain[i - 1] -> nextLinkPtr = chain[i];
+				//Creating a new link in the chain, with read element
+				chain[i] = newLink("readChain/single link", type, false);
+				chain[i] -> elementPtr = &elementsBufferPtr[i];
+				
+				if(i)
+				{
+					//Chaining links
+					chain[i - 1] -> nextLinkPtr = chain[i];
+				}
+				else if(i + 1 == elementsCount)
+				{
+					chain[i] -> nextLinkPtr = NULL;
+				}
 			}
-			else if(i + 1 == elementsCount)
+		}
+		else
+		{
+			#ifdef DEBUG
+			if(elementsBufferPtr == NULL) 
+				printf("<readFile> Warning: %s is empty, deleting...\n", baseName);
+			#endif
+			fclose(filePtr);
+			if(remove(baseName) == 0)
 			{
-				chain[i] -> nextLinkPtr = NULL;
+				#ifdef DEBUG
+				if(elementsBufferPtr == NULL) 
+					printf("<readFile> %s deleted\n", baseName);
+				#endif
 			}
 		}
 	}

@@ -61,6 +61,10 @@ int main()
 							//Delete
 							if(!strcmp(editionLabel, "\0"))
 								strcpy(editionLabel, "Delete");
+						case 4:
+							//Watch
+							if(!strcmp(editionLabel, "\0"))
+								strcpy(editionLabel, "Watch");
 							do
 							{
 								elementSelect = menu(elements, editionLabel);
@@ -95,56 +99,74 @@ int main()
 												
 												existingChain = insertLink(existingChain, newLinkPtr);
 												writeChain(existingChain, globalFiles[elementChoice]);
+												
+												//If user wants to do things with another element
+												elementChoice = lastStructId;
 												break;
 												
 											case 2:
 												//Edit
 											case 3:
 												//Delete
+											case 4:
+												//Watch
 												
-												//Display chain so user can see before choosing
+												//Display chain so user can see (before choosing ?)
 												displayChain(existingChain);
-												
-												//User selection
-												printf("Select %s of Id: ", globalFiles[elementChoice].name);
-												scanf("%d", &idChoice);
-												getchar();
-												
-												//Fetching
-												selectedLinkPtr = chain_search(existingChain, idChoice);
-												if(selectedLinkPtr != NULL && editionSelect == 2)
+												if(editionSelect == 4)
 												{
-													//If Id exists in chain AND is edited
-													
-													//Save a way to the rest of the chain
-													selectedLinkNextPtr = selectedLinkPtr -> nextLinkPtr;
-													
-													//elementPtr is going to be re-malloc'd by grabLink
-													//free(selectedLinkPtr -> elementPtr);
-													
-													//Give new data to this link
-													*selectedLinkPtr = grabLink(elementChoice);
-													
-													//Give back Id and nextLinkPtr to selectedLink
-													setLinkId(selectedLinkPtr, idChoice);
-													selectedLinkPtr -> nextLinkPtr = selectedLinkNextPtr;
-												}
-												else if(selectedLinkPtr != NULL && editionSelect == 3)
-												{
-													//If Id exists in chain AND is deleted
-													existingChain = deleteLink(existingChain, idChoice);
+													//Watch
+													printf("\nHit any key to go\n");
+													getch();
 												}
 												else
 												{
-													//Null result
-													printf("Unknown %s Id: %d\n", globalFiles[elementChoice].name, idChoice);
+													//If the point is not just to watch
+													//User selection
+													printf("Select %s of Id: ", globalFiles[elementChoice].name);
+													scanf("%d", &idChoice);
+													getchar();
+													
+													//Fetching
+													selectedLinkPtr = chain_search(existingChain, idChoice);
+													if(selectedLinkPtr != NULL && editionSelect == 2)
+													{
+														//If Id exists in chain AND is edited
+														
+														//Save a way to the rest of the chain
+														selectedLinkNextPtr = selectedLinkPtr -> nextLinkPtr;
+														
+														//elementPtr is going to be re-malloc'd by grabLink
+														//free(selectedLinkPtr -> elementPtr);
+														
+														//Give new data to this link
+														*selectedLinkPtr = grabLink(elementChoice);
+														
+														//Give back Id and nextLinkPtr to selectedLink
+														setLinkId(selectedLinkPtr, idChoice);
+														selectedLinkPtr -> nextLinkPtr = selectedLinkNextPtr;
+													}
+													else if(selectedLinkPtr != NULL && editionSelect == 3)
+													{
+														//If Id exists in chain AND is deleted
+														existingChain = deleteLink(existingChain, idChoice);
+													}
+													else
+													{
+														//Null result
+														printf("Unknown %s Id: %d\n", globalFiles[elementChoice].name, idChoice);
+													}
+													writeChain(existingChain, globalFiles[elementChoice]);
 												}
-												writeChain(existingChain, globalFiles[elementChoice]);
+												
+												//If user wants to do things with another element
+												elementChoice = lastStructId;
 										}
 										break;
 										
 									case 5:
 										//Leave
+										//Maybe user will want to select another type of element after
 										strcpy(editionLabel, "\0");
 										break;
 									
@@ -155,14 +177,14 @@ int main()
 							}while(elementSelect != globalStructuresCount + 1);
 							break;
 							
-						case 4:
+						case 5:
 							//Leave
 							break;
 							
 						default:
 							printf("Select again\n\n");
 					}
-				}while(editionSelect != 4);
+				}while(editionSelect != 5);
 				break;
 				
 			case 3:

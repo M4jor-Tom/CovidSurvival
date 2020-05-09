@@ -22,7 +22,8 @@ void editionMenu()
 	printf("\t   Add Elements-------------1\n");
 	printf("\t   Edit Elements------------2\n");
 	printf("\t   Delete Elements----------3\n");
-	printf("\t   Back to the main menu----4\n");
+	printf("\t   Watch Elements-----------4\n");
+	printf("\t   Back to the main menu----5\n");
 	printf("\n\t  Please make a choice\n");
 }
 
@@ -41,7 +42,7 @@ void elementsMenu(char *optionsLabel)
 
 int menu(int menuType, char *optionsLabel)
 {
-	int select;
+	int select = 0;
 	
 	switch(menuType)
 	{
@@ -58,7 +59,7 @@ int menu(int menuType, char *optionsLabel)
 			break;
 	}
 		
-	//Value conversion
+	//User selection
 	scanf("%d", &select);
 	getchar();
 		

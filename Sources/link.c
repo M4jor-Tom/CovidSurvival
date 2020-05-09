@@ -189,36 +189,39 @@ long int getElementId(element* elementPtr, structId type)
 	switch(type)
 	{
 		//[CREATE_STRUCTURE]
-		case _event:
-			elementId = elementPtr -> event_.ID;
-			break;
-			
-		case _eventType:
-			elementId = elementPtr -> eventType_.ID;
-			break;
-			
-		case _building:
-			elementId = elementPtr -> building_.ID;
+		
+		//[CREAT_GLOBAL_STRUCTURE]
+		case _itemType:
+			elementId = elementPtr -> itemType_.ID;
 			break;
 			
 		case _buildingType:
 			elementId = elementPtr -> buildingType_.ID;
 			break;
 			
-		case _item:
-			elementId = elementPtr -> item_.ID;
-			break;
-			
-		case _itemType:
-			elementId = elementPtr -> itemType_.ID;
-			break;
-			
-		case _person:
-			elementId = elementPtr -> person_.ID;
+		case _eventType:
+			elementId = elementPtr -> eventType_.ID;
 			break;
 			
 		case _simulation:
 			elementId = elementPtr -> simulation_.ID;
+			break;
+			
+		//[CREATE_GAME_STRUCTURE]
+		case _event:
+			elementId = elementPtr -> event_.ID;
+			break;
+			
+		case _building:
+			elementId = elementPtr -> building_.ID;
+			break;
+			
+		case _item:
+			elementId = elementPtr -> item_.ID;
+			break;
+			
+		case _person:
+			elementId = elementPtr -> person_.ID;
 			break;
 			
 		#ifdef DEBUG
@@ -388,9 +391,14 @@ link grabLink(structId structType)
 			scanf("%s", recipient -> itemType_.name);
 			break;
 			
+		case _simulation:
+			printf("[simulation]\nSimuled time: ");
+			scanf("%u", &recipient -> simulation_.simuledTime);
+			break;
+			
 		#ifdef DEBUG
 		default:
-			printf("<newElement> Error: Unknown structure type (%d), should be in [%d;%d]\n", structType, 0, lastStructId_);
+			printf("<grabLink> Error: Unknown structure type (%d), should be in [%d;%d]\n", structType, 0, lastStructId_);
 		#endif
 	}
 	
@@ -567,8 +575,9 @@ void displayLink(link toDisplay)
 			case _simulation:
 				printf
 				(
-					"[simulation]\n\tID: %u\n\tSimuled time: %\n\n",
-					elementPtr -> simulation_.ID
+					"[simulation]\n\tID: %u\n\tSimuled time: %u\n\n",
+					elementPtr -> simulation_.ID,
+					elementPtr -> simulation_.simuledTime
 				);
 				break;
 				
