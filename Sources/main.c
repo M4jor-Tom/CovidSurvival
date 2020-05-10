@@ -116,8 +116,8 @@ int main()
 												if(editionSelect == 4)
 												{
 													//Watch
-													printf("\nHit any key to go\n");
-													getch();
+													/*printf("\nHit any key to go\n");
+													getch();*/
 												}
 												else
 												{
@@ -160,6 +160,9 @@ int main()
 												}
 												
 												//If user wants to do things with another element
+												printf("->");
+												getch();
+												system("cls");
 												elementChoice = lastStructId;
 										}
 										break;
