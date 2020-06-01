@@ -9,12 +9,11 @@ void test(bool file, bool print);
 
 int main()
 {
+	system("color F0");
 	srand(time(NULL));
-	
 	test(false, false);
 	
-	extern savesFiles globalFiles[];
-	extern savesFiles gameFiles[];
+	extern savesFile globalFile[];
 	
 	int 
 		mainSelect = 0,
@@ -36,10 +35,11 @@ int main()
 	do
 	{
 		mainSelect = menu(start, NULL);
-		simulation sim = setupGame();
+		simulation *sim;
 		switch(mainSelect)
 		{
 			case 1:
+				sim = setupGame();
 				while(playGame(sim));
 				break;
 			
@@ -87,8 +87,8 @@ int main()
 										if(elementChoice == lastStructId)
 											elementChoice = _simulation;
 										
-										//freeChain(existingChain);
-										existingChain = readChain(globalFiles[elementChoice], elementChoice);
+										//freeChain(existingChain, NULL);
+										existingChain = readChain(globalFile[elementChoice], elementChoice);
 										switch(editionSelect)
 										{
 											case 1:
@@ -98,7 +98,7 @@ int main()
 												*newLinkPtr = grabLink(elementChoice);
 												
 												existingChain = insertLink(existingChain, newLinkPtr);
-												writeChain(existingChain, globalFiles[elementChoice]);
+												writeChain(existingChain, globalFile[elementChoice]);
 												
 												//If user wants to do things with another element
 												elementChoice = lastStructId;
@@ -123,7 +123,7 @@ int main()
 												{
 													//If the point is not just to watch
 													//User selection
-													printf("Select %s of Id: ", globalFiles[elementChoice].name);
+													printf("Select %s of Id: ", globalFile[elementChoice].name);
 													scanf("%d", &idChoice);
 													getchar();
 													
@@ -154,9 +154,9 @@ int main()
 													else
 													{
 														//Null result
-														printf("Unknown %s Id: %d\n", globalFiles[elementChoice].name, idChoice);
+														printf("Unknown %s Id: %d\n", globalFile[elementChoice].name, idChoice);
 													}
-													writeChain(existingChain, globalFiles[elementChoice]);
+													writeChain(existingChain, globalFile[elementChoice]);
 												}
 												
 												//If user wants to do things with another element
@@ -239,7 +239,7 @@ void test(bool file, bool print)
 	
 	if(file)
 		//writeChain(chain, "test/test.test");
-	freeChain(chain);
+		freeChain(chain, NULL);
 	
 	if(print)
 	{

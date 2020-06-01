@@ -22,11 +22,11 @@ typedef enum structId
 }structId;
 
 //Simulator structures: They are the simulator's core
-typedef struct savesFiles
+typedef struct savesFile
 {
 	structId storedElements;
 	char path[70], name[wordLength], file[wordLength];
-}savesFiles;
+}savesFile;
 
 typedef struct building
 {
@@ -43,15 +43,15 @@ typedef struct buildingType
 
 typedef struct itemType
 {
-	unsigned int ID;
+	unsigned int ID, usesCount;
 	char name[wordLength];
+	stats onConsumption;
 }itemType;
 
 typedef struct item
 {
-	unsigned int ID, itemTypeId;
+	unsigned int ID, itemTypeId, usedCount;
 	int proprietaryId;
-	char name[wordLength];
 }item;
 
 typedef enum personParticularity

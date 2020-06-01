@@ -47,15 +47,16 @@ void freeLink(link* linkPtr)
 	}
 }
 
-void freeChain(link* chain)
+void freeChain(link *chain, link *Excepted)
 {
 	if(chain != NULL)
 	{
 		//Recurses to free next link of the chain
-		freeChain(chain -> nextLinkPtr);
+		freeChain(chain -> nextLinkPtr, Excepted);
 		
-		//Ends up freeing this link
-		freeLink(chain);
+		if(chain != Excepted)
+			//Ends up freeing this link
+			freeLink(chain);
 	}
 }
 
@@ -189,8 +190,7 @@ long int getElementId(element* elementPtr, structId type)
 	switch(type)
 	{
 		//[CREATE_STRUCTURE]
-		
-		//[CREAT_GLOBAL_STRUCTURE]
+		//[CREATE_GLOBAL_STRUCTURE]
 		case _itemType:
 			elementId = elementPtr -> itemType_.ID;
 			break;
@@ -240,16 +240,16 @@ long int getLinkId(link* linkPtr)
 }
 
 
-link* chain_search(link* linkPtr, unsigned int ID)
+link* chain_search(link* chain, unsigned int ID)
 {
-	while(linkPtr != NULL)
+	while(chain != NULL)
 	{
-		if(getLinkId(linkPtr) == (long int)ID)
+		if(getLinkId(chain) == (long int)ID)
 			//If found
-			return linkPtr;
+			return chain;
 			
 		//Next
-		linkPtr = linkPtr -> nextLinkPtr;
+		chain = chain -> nextLinkPtr;
 	}
 	
 	//Not found
@@ -339,6 +339,7 @@ link grabLink(structId structType)
 	switch(structType)
 	{
 		//[CREATE_STRUCTURE]
+		//[EDIT_STRUCTURE]
 		case _eventType:
 			printf("[event type]\n\tName: ");
 			scanf("%s", recipient -> eventType_.name);
@@ -389,6 +390,11 @@ link grabLink(structId structType)
 		case _itemType:
 			printf("[item type]\n\tName: ");
 			scanf("%s", recipient -> itemType_.name);
+			
+			printf("[item type]\n\tUses count: ");
+			scanf("%u", &recipient -> itemType_.usesCount);
+			
+			recipient -> itemType_.onConsumption = grabStats("\tStats added to user's:\n");
 			break;
 			
 		case _simulation:
@@ -494,6 +500,7 @@ void displayLink(link toDisplay)
 		switch(toDisplay.structType)
 		{
 			//[CREATE_STRUCTURE]
+			//[EDIT_STRUCTURE]
 			case _event:
 				printf
 				(
@@ -556,20 +563,24 @@ void displayLink(link toDisplay)
 			case _item:
 				printf
 				(
-					"[item]\n\tID: %u\n\tProprietary ID: %u\n\tName: %s\n\n",
+					"[item]\n\tID: %u\n\tProprietary ID: %u\n\tTimes used: %u\n\n",
 					elementPtr -> item_.ID,
 					elementPtr -> item_.proprietaryId,
-					elementPtr -> item_.name
+					elementPtr -> item_.usedCount
 				);
 				break;
 				
 			case _itemType:
 				printf
 				(
-					"[item type]\n\tID: %u\n\tName: %s\n\n",
+					"[item type]\n\tID: %u\n\tName: %s\n\tUses count: %u\n\n",
 					elementPtr -> itemType_.ID,
-					elementPtr -> itemType_.name
+					elementPtr -> itemType_.name,
+					elementPtr -> itemType_.usesCount
 				);
+				
+				displayStats(elementPtr -> itemType_.onConsumption, "item's' stats modification on consumption");
+				printf("\n\n");
 				break;
 				
 			case _simulation:
@@ -616,7 +627,7 @@ void displayLink(link toDisplay)
 				
 			#ifdef DEBUG
 			default:
-				printf("<displayLink> Error: invalid data\n");
+				printf("<displayLink> Error: invalid structId: %d\n", toDisplay.structType);
 			#endif
 		}
 	}

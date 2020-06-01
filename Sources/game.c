@@ -2,8 +2,7 @@
 
 #include "../Headers/main.h"
 
-extern savesFiles globalFiles[];
-extern savesFiles gameFiles[];
+extern savesFile globalFile[];
 
 void mainMenu()
 {
@@ -34,7 +33,7 @@ void elementsMenu(char *optionsLabel)
 	printf("\t-----\tElements menu\t-----\t\n\n");
 	int i, j;
 	for(i = 1, j = 0; j < globalStructuresCount; i++, j++)
-		printf("\t   %s %s----%d\n", optionsLabel, globalFiles[j].name, i);
+		printf("\t   %s %s----%d\n", optionsLabel, globalFile[j].name, i);
 	
 	printf("\t   Back to the edition menu----%d\n", globalStructuresCount + 1);
 	printf("\n\t  Please make a choice\n");
@@ -68,13 +67,62 @@ int menu(int menuType, char *optionsLabel)
 }
 
 
-simulation setupGame()
+link *setupGame()
 {
-	simulation sim;
-	return sim;
+	//Getting simulations list and choice's recipient
+	link *simulations = readChain(globalFile[_simulation], _simulation);
+	link *currentSimPtr = NULL;
+	
+	if(simulations != NULL)
+	{
+		int idChoice = 0;
+		
+		do
+		{
+			//Displaying simulations
+			displayChain(simulations);
+			printf("Select a simulation Id: ");
+			
+			//Selecting a game
+			scanf("%u", &idChoice);
+			getchar();
+			
+			//Fetching for the game
+			currentSimPtr = chain_search(simulations, idChoice);
+			
+			//Freeing selection, ommiting choice
+			freeChain(simulations, currentSimPtr);
+		}while(currentSimPtr == NULL);
+	}
+	else
+	{
+		//Creating a game
+		currentSimPtr = newLink("setupGame/no simulation found/create simulation", _simulation, true);
+		setLinkId(currentSimPtr, 1);
+		if(!writeChain(currentSimPtr, globalFile[_simulation]))
+			printf("<setupGame> Error: writeChain failed");
+		
+		//Creating a character
+		printf("Design your character:\n");
+		link *personPtr = newLink("setupGame/no simulation found/create character", _person, true);
+		*personPtr = grabLink(_person);
+		
+		//Creating game files from the source code's template
+		savesFile *gameFile = setGameFiles(currentSimPtr);
+		
+		int i;
+		for(i = 0; i < lastStructId; i++)
+			//Creating the directory for wanted file
+			mkSdir(gameFile[i].path);
+			
+		//
+		writeChain(personPtr, gameFile[_person]);
+	}
+	
+	return currentSimPtr;
 }
 
-bool playGame(simulation game)
+bool playGame(simulation *game)
 {
 	bool keepPlaying = true;
 	

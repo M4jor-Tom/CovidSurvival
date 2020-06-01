@@ -11,10 +11,10 @@ link *newLink(char *errorMessage, structId type, bool createElement);
 element *newElement(char *errorMessage);
 
 //Frees a link as well as its element if it exists
-void freeLink(link* linkPtr);
+void freeLink(link *linkPtr);
 
 //Frees a chain as well as its elements if they exist
-void freeChain(link* chain);
+void freeChain(link *chain, link *Excepted);
 
 
 // --- Chaining functions ---
@@ -26,21 +26,22 @@ link* lastLink(link* currentLinkPtr);
 link* deleteLink(link *chain, unsigned int Id);
 
 //Inserts a created link et the end of a chain
-link* insertLink(link* headLinkPtr, link *toInsertLinkPtr);
+link* insertLink(link *headLinkPtr, link *toInsertLinkPtr);
 
 //Gives an Id to both link and corresponding element
-void setLinkId(link* linkPtr, unsigned int Id);
+void setLinkId(link *linkPtr, unsigned int Id);
 
 //Gives an Id to the corresponding element
-void setElementId(element* elementPtr, structId type, unsigned int Id);
+void setElementId(element *elementPtr, structId type, unsigned int Id);
 
 //Gets a link's element Id from the link's pointer
-long int getLinkId(link* linkPtr);
+long int getLinkId(link *linkPtr);
 
 //Gets a link's element Id from the element's pointer and type
-long int getElementId(element* elementPtr, structId type);
+long int getElementId(element *elementPtr, structId type);
 
-link *chain_search(link *linkPtr, unsigned int ID);
+//Returns a link's ptr from a chain within wich an Id's one has been searched. Returns NULL if Id doesn't exists
+link *chain_search(link *chain, unsigned int ID);
 
 
 // --- Human/Program interface functions ---

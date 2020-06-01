@@ -7,8 +7,8 @@
 #include "../Headers/main.h"
 
 //[CREATE_STRUCTURE]
-savesFiles
-	globalFiles[structuresCount] = 
+savesFile
+	globalFile[structuresCount] = 
 	{
 		{
 			.storedElements = _itemType,
@@ -33,50 +33,38 @@ savesFiles
 			.name = "Simulation",
 			.path = "saves/",
 			.file = "simulation.covid"
-		}
-	},
-	
-	gamesFiles[structuresCount] = 
-	{
-		{
-			
 		},
 		{
-			
-		},
-		{
-			
-		},
-		{
-			
-		},
-		{
+			//gameFile template
 			.storedElements = _event,
 			.name = "Events",
-			.path = "saves/simulation_%d/",
+			.path = "saves/simulation_%u/",
 			.file = "event.surviver"
 		},
 		{
+			//gameFile template
 			.storedElements = _building,
 			.name = "Buildings",
-			.path = "saves/simulation_%d/",
+			.path = "saves/simulation_%u/",
 			.file = "building.surviver"
 		},
 		{
+			//gameFile template
 			.storedElements = _item,
 			.name = "Items",
-			.path = "saves/simulation_%d/",
+			.path = "saves/simulation_%u/",
 			.file = "item.surviver"
 		},
 		{
+			//gameFile template
 			.storedElements = _person,
 			.name = "Persons",
-			.path = "saves/simulation_%d/",
+			.path = "saves/simulation_%u/",
 			.file = "person.surviver"
 		}
 	};
 
-bool writeChain(link* chain, savesFiles save)
+bool writeChain(link* chain, savesFile save)
 {
 	bool success = false;
 	
@@ -104,7 +92,7 @@ bool writeChain(link* chain, savesFiles save)
 	{
 		//Null chain, delete file
 		#ifdef DEBUG
-		printf("<writeChain> Warning: Null chain, deleting file %s\n", baseName);
+		printf("<writeChain> Notice: Null chain, deleting file %s\n", baseName);
 		#endif
 		fclose(filePtr);
 		if(remove(baseName) == 0)
@@ -130,7 +118,7 @@ bool writeChain(link* chain, savesFiles save)
 	return success;
 }
 
-link *readChain(savesFiles save, structId type)
+link *readChain(savesFile save, structId type)
 {
 	char baseName[70] = "\0";
 	strcat(baseName, save.path);
@@ -147,7 +135,7 @@ link *readChain(savesFiles save, structId type)
 	if(filePtr == NULL)
 	{
 		#ifdef DEBUG
-		printf("<readFile> Warning: File %s not found\n", baseName);
+		printf("<readFile> Notice: File %s not found\n", baseName);
 		#endif
 		return NULL;
 	}
@@ -174,6 +162,7 @@ link *readChain(savesFiles save, structId type)
 				//Creating a new link in the chain, with read element
 				chain[i] = newLink("readChain/single link", type, false);
 				chain[i] -> elementPtr = &elementsBufferPtr[i];
+				chain[i] -> ID = getElementId(chain[i] -> elementPtr, save.storedElements);
 				
 				if(i)
 				{
@@ -190,7 +179,7 @@ link *readChain(savesFiles save, structId type)
 		{
 			#ifdef DEBUG
 			if(elementsBufferPtr == NULL) 
-				printf("<readFile> Warning: %s is empty, deleting...\n", baseName);
+				printf("<readFile> Notice: %s is empty, deleting...\n", baseName);
 			#endif
 			fclose(filePtr);
 			if(remove(baseName) == 0)
@@ -209,10 +198,57 @@ link *readChain(savesFiles save, structId type)
 	
 	#ifdef DEBUG
 	if(elementsBufferPtr == NULL) 
-		printf("<readFile> Warning: Empty file, null return\n");
+		printf("<readFile> Notice: Empty file, null return\n");
 	#endif
 	
 	fclose(filePtr);
 	
 	return chain[0];
+}
+
+savesFile *setGameFiles(link *simulationLinkPtr)
+{
+	//Create game files
+	savesFile *gameFilePtr = safeMalloc(sizeof(savesFile) * structuresCount, "setGameFiles/gameFile");
+	int i;
+	for(i = 0; i < lastStructId; i++)
+	{
+		//For each global file
+		//Decide whether the file's wideness is
+		if(!strstr(gameFilePtr[i].path, "%u"))
+		{
+			//GameWide file
+			sprintf(gameFilePtr[i].path, globalFile[i].path, simulationLinkPtr -> ID);
+			printf("\n\t\t%u\n", simulationLinkPtr -> ID);
+		}
+		else
+			//Global file
+			strcpy(gameFilePtr[i].path, globalFile[i].path);
+		
+		strcpy(gameFilePtr[i].file, globalFile[i].file);
+		strcpy(gameFilePtr[i].name, globalFile[i].name);
+		gameFilePtr[i].storedElements = globalFile[i].storedElements;
+	}
+	return gameFilePtr;
+}
+
+void displayFile(savesFile toDisplay)
+{
+	printf(
+		"<displayFile>\n\tStored element: %u\n\tName: %s\n\tBase name: %s%s",
+		toDisplay.storedElements,
+		toDisplay.name,
+		toDisplay.path,
+		toDisplay.file
+	);
+}
+
+char *baseName(savesFile saves)
+{
+	//Creating return variable
+	char *baseName = safeMalloc(sizeof(char), 70);
+	baseName[0] = '\0';
+	
+	strcat(baseName, saves.path);
+	strcat(baseName, saves.file);
 }
