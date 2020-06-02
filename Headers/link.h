@@ -53,7 +53,10 @@ char **initParticularityLabels();
 link grabLink(structId structType);
 
 //Launches grabLink() as long as the user wants it
-link* grabChain(structId structType);
+link *grabChain(structId structType);
+
+//Gets a link's ptr out of a chain by user choice
+link *selectLink(link *chain);
 
 
 //Displays a link

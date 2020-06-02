@@ -45,7 +45,6 @@ typedef struct itemType
 {
 	unsigned int ID, usesCount;
 	char name[wordLength];
-	stats onConsumption;
 }itemType;
 
 typedef struct item
@@ -73,7 +72,12 @@ typedef struct person
 
 typedef struct eventType // <=> action
 {
-	unsigned int ID, duration_s;
+	unsigned int 
+		ID,
+		requiredItemTypeId,
+		requiredBuildingTypeId,
+		itemTypeConsumption,
+		duration_s;
 	char name[wordLength];
 	
 	//Consequence on stats

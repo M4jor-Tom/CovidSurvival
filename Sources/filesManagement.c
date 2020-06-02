@@ -37,28 +37,28 @@ savesFile
 		{
 			//gameFile template
 			.storedElements = _event,
-			.name = "Events",
+			.name = "Event",
 			.path = "saves/simulation_%u/",
 			.file = "event.surviver"
 		},
 		{
 			//gameFile template
 			.storedElements = _building,
-			.name = "Buildings",
+			.name = "Building",
 			.path = "saves/simulation_%u/",
 			.file = "building.surviver"
 		},
 		{
 			//gameFile template
 			.storedElements = _item,
-			.name = "Items",
+			.name = "Item",
 			.path = "saves/simulation_%u/",
 			.file = "item.surviver"
 		},
 		{
 			//gameFile template
 			.storedElements = _person,
-			.name = "Persons",
+			.name = "Person",
 			.path = "saves/simulation_%u/",
 			.file = "person.surviver"
 		}
@@ -118,7 +118,7 @@ bool writeChain(link* chain, savesFile save)
 	return success;
 }
 
-link *readChain(savesFile save, structId type)
+link *readChain(savesFile save)
 {
 	char baseName[70] = "\0";
 	strcat(baseName, save.path);
@@ -135,7 +135,7 @@ link *readChain(savesFile save, structId type)
 	if(filePtr == NULL)
 	{
 		#ifdef DEBUG
-		printf("<readFile> Notice: File %s not found\n", baseName);
+		printf("<readChain> Notice: File %s not found\n", baseName);
 		#endif
 		return NULL;
 	}
@@ -160,7 +160,7 @@ link *readChain(savesFile save, structId type)
 			for(i = 0; i < elementsCount; i++)
 			{
 				//Creating a new link in the chain, with read element
-				chain[i] = newLink("readChain/single link", type, false);
+				chain[i] = newLink("readChain/single link", save.storedElements, false);
 				chain[i] -> elementPtr = &elementsBufferPtr[i];
 				chain[i] -> ID = getElementId(chain[i] -> elementPtr, save.storedElements);
 				
@@ -179,14 +179,14 @@ link *readChain(savesFile save, structId type)
 		{
 			#ifdef DEBUG
 			if(elementsBufferPtr == NULL) 
-				printf("<readFile> Notice: %s is empty, deleting...\n", baseName);
+				printf("<readChain> Notice: %s is empty, deleting...\n", baseName);
 			#endif
 			fclose(filePtr);
 			if(remove(baseName) == 0)
 			{
 				#ifdef DEBUG
 				if(elementsBufferPtr == NULL) 
-					printf("<readFile> %s deleted\n", baseName);
+					printf("<readChain> %s deleted\n", baseName);
 				#endif
 			}
 		}
@@ -198,7 +198,7 @@ link *readChain(savesFile save, structId type)
 	
 	#ifdef DEBUG
 	if(elementsBufferPtr == NULL) 
-		printf("<readFile> Notice: Empty file, null return\n");
+		printf("<readChain> Notice: Empty file, null return\n");
 	#endif
 	
 	fclose(filePtr);
@@ -246,7 +246,7 @@ void displayFile(savesFile toDisplay)
 char *baseName(savesFile saves)
 {
 	//Creating return variable
-	char *baseName = safeMalloc(sizeof(char), 70);
+	char *baseName = safeMalloc(sizeof(char) * 70, "baseName");
 	baseName[0] = '\0';
 	
 	strcat(baseName, saves.path);

@@ -5,6 +5,8 @@
 
 #include "../Headers/main.h"
 
+extern savesFile globalFile[];
+
 link* newLink(char* errorMessage, structId type, bool createElement)
 {
 	link* ret = (link*)safeMalloc(sizeof(link), errorMessage);
@@ -34,9 +36,9 @@ void freeLink(link* linkPtr)
 {
 	if(linkPtr != NULL)
 	{
-		if(linkPtr -> elementPtr)
+		if(linkPtr -> elementPtr != NULL)
 		{
-			//Frees element ifexists
+			//Frees element if exists
 			memset(linkPtr -> elementPtr, 0, sizeof(element));
 			free(linkPtr -> elementPtr);
 		}
@@ -320,13 +322,18 @@ stats grabStats(char *instructions)
 
 link grabLink(structId structType)
 {
-	link link_;
+	link 
+		link_,
+		*displayedChain = NULL,
+		*chosenLinkPtr = NULL;
 	memset(&link_, 0, sizeof(link));
 	link_.structType = structType;
 	link_.elementPtr = newElement("grabLink");
 	
 	element *recipient = link_.elementPtr;
 	structId lastStructId_ = lastStructId;
+	
+	int idChoice;
 	
 	//Only for eventTypes
 	personParticularity lastPersonParticularityId_ = lastPersonParticularityId;
@@ -346,6 +353,70 @@ link grabLink(structId structType)
 			
 			printf("[event type]\n\tDuration: ");
 			scanf("%u", &recipient -> eventType_.duration_s);
+			
+			//Item consumed on eventing
+			idChoice = nullId;
+			printf("Require item type ? (y/any)\n");
+			scanf("%s", &choice);
+			
+			//Ask to the user a choice to make for an itemType's Id
+			if(!strcmp(choice, "y"))
+			{
+				//Empty choice
+				strcpy(choice, "\0");
+				
+				//Getting choices to display
+				displayedChain = readChain(globalFile[_itemType]);
+				
+				//Choosing a link, getting its Id
+				chosenLinkPtr = selectLink(displayedChain);
+				
+				if(chosenLinkPtr != NULL)
+					idChoice = chosenLinkPtr -> ID;
+				
+				//Getting itemType consumption
+				printf(
+					"%s consumption (?/%u)",
+					chosenLinkPtr -> elementPtr -> itemType_.name,
+					chosenLinkPtr -> elementPtr -> itemType_.usesCount
+				);
+				
+				scanf("%u", &recipient -> eventType_.itemTypeConsumption);
+				getchar();
+				
+				//Freeing this chain done for pure display
+				//freeChain(displayedChain, NULL);
+			}
+			
+			//Binding the chosen itemType to the eventType
+			recipient -> eventType_.requiredItemTypeId = idChoice;
+			
+			//Item consumed on eventing
+			idChoice = nullId;
+			printf("Require building type ? (y/any)\n");
+			scanf("%s", &choice);
+			
+			//Ask to the user a choice to make for an itemType's Id
+			if(!strcmp(choice, "y"))
+			{
+				//Empty choice
+				strcpy(choice, "\0");
+				
+				//Getting choices to display
+				displayedChain = readChain(globalFile[_buildingType]);
+				
+				//Choosing a link, getting its Id
+				chosenLinkPtr = selectLink(displayedChain);
+				
+				if(chosenLinkPtr != NULL)
+					idChoice = chosenLinkPtr -> ID;
+				
+				//Freeing this chain done for pure display
+				//freeChain(displayedChain, NULL);
+			}
+			
+			//Binding the chosen buildingType to the eventType
+			recipient -> eventType_.requiredBuildingTypeId = idChoice;
 			
 			//General case consequences
 			recipient -> eventType_.consequence = grabStats("\tStats added to user's:\n");
@@ -393,8 +464,6 @@ link grabLink(structId structType)
 			
 			printf("[item type]\n\tUses count: ");
 			scanf("%u", &recipient -> itemType_.usesCount);
-			
-			recipient -> itemType_.onConsumption = grabStats("\tStats added to user's:\n");
 			break;
 			
 		case _simulation:
@@ -445,6 +514,32 @@ link* grabChain(structId structType)
 	return chain;
 }
 
+link *selectLink(link *chain)
+{
+	link *chosenLinkPtr = NULL;
+	int idChoice = nullId;
+	
+	if(chain != NULL)
+	{
+		//User query + choices display
+		printf("Please select among %ss: (Enter %d to escape)\n", globalFile[chain -> structType].name, nullId);
+		displayChain(chain);
+		do
+		{
+			//Getting choice's link ptr from Id
+			scanf("%d", &idChoice);
+			getchar();
+			
+			chosenLinkPtr = chain_search(chain, (unsigned int)idChoice);
+		}while(chosenLinkPtr == NULL || idChoice == nullId);
+	}
+	else 
+	{
+		printf("<selectLink> Notice: Empty chain given to choose in, returning NULL\n");
+	}
+	
+	return chosenLinkPtr;
+}
 
 void displayLocation(location toDisplay, char *tagging)
 {
@@ -494,6 +589,10 @@ void displayLink(link toDisplay)
 		element *elementPtr = toDisplay.elementPtr;
 		personParticularity last = lastPersonParticularityId;
 		
+		link 
+			*joiningChain = NULL,
+			*joinedLinkPtr = NULL;
+		
 		char manWoman[6] = "\0", smokerString[4] = "\0", remoteWorkingString[4] = "\0";
 		
 		//What to display ?
@@ -529,13 +628,53 @@ void displayLink(link toDisplay)
 				char **particularityLabels = initParticularityLabels();
 				personParticularity cursor = 0;
 				
+				//Prepare an empty stats variable to compare with
+				stats emptyStatsBuffer;
+				memset(&emptyStatsBuffer, 0, sizeof(stats));
+				
 				for(cursor = 0; cursor < last; cursor++)
+					if(memcmp(&elementPtr -> eventType_.consequenceFor[cursor], &emptyStatsBuffer, sizeof(stats)))
+					{
+						//Display non-empty particulary case stats
+						char tag[50];
+						strcpy(tag, "event type specific consequence for ");
+						strcat(tag, particularityLabels[cursor]);
+						displayStats(elementPtr -> eventType_.consequenceFor[cursor], tag);
+					}
+					
+				//Binded elements
+				if(elementPtr -> eventType_.requiredItemTypeId != nullId)
 				{
-					char tag[50];
-					strcpy(tag, "event type specific consequence for ");
-					strcat(tag, particularityLabels[cursor]);
-					displayStats(elementPtr -> eventType_.consequenceFor[cursor], tag);
+					//Making a 'sql like' join
+					joiningChain = readChain(globalFile[_itemType]);
+					joinedLinkPtr = chain_search(joiningChain, elementPtr -> eventType_.requiredItemTypeId);
+					
+					
+					printf(
+						"[event type]\n\tUsed item type: %s, consumes %u times (%u in total)\n",
+						joinedLinkPtr -> elementPtr -> itemType_.name,
+						elementPtr -> eventType_.itemTypeConsumption,
+						joinedLinkPtr -> elementPtr -> itemType_.usesCount
+					);
+					
+					//freeChain(joiningChain, NULL);
 				}
+				
+				if(elementPtr -> eventType_.requiredBuildingTypeId != nullId)
+				{
+					//Making a 'sql like' join
+					joiningChain = readChain(globalFile[_buildingType]);
+					joinedLinkPtr = chain_search(joiningChain, elementPtr -> eventType_.requiredBuildingTypeId);
+					
+					
+					printf(
+						"[event type]\n\tNecessary building type: %s\n",
+						joinedLinkPtr -> elementPtr -> buildingType_.name
+					);
+					
+					//freeChain(joiningChain, NULL);
+				}
+				
 				printf("\n\n");
 				break;
 				
@@ -578,9 +717,6 @@ void displayLink(link toDisplay)
 					elementPtr -> itemType_.name,
 					elementPtr -> itemType_.usesCount
 				);
-				
-				displayStats(elementPtr -> itemType_.onConsumption, "item's' stats modification on consumption");
-				printf("\n\n");
 				break;
 				
 			case _simulation:

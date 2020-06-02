@@ -70,29 +70,16 @@ int menu(int menuType, char *optionsLabel)
 link *setupGame()
 {
 	//Getting simulations list and choice's recipient
-	link *simulations = readChain(globalFile[_simulation], _simulation);
+	link *simulations = readChain(globalFile[_simulation]);
 	link *currentSimPtr = NULL;
 	
 	if(simulations != NULL)
 	{
-		int idChoice = 0;
+		currentSimPtr = selectLink(simulations);
 		
-		do
-		{
-			//Displaying simulations
-			displayChain(simulations);
-			printf("Select a simulation Id: ");
-			
-			//Selecting a game
-			scanf("%u", &idChoice);
-			getchar();
-			
-			//Fetching for the game
-			currentSimPtr = chain_search(simulations, idChoice);
-			
-			//Freeing selection, ommiting choice
-			freeChain(simulations, currentSimPtr);
-		}while(currentSimPtr == NULL);
+		
+		//Freeing selection, ommiting choice
+		//freeChain(simulations, currentSimPtr);
 	}
 	else
 	{
@@ -111,11 +98,11 @@ link *setupGame()
 		savesFile *gameFile = setGameFiles(currentSimPtr);
 		
 		int i;
-		for(i = 0; i < lastStructId; i++)
+		for(i = _event; i < lastStructId; i++)
 			//Creating the directory for wanted file
 			mkSdir(gameFile[i].path);
 			
-		//
+		//Save character
 		writeChain(personPtr, gameFile[_person]);
 	}
 	

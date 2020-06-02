@@ -88,7 +88,7 @@ int main()
 											elementChoice = _simulation;
 										
 										//freeChain(existingChain, NULL);
-										existingChain = readChain(globalFile[elementChoice], elementChoice);
+										existingChain = readChain(globalFile[elementChoice]);
 										switch(editionSelect)
 										{
 											case 1:
@@ -101,6 +101,9 @@ int main()
 												writeChain(existingChain, globalFile[elementChoice]);
 												
 												//If user wants to do things with another element
+												printf("->");
+												getch();
+												system("cls");
 												elementChoice = lastStructId;
 												break;
 												
@@ -246,7 +249,6 @@ void test(bool file, bool print)
 		/*printf("Deleted structures: \n");
 		displayChain(chain);*/
 		//printf("Read structures: \n");
-		//displayChain(readChain("test.test", 0));
 		
 	}
 }
