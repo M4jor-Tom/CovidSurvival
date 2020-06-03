@@ -10,6 +10,6 @@ void elementsMenu(char *optionsLabel);
 
 int menu(int menuType, char *optionsLabel);
 
-link *setupGame();
+link **setupGame();
 
-bool playGame(simulation *game);
+bool playGame(link **gameChains);

@@ -35,12 +35,12 @@ int main()
 	do
 	{
 		mainSelect = menu(start, NULL);
-		simulation *sim;
+		link **gameChains;
 		switch(mainSelect)
 		{
 			case 1:
-				sim = setupGame();
-				while(playGame(sim));
+				gameChains = setupGame();
+				while(playGame(gameChains));
 				break;
 			
 			case 2:

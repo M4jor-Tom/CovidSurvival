@@ -216,11 +216,8 @@ savesFile *setGameFiles(link *simulationLinkPtr)
 		//For each global file
 		//Decide whether the file's wideness is
 		if(!strstr(gameFilePtr[i].path, "%u"))
-		{
 			//GameWide file
 			sprintf(gameFilePtr[i].path, globalFile[i].path, simulationLinkPtr -> ID);
-			printf("\n\t\t%u\n", simulationLinkPtr -> ID);
-		}
 		else
 			//Global file
 			strcpy(gameFilePtr[i].path, globalFile[i].path);

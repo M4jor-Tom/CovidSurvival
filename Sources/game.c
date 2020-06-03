@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <conio.h>
+#include <string.h>
 
 #include "../Headers/main.h"
 
@@ -66,52 +68,80 @@ int menu(int menuType, char *optionsLabel)
 	return select;
 }
 
-
-link *setupGame()
+link **setupGame()
 {
 	//Getting simulations list and choice's recipient
-	link *simulations = readChain(globalFile[_simulation]);
-	link *currentSimPtr = NULL;
+	link 
+		**gameChains = safeMalloc(sizeof(link *) * lastStructId, "setupGame/gameChains init"),
+		*simulations = readChain(globalFile[_simulation]),
+		*currentSimPtr = NULL;
+	int i;
+	char choice[] = "\0";
+	
+	//Set each ptr of lists of data to NULL
+	memset(gameChains, 0, sizeof(link *) * lastStructId);
 	
 	if(simulations != NULL)
 	{
-		currentSimPtr = selectLink(simulations);
+		printf("Create a new simulation ? (y/other)\n");
+		scanf("%s", choice);
+	}
+	
+	if(simulations == NULL || !strcmp(choice, "y"))
+	{
+		//Creating a game
+		currentSimPtr = newLink("setupGame/no simulation found/create simulation", _simulation, true);
 		
+		//Getting the new simulations list
+		simulations = insertLink(simulations, currentSimPtr);
+	}
+	else
+	{
+		currentSimPtr = selectLink(simulations);
 		
 		//Freeing selection, ommiting choice
 		//freeChain(simulations, currentSimPtr);
 	}
-	else
-	{
-		//Creating a game
-		currentSimPtr = newLink("setupGame/no simulation found/create simulation", _simulation, true);
-		setLinkId(currentSimPtr, 1);
-		if(!writeChain(currentSimPtr, globalFile[_simulation]))
-			printf("<setupGame> Error: writeChain failed");
-		
-		//Creating a character
-		printf("Design your character:\n");
-		link *personPtr = newLink("setupGame/no simulation found/create character", _person, true);
-		*personPtr = grabLink(_person);
-		
-		//Creating game files from the source code's template
-		savesFile *gameFile = setGameFiles(currentSimPtr);
-		
-		int i;
+	
+	//Creating game files from the source code's template
+	savesFile *gameFile = setGameFiles(currentSimPtr);
+	
+	if(simulations == NULL)
 		for(i = _event; i < lastStructId; i++)
 			//Creating the directory for wanted file
 			mkSdir(gameFile[i].path);
-			
-		//Save character
-		writeChain(personPtr, gameFile[_person]);
-	}
 	
-	return currentSimPtr;
+	//Get selected simulation
+	gameChains[_simulation] = currentSimPtr;
+		
+	//Creating a character
+	printf("Design your character:\n");
+	gameChains[_person] = newLink("setupGame/no simulation found/create character", _person, true);
+	*gameChains[_person] = grabLink(_person);
+	setLinkId(gameChains[_person], 1);
+	
+	//Rewriteing simulations in case a new's here
+	writeChain(simulations, gameFile[_simulation]);
+	
+	//Save created character
+	writeChain(gameChains[_person], gameFile[_person]);
+	
+	for(i = _event; i < lastStructId; i++)
+		//Load chain
+		gameChains[i] = readChain(gameFile[i]);
+	
+	return gameChains;
 }
 
-bool playGame(simulation *game)
+bool playGame(link **gameChains)
 {
 	bool keepPlaying = true;
+	system("cls");
+	printf("Game data:\n");
+	int i;
+	for(i = 0; i < lastStructId; i++)
+		displayChain(gameChains[i]);
 	
+	getch();
 	return keepPlaying;
 }

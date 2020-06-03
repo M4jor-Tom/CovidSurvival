@@ -18,8 +18,9 @@
 #define wordLength 40
 #define smallWordLength 20
 
-#define MAN false
-#define WOMAN true
+#define MAN 0
+#define WOMAN 1
+#define OTHER 2
 
 #define start 1
 #define edition 2

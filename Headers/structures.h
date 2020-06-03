@@ -63,9 +63,11 @@ typedef struct person
 {
 	char firstName[wordLength], lastName[wordLength];
 	unsigned int ID, houseId;
-	unsigned short int sportiness; //0, 1, 2
+	unsigned short int 
+		gender, //0, 1, 2
+		sportiness; //0, 1, 2
 	
-	bool gender, smoker, remoteWorking;
+	bool smoker, remoteWorking;
 	float salary, money;
 	stats stats_;
 }person;

@@ -114,29 +114,6 @@ int random(int min, int max)
 	}
 }
 
-static void _mkdir(const char *dir) 
-{
-    char tmp[256];
-    char *p = NULL;
-    size_t len;
-
-    snprintf(tmp, sizeof(tmp), "%s", dir);
-    
-    len = strlen(tmp);
-    
-    if(tmp[len - 1] == '/')
-        tmp[len - 1] = 0;
-    
-	for(p = tmp + 1; *p; p++)
-    	if(*p == '/') 
-		{
-            *p = 0;
-            mkdir(tmp);
-            *p = '/';
-        }
-    mkdir(tmp);
-}
-
 int mkSdir(char *path)
 {
 	if(sizeof(path) > 1024)
@@ -162,14 +139,7 @@ int mkSdir(char *path)
 		//printf("-%s\n", existingPath);
 		
 		if(dir_ = opendir(existingPath))
-		{
-			//If the file exists
-			#ifdef DEBUG
-			printf("<mkSdir> %s exists\n", existingPath);
-			#endif
-			
 			closedir(dir_);
-		}
 		else
 		{
 			//If it needs to be created

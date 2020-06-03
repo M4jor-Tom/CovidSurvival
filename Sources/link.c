@@ -331,6 +331,7 @@ link grabLink(structId structType)
 	link_.elementPtr = newElement("grabLink");
 	
 	element *recipient = link_.elementPtr;
+	memset(recipient, 0, sizeof(element));
 	structId lastStructId_ = lastStructId;
 	
 	int idChoice;
@@ -347,11 +348,23 @@ link grabLink(structId structType)
 	{
 		//[CREATE_STRUCTURE]
 		//[EDIT_STRUCTURE]
+		case _person:
+			printf("[person]\n\tLast name: ");
+			scanf("%s", recipient -> person_.lastName);
+			
+			printf("\tFirst name: ");
+			scanf("%s", recipient -> person_.firstName);
+			
+			recipient -> person_.stats_ = grabStats("person's stats\n");
+			
+			recipient -> person_.houseId = nullId;
+			break;
+		
 		case _eventType:
-			printf("[event type]\n\tName: ");
+			printf("[event type]\tName: ");
 			scanf("%s", recipient -> eventType_.name);
 			
-			printf("[event type]\n\tDuration: ");
+			printf("\n\tDuration: ");
 			scanf("%u", &recipient -> eventType_.duration_s);
 			
 			//Item consumed on eventing
@@ -376,7 +389,7 @@ link grabLink(structId structType)
 				
 				//Getting itemType consumption
 				printf(
-					"%s consumption (?/%u)",
+					"%s consumption (?/%u) ",
 					chosenLinkPtr -> elementPtr -> itemType_.name,
 					chosenLinkPtr -> elementPtr -> itemType_.usesCount
 				);
@@ -462,7 +475,7 @@ link grabLink(structId structType)
 			printf("[item type]\n\tName: ");
 			scanf("%s", recipient -> itemType_.name);
 			
-			printf("[item type]\n\tUses count: ");
+			printf("\tUses count: ");
 			scanf("%u", &recipient -> itemType_.usesCount);
 			break;
 			
@@ -649,13 +662,15 @@ void displayLink(link toDisplay)
 					joiningChain = readChain(globalFile[_itemType]);
 					joinedLinkPtr = chain_search(joiningChain, elementPtr -> eventType_.requiredItemTypeId);
 					
-					
-					printf(
-						"[event type]\n\tUsed item type: %s, consumes %u times (%u in total)\n",
-						joinedLinkPtr -> elementPtr -> itemType_.name,
-						elementPtr -> eventType_.itemTypeConsumption,
-						joinedLinkPtr -> elementPtr -> itemType_.usesCount
-					);
+					if(joinedLinkPtr != NULL)
+						printf(
+							"\t-> Used item type: %s, consumes %u times (%u in total)\n",
+							joinedLinkPtr -> elementPtr -> itemType_.name,
+							elementPtr -> eventType_.itemTypeConsumption,
+							joinedLinkPtr -> elementPtr -> itemType_.usesCount
+						);
+					else
+						printf("Warning: No item type has ID = %u\n", elementPtr -> eventType_.requiredItemTypeId);
 					
 					//freeChain(joiningChain, NULL);
 				}
@@ -666,11 +681,13 @@ void displayLink(link toDisplay)
 					joiningChain = readChain(globalFile[_buildingType]);
 					joinedLinkPtr = chain_search(joiningChain, elementPtr -> eventType_.requiredBuildingTypeId);
 					
-					
-					printf(
-						"[event type]\n\tNecessary building type: %s\n",
-						joinedLinkPtr -> elementPtr -> buildingType_.name
-					);
+					if(joinedLinkPtr != NULL)
+						printf(
+							"\t-> Necessary building type: %s\n",
+							joinedLinkPtr -> elementPtr -> buildingType_.name
+						);
+					else
+						printf("Warning: No building type has ID = %u\n", elementPtr -> eventType_.requiredBuildingTypeId);
 					
 					//freeChain(joiningChain, NULL);
 				}
