@@ -39,6 +39,7 @@ typedef struct buildingType
 {
 	unsigned int ID;
 	char name[wordLength];
+	bool living, marketPlace;
 }buildingType;
 
 typedef struct itemType
@@ -49,8 +50,11 @@ typedef struct itemType
 
 typedef struct item
 {
-	unsigned int ID, itemTypeId, usedCount;
-	int proprietaryId;
+	unsigned int 
+		ID,
+		proprietaryId,
+		itemTypeId,
+		usedCount;
 }item;
 
 typedef enum personParticularity

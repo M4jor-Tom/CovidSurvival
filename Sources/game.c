@@ -126,9 +126,10 @@ link **setupGame()
 	//Save created character
 	writeChain(gameChains[_person], gameFile[_person]);
 	
-	for(i = _event; i < lastStructId; i++)
-		//Load chain
-		gameChains[i] = readChain(gameFile[i]);
+	for(i = 0; i < lastStructId; i++)
+		if(gameChains[i] == NULL)
+			//Load chain
+			gameChains[i] = readChain(gameFile[i]);
 	
 	return gameChains;
 }
