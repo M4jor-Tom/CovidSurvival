@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <conio.h>
 
 #include "../Headers/main.h"
 
@@ -39,12 +40,12 @@ void freeLink(link* linkPtr)
 		if(linkPtr -> elementPtr != NULL)
 		{
 			//Frees element if exists
-			memset(linkPtr -> elementPtr, 0, sizeof(element));
+			//memset(linkPtr -> elementPtr, 0, sizeof(element));
 			free(linkPtr -> elementPtr);
 		}
 		
 		//Frees link if exists
-		memset(linkPtr, 0, sizeof(link));
+		//memset(linkPtr, 0, sizeof(link));
 		free(linkPtr);
 	}
 }
@@ -62,17 +63,17 @@ void freeChain(link *chain, link *Excepted)
 	}
 }
 
-link* lastLink(link* currentLinkPtr)
+link* lastLink(link* chain)
 {
-	if(currentLinkPtr != NULL)
+	if(chain != NULL)
 	{
-		if(currentLinkPtr -> nextLinkPtr == NULL)
+		if(chain -> nextLinkPtr == NULL)
 			//Last link
-			return currentLinkPtr;
+			return chain;
 			
 		else 
 			//Recusion/Next link
-			return lastLink(currentLinkPtr -> nextLinkPtr);
+			return lastLink(chain -> nextLinkPtr);
 	}
 	else return NULL;
 }
@@ -316,6 +317,7 @@ stats grabStats(char *instructions)
 	recipient.hygiene = grabInt("hygiene: ");
 	recipient.mentalHealth = grabInt("mentalHealth: ");
 	recipient.stamina = grabInt("stamina: ");
+	recipient.money = grabInt("money: ");
 	
 	return recipient;
 }
@@ -431,8 +433,12 @@ link grabLink(structId structType)
 			//Binding the chosen buildingType to the eventType
 			recipient -> eventType_.requiredBuildingTypeId = idChoice;
 			
-			//General case consequences
-			recipient -> eventType_.consequence = grabStats("\tStats added to user's:\n");
+			//Success case consequences
+			recipient -> eventType_.onSuccess = grabStats("\tStats added to receiver's on success:\n");
+			
+			//Failure case consequences
+			if(recipient -> eventType_.requiredItemTypeId != nullId || recipient -> eventType_.requiredBuildingTypeId != nullId)
+				recipient -> eventType_.onSuccess = grabStats("\tStats added to receiver's on failure:\n");
 			
 			//Particular cases consequences
 			printf("Create particular cases ? (y/any)\n");
@@ -469,6 +475,12 @@ link grabLink(structId structType)
 		case _buildingType:
 			printf("[building type]\n\tName: ");
 			scanf("%s", recipient -> buildingType_.name);
+			printf("\tCan be a living place (y/else):");
+			recipient -> buildingType_.livingPlace = 'y' == getche();
+			printf("\tCan be a market place (y/else):");
+			recipient -> buildingType_.marketPlace = 'y' == getche();
+			printf("\tCan be a care place (y/else):");
+			recipient -> buildingType_.carePlace = 'y' == getche();
 			break;
 			
 		case _itemType:
@@ -536,7 +548,7 @@ link *selectLink(link *chain)
 	{
 		//User query + choices display
 		printf("Please select among %ss: (Enter %d to escape)\n", globalFile[chain -> structType].name, nullId);
-		displayChain(chain);
+		displayChain(chain, NULL);
 		do
 		{
 			//Getting choice's link ptr from Id
@@ -581,20 +593,21 @@ void displayStats(stats toDisplay, char *tagging)
 	//[CREATE_STATS]
 	printf
 	(
-		"[%s]\n\tHealth: %d\n\tHunger: %d\n\tHygiene: %d\n\tmentalHealth: %d\n\tStamina: %d\n",
+		"[%s]\n\tHealth: %d\n\tHunger: %d\n\tHygiene: %d\n\tmentalHealth: %d\n\tStamina: %d\nmoney: %d",
 		tagging,
 		toDisplay.health,
 		toDisplay.hunger,
 		toDisplay.hygiene,
 		toDisplay.mentalHealth,
-		toDisplay.stamina
+		toDisplay.stamina,
+		toDisplay.money
 	);
 	
 	if(mustFreeTagging)
 		free(tagging);
 }
 
-void displayLink(link toDisplay)
+void displayLink(link toDisplay, link *currentSimPtr)
 {
 	if(toDisplay.elementPtr != NULL)
 	{
@@ -602,11 +615,17 @@ void displayLink(link toDisplay)
 		element *elementPtr = toDisplay.elementPtr;
 		personParticularity last = lastPersonParticularityId;
 		
+		//If joining needed on game files
+		savesFile *gameFile = NULL;
+		if(currentSimPtr != NULL)
+			gameFile = setGameFiles(currentSimPtr);
+		
+		//If joining needed
 		link 
 			*joiningChain = NULL,
 			*joinedLinkPtr = NULL;
 		
-		char manWoman[6] = "\0", smokerString[4] = "\0", remoteWorkingString[4] = "\0";
+		char genderToString[6] = "\0", smokerString[4] = "\0", remoteWorkingString[4] = "\0";
 		
 		//What to display ?
 		switch(toDisplay.structType)
@@ -635,7 +654,8 @@ void displayLink(link toDisplay)
 					secondsTo("minutes", elementPtr -> eventType_.duration_s),
 					secondsTo("seconds", elementPtr -> eventType_.duration_s)
 				);
-				displayStats(elementPtr -> eventType_.consequence, "event type global consequence");
+				displayStats(elementPtr -> eventType_.onSuccess, "event type success consequence");
+				displayStats(elementPtr -> eventType_.onFailure, "event type failure consequence");
 				
 				
 				char **particularityLabels = initParticularityLabels();
@@ -710,20 +730,63 @@ void displayLink(link toDisplay)
 			case _buildingType:
 				printf
 				(
-					"[building type]\n\tID: %u\n\tName: %s\n\n",
+					"[building type]\n\tID: %u\n\tName: %s\n",
 					elementPtr -> buildingType_.ID,
 					elementPtr -> buildingType_.name
 				);
+				if(elementPtr -> buildingType_.livingPlace)
+					printf("Living place\n");
+				if(elementPtr -> buildingType_.marketPlace)
+					printf("Market place\n");
+				if(elementPtr -> buildingType_.carePlace)
+					printf("Care place\n");
 				break;
 				
 			case _item:
-				printf
-				(
-					"[item]\n\tID: %u\n\tProprietary ID: %u\n\tTimes used: %u\n\n",
-					elementPtr -> item_.ID,
-					elementPtr -> item_.proprietaryId,
-					elementPtr -> item_.usedCount
-				);
+				if(gameFile != NULL)
+				{
+					printf
+					(
+						"[item]\n\tID: %u\n",
+						elementPtr -> item_.ID
+					);
+					
+					if(elementPtr -> item_.proprietaryId != nullId)
+					{
+						//Who owns it ?
+						joiningChain = readChain(gameFile[_person]);
+						joinedLinkPtr = chain_search(joiningChain, elementPtr -> item_.proprietaryId);
+						
+						printf
+						(
+							"\tProprietary: %s %s\n",
+							joinedLinkPtr -> elementPtr -> person_.firstName,
+							joinedLinkPtr -> elementPtr -> person_.lastName
+						);
+					}
+					
+					if(elementPtr -> item_.locationBuildingId != nullId)
+					{
+						//Who owns it ?
+						joiningChain = readChain(gameFile[_building]);
+						joinedLinkPtr = chain_search(joiningChain, elementPtr -> item_.locationBuildingId);
+						
+						printf
+						(
+							"\tLocation: %s\n",
+							joinedLinkPtr -> elementPtr -> building_.name
+						);
+						displayLocation(joinedLinkPtr -> elementPtr -> building_.loc, "location ");
+					}
+					else if(elementPtr -> item_.proprietaryId == nullId)
+						displayLocation(elementPtr -> item_.loc, "location ");
+					
+					printf
+					(
+						"tTimes used: %u\n\n",
+						elementPtr -> item_.usedCount
+					);
+				}
 				break;
 				
 			case _itemType:
@@ -746,9 +809,12 @@ void displayLink(link toDisplay)
 				break;
 				
 			case _person:
-				if(elementPtr -> person_.gender = MAN)
-					strcpy(manWoman, "man");
-				else strcpy(manWoman, "woman");
+				if(elementPtr -> person_.gender == MAN)
+					strcpy(genderToString, "man");
+				else if(elementPtr -> person_.gender == WOMAN)
+					strcpy(genderToString, "woman");
+				else
+					strcpy(genderToString, "other");
 				
 				if(elementPtr -> person_.smoker)
 					strcpy(smokerString, "yes");
@@ -767,7 +833,7 @@ void displayLink(link toDisplay)
 					elementPtr -> person_.lastName,
 					elementPtr -> person_.houseId,
 					elementPtr -> person_.sportiness,
-					manWoman,
+					genderToString,
 					smokerString,
 					remoteWorkingString,
 					elementPtr -> person_.salary,
@@ -786,14 +852,14 @@ void displayLink(link toDisplay)
 	}
 }
 
-void displayChain(link* toDisplayPtr)
+void displayChain(link* toDisplayPtr, link *currentSimPtr)
 {
 	if(toDisplayPtr != NULL)
 	{
 		//Process
-		displayLink(*toDisplayPtr);
+		displayLink(*toDisplayPtr, currentSimPtr);
 		
 		//Recursion
-		displayChain(toDisplayPtr -> nextLinkPtr);
+		displayChain(toDisplayPtr -> nextLinkPtr, currentSimPtr);
 	}
 }

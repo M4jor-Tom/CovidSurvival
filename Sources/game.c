@@ -141,7 +141,7 @@ bool playGame(link **gameChains)
 	printf("Game data:\n");
 	int i;
 	for(i = 0; i < lastStructId; i++)
-		displayChain(gameChains[i]);
+		displayChain(gameChains[i], gameChains[_simulation]);
 	
 	getch();
 	return keepPlaying;

@@ -19,8 +19,8 @@ void freeChain(link *chain, link *Excepted);
 
 // --- Chaining functions ---
 
-//Get to last link from a link's pointer
-link* lastLink(link* currentLinkPtr);
+//Get to last link from a chain
+link* lastLink(link* chain);
 
 //Deletes a link by Id and returns the list head (which can be different if the first link is the one deleted)
 link* deleteLink(link *chain, unsigned int Id);
@@ -60,7 +60,7 @@ link *selectLink(link *chain);
 
 
 //Displays a link
-void displayLink(link toDisplay);
+void displayLink(link toDisplay, link *currentSimPtr);
 
 //Launches displayLink as long as there are links to display in the chain
-void displayChain(link *toDisplayPtr);
+void displayChain(link *toDisplayPtr, link *currentSimPtr);

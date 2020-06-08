@@ -115,7 +115,7 @@ int main()
 												//Watch
 												
 												//Display chain so user can see (before choosing ?)
-												displayChain(existingChain);
+												displayChain(existingChain, NULL);
 												if(editionSelect == 4)
 												{
 													//Watch
@@ -237,7 +237,7 @@ void test(bool file, bool print)
 	if(print)
 	{
 		printf("Existing structures: \n");
-		displayChain(chain);
+		displayChain(chain, NULL);
 	}
 	
 	if(file)

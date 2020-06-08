@@ -10,7 +10,7 @@ typedef struct location
 
 typedef struct stats
 {
-	int health, mentalHealth, hunger, hygiene, stamina;
+	int health, mentalHealth, hunger, hygiene, stamina, money;
 }stats;
 
 //System enum: Created to know structures [CREATE_STRUCTURE]
@@ -39,7 +39,7 @@ typedef struct buildingType
 {
 	unsigned int ID;
 	char name[wordLength];
-	bool living, marketPlace;
+	bool livingPlace, marketPlace, carePlace;
 }buildingType;
 
 typedef struct itemType
@@ -53,8 +53,11 @@ typedef struct item
 	unsigned int 
 		ID,
 		proprietaryId,
+		locationBuildingId,
 		itemTypeId,
 		usedCount;
+	
+	location loc;
 }item;
 
 typedef enum personParticularity
@@ -87,7 +90,9 @@ typedef struct eventType // <=> action
 	char name[wordLength];
 	
 	//Consequence on stats
-	stats consequence;
+	stats 
+		onSuccess,
+		onFailure;
 	
 	//Consequence on stats for specific personParticularities (sum with consequence ?)
 	stats consequenceFor[personParticularitiesCount/* <=> personParticularity :: lastParticularityId*/];
