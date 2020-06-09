@@ -146,7 +146,6 @@ void setElementId(element* elementPtr, structId type, unsigned int Id)
 	switch(type)
 	{
 		//[CREATE_STRUCTURE]
-			
 		case _eventType:
 			elementPtr -> eventType_.ID = Id;
 			break;
@@ -192,8 +191,7 @@ long int getElementId(element* elementPtr, structId type)
 	unsigned int elementId = nullId;
 	switch(type)
 	{
-		//[CREATE_STRUCTURE]
-		//[CREATE_GLOBAL_STRUCTURE]
+		//[CREATE_STRUCTURE] [CREATE_GLOBAL_STRUCTURE]
 		case _itemType:
 			elementId = elementPtr -> itemType_.ID;
 			break;
@@ -348,8 +346,7 @@ link grabLink(structId structType)
 	
 	switch(structType)
 	{
-		//[CREATE_STRUCTURE]
-		//[EDIT_STRUCTURE]
+		//[CREATE_STRUCTURE] [EDIT_STRUCTURE]
 		case _person:
 			printf("[person]\n\tLast name: ");
 			scanf("%s", recipient -> person_.lastName);
@@ -361,12 +358,16 @@ link grabLink(structId structType)
 			
 			recipient -> person_.houseId = nullId;
 			break;
+			
+		case _event:
+			//#TODO
+			break;
 		
 		case _eventType:
-			printf("[event type]\tName: ");
+			printf("[event type]\n\tName: ");
 			scanf("%s", recipient -> eventType_.name);
 			
-			printf("\n\tDuration: ");
+			printf("\tDuration: ");
 			scanf("%u", &recipient -> eventType_.duration_s);
 			
 			//Item consumed on eventing
@@ -438,7 +439,10 @@ link grabLink(structId structType)
 			
 			//Failure case consequences
 			if(recipient -> eventType_.requiredItemTypeId != nullId || recipient -> eventType_.requiredBuildingTypeId != nullId)
-				recipient -> eventType_.onSuccess = grabStats("\tStats added to receiver's on failure:\n");
+				recipient -> eventType_.onFailure = grabStats("\tStats added to receiver's on failure:\n");
+			
+			printf("Is the player able to select the option on failure ? (y/any)\n");
+			recipient -> eventType_.selectableOnFailure = getche() == 'y';
 			
 			//Particular cases consequences
 			printf("Create particular cases ? (y/any)\n");
@@ -477,15 +481,19 @@ link grabLink(structId structType)
 			scanf("%s", recipient -> buildingType_.name);
 			printf("\tCan be a living place (y/else):");
 			recipient -> buildingType_.livingPlace = 'y' == getche();
-			printf("\tCan be a market place (y/else):");
+			printf("\n\tCan be a market place (y/else):");
 			recipient -> buildingType_.marketPlace = 'y' == getche();
-			printf("\tCan be a care place (y/else):");
+			printf("\n\tCan be a care place (y/else):");
 			recipient -> buildingType_.carePlace = 'y' == getche();
+			printf("\n\n");
 			break;
 			
 		case _itemType:
 			printf("[item type]\n\tName: ");
 			scanf("%s", recipient -> itemType_.name);
+			
+			printf("\tPrice: ");
+			scanf("%u", &recipient -> itemType_.price);
 			
 			printf("\tUses count: ");
 			scanf("%u", &recipient -> itemType_.usesCount);
@@ -522,10 +530,9 @@ link* grabChain(structId structType)
 		*linkPtr = grabLink(structType);
 		
 		//Restart ?
-		printf("\nKeep grabbing ? 1/0\n");
+		printf("\nKeep grabbing ? y/any\n");
 		
-		scanf("%d", &keepGrabbing);
-		getchar();
+		keepGrabbing = getche() == 'y';
 		
 		system("cls");
 		
@@ -593,7 +600,7 @@ void displayStats(stats toDisplay, char *tagging)
 	//[CREATE_STATS]
 	printf
 	(
-		"[%s]\n\tHealth: %d\n\tHunger: %d\n\tHygiene: %d\n\tmentalHealth: %d\n\tStamina: %d\nmoney: %d",
+		"[%s]\n\tHealth: %d\n\tHunger: %d\n\tHygiene: %d\n\tmentalHealth: %d\n\tStamina: %d\n\tmoney: %d\n",
 		tagging,
 		toDisplay.health,
 		toDisplay.hunger,
@@ -615,32 +622,84 @@ void displayLink(link toDisplay, link *currentSimPtr)
 		element *elementPtr = toDisplay.elementPtr;
 		personParticularity last = lastPersonParticularityId;
 		
-		//If joining needed on game files
-		savesFile *gameFile = NULL;
-		if(currentSimPtr != NULL)
-			gameFile = setGameFiles(currentSimPtr);
-		
 		//If joining needed
 		link 
-			*joiningChain = NULL,
-			*joinedLinkPtr = NULL;
+			*joinedLinkPtr = NULL,
+			*joinedLinkPtr2 = NULL;
 		
+		//[PERSON_PARTICULARITY]
 		char genderToString[6] = "\0", smokerString[4] = "\0", remoteWorkingString[4] = "\0";
 		
 		//What to display ?
 		switch(toDisplay.structType)
 		{
-			//[CREATE_STRUCTURE]
-			//[EDIT_STRUCTURE]
+			//[CREATE_STRUCTURE] [EDIT_STRUCTURE]
 			case _event:
 				printf
 				(
-					"[event]\n\tID: %u\n\tType ID: %d\n\treveiver ID: %d\n\tTransmitter ID: %d\n\n",
-					elementPtr -> event_.ID,
-					elementPtr -> event_.eventTypeId,
-					elementPtr -> event_.receiverId,
-					elementPtr -> event_.transmitterId
+					"[event]\n\tID: %u",
+					elementPtr -> event_.ID
 				);
+				
+				//[JOIN] eventType
+				joinedLinkPtr = getJoinedLink(&toDisplay, _eventType, currentSimPtr, 1);
+				if(joinedLinkPtr != NULL)
+				{
+					printf(
+						"\n\tEvent type: %s",
+						joinedLinkPtr -> elementPtr -> eventType_.name
+					);
+				}
+				
+				//[JOIN] person
+				joinedLinkPtr = getJoinedLink(&toDisplay, _person, currentSimPtr, 1);
+				if(joinedLinkPtr != NULL)
+				{
+					printf(
+						"\n\tTransmitter: %s %s",
+						joinedLinkPtr -> elementPtr -> person_.firstName,
+						joinedLinkPtr -> elementPtr -> person_.lastName
+					);
+				}
+				
+				//[JOIN] person
+				joinedLinkPtr = getJoinedLink(&toDisplay, _person, currentSimPtr, 2);
+				if(joinedLinkPtr != NULL)
+				{
+					printf(
+						"\n\tReceiver: %s %s\n\n",
+						joinedLinkPtr -> elementPtr -> person_.firstName,
+						joinedLinkPtr -> elementPtr -> person_.lastName
+					);
+				}
+				
+				//[JOIN] item
+				joinedLinkPtr = getJoinedLink(&toDisplay, _item, currentSimPtr, 1);
+				if(joinedLinkPtr != NULL)
+				{
+					//[JOIN] itemType
+					joinedLinkPtr2 = getJoinedLink(joinedLinkPtr, _itemType, currentSimPtr, 1);
+					printf(
+						"\n\tItem: %s (%u uses out of %u)",
+						joinedLinkPtr2 -> elementPtr -> itemType_.name,
+						joinedLinkPtr -> elementPtr -> item_.usedCount,
+						joinedLinkPtr2 -> elementPtr -> itemType_.usesCount
+					);
+				}
+				
+				//[JOIN] building
+				joinedLinkPtr = getJoinedLink(&toDisplay, _building, currentSimPtr, 1);
+				if(joinedLinkPtr != NULL)
+				{
+					//[JOIN] buildingType
+					joinedLinkPtr2 = getJoinedLink(joinedLinkPtr, _buildingType, currentSimPtr, 1);
+					printf(
+						"\n\tLocation: %s (%s)",
+						joinedLinkPtr -> elementPtr -> building_.name,
+						joinedLinkPtr2 -> elementPtr -> buildingType_.name
+					);
+					displayLocation(joinedLinkPtr -> elementPtr -> building_.loc, "building's location");
+				}
 				break;
 				
 			case _eventType:
@@ -674,43 +733,31 @@ void displayLink(link toDisplay, link *currentSimPtr)
 						strcat(tag, particularityLabels[cursor]);
 						displayStats(elementPtr -> eventType_.consequenceFor[cursor], tag);
 					}
-					
-				//Binded elements
-				if(elementPtr -> eventType_.requiredItemTypeId != nullId)
-				{
-					//Making a 'sql like' join
-					joiningChain = readChain(globalFile[_itemType]);
-					joinedLinkPtr = chain_search(joiningChain, elementPtr -> eventType_.requiredItemTypeId);
-					
-					if(joinedLinkPtr != NULL)
-						printf(
-							"\t-> Used item type: %s, consumes %u times (%u in total)\n",
-							joinedLinkPtr -> elementPtr -> itemType_.name,
-							elementPtr -> eventType_.itemTypeConsumption,
-							joinedLinkPtr -> elementPtr -> itemType_.usesCount
-						);
-					else
-						printf("Warning: No item type has ID = %u\n", elementPtr -> eventType_.requiredItemTypeId);
-					
-					//freeChain(joiningChain, NULL);
-				}
 				
-				if(elementPtr -> eventType_.requiredBuildingTypeId != nullId)
-				{
-					//Making a 'sql like' join
-					joiningChain = readChain(globalFile[_buildingType]);
-					joinedLinkPtr = chain_search(joiningChain, elementPtr -> eventType_.requiredBuildingTypeId);
-					
-					if(joinedLinkPtr != NULL)
-						printf(
-							"\t-> Necessary building type: %s\n",
-							joinedLinkPtr -> elementPtr -> buildingType_.name
-						);
-					else
-						printf("Warning: No building type has ID = %u\n", elementPtr -> eventType_.requiredBuildingTypeId);
-					
-					//freeChain(joiningChain, NULL);
-				}
+				//[JOIN] itemType
+				joinedLinkPtr = getJoinedLink(&toDisplay, _itemType, currentSimPtr, 1);
+				if(joinedLinkPtr != NULL)
+					printf(
+						"\t-> Used item type: %s, consumes %u times (%u in total)\n",
+						joinedLinkPtr -> elementPtr -> itemType_.name,
+						elementPtr -> eventType_.itemTypeConsumption,
+						joinedLinkPtr -> elementPtr -> itemType_.usesCount
+					);
+				
+				//[JOIN] buildingType
+				joinedLinkPtr = getJoinedLink(&toDisplay, _buildingType, currentSimPtr, 1);
+				if(joinedLinkPtr != NULL)
+					printf(
+						"\t-> Necessary building type: %s\n",
+						joinedLinkPtr -> elementPtr -> buildingType_.name
+					);
+				
+				printf(
+					"\t-%selectable on failure",
+					toDisplay.elementPtr -> eventType_.selectableOnFailure
+						? "S"
+						: "Not s"
+				);
 				
 				printf("\n\n");
 				break;
@@ -718,11 +765,21 @@ void displayLink(link toDisplay, link *currentSimPtr)
 			case _building:
 				printf
 				(
-					"[building]\n\tID: %u\n\tName: %s\n\tType ID: %u\n",
+					"[building]\n\tID: %u\n\tName: %s",
 					elementPtr -> building_.ID,
-					elementPtr -> building_.name,
-					elementPtr -> building_.typeId
+					elementPtr -> building_.name
 				);
+				
+				//[JOIN] buildingType
+				joinedLinkPtr = getJoinedLink(&toDisplay, _buildingType, currentSimPtr, 1);
+				if(joinedLinkPtr != NULL)
+				{
+					printf(
+						"\n\tType: %s",
+						joinedLinkPtr -> elementPtr -> buildingType_.name
+					);
+				}
+				
 				displayLocation(elementPtr -> building_.loc, "building location");
 				printf("\n\n");
 				break;
@@ -735,15 +792,15 @@ void displayLink(link toDisplay, link *currentSimPtr)
 					elementPtr -> buildingType_.name
 				);
 				if(elementPtr -> buildingType_.livingPlace)
-					printf("Living place\n");
+					printf("\tLiving place\n");
 				if(elementPtr -> buildingType_.marketPlace)
-					printf("Market place\n");
+					printf("\tMarket place\n");
 				if(elementPtr -> buildingType_.carePlace)
-					printf("Care place\n");
+					printf("\tCare place\n");
 				break;
 				
 			case _item:
-				if(gameFile != NULL)
+				if(currentSimPtr != NULL)
 				{
 					printf
 					(
@@ -751,26 +808,29 @@ void displayLink(link toDisplay, link *currentSimPtr)
 						elementPtr -> item_.ID
 					);
 					
-					if(elementPtr -> item_.proprietaryId != nullId)
-					{
-						//Who owns it ?
-						joiningChain = readChain(gameFile[_person]);
-						joinedLinkPtr = chain_search(joiningChain, elementPtr -> item_.proprietaryId);
-						
+					//[JOIN] itemType
+					joinedLinkPtr = getJoinedLink(&toDisplay, _itemType, currentSimPtr, 1);
+					if(joinedLinkPtr != NULL)
+						printf
+						(
+							"\tType: %s\n",
+							joinedLinkPtr -> elementPtr -> itemType_.name
+						);
+					
+					//[JOIN] person
+					joinedLinkPtr = getJoinedLink(&toDisplay, _person, currentSimPtr, 1);
+					if(joinedLinkPtr != NULL)
 						printf
 						(
 							"\tProprietary: %s %s\n",
 							joinedLinkPtr -> elementPtr -> person_.firstName,
 							joinedLinkPtr -> elementPtr -> person_.lastName
 						);
-					}
 					
-					if(elementPtr -> item_.locationBuildingId != nullId)
+					//[JOIN] building
+					joinedLinkPtr = getJoinedLink(&toDisplay, _building, currentSimPtr, 1);
+					if(joinedLinkPtr != NULL)
 					{
-						//Who owns it ?
-						joiningChain = readChain(gameFile[_building]);
-						joinedLinkPtr = chain_search(joiningChain, elementPtr -> item_.locationBuildingId);
-						
 						printf
 						(
 							"\tLocation: %s\n",
@@ -778,7 +838,7 @@ void displayLink(link toDisplay, link *currentSimPtr)
 						);
 						displayLocation(joinedLinkPtr -> elementPtr -> building_.loc, "location ");
 					}
-					else if(elementPtr -> item_.proprietaryId == nullId)
+					else
 						displayLocation(elementPtr -> item_.loc, "location ");
 					
 					printf
@@ -792,9 +852,10 @@ void displayLink(link toDisplay, link *currentSimPtr)
 			case _itemType:
 				printf
 				(
-					"[item type]\n\tID: %u\n\tName: %s\n\tUses count: %u\n\n",
+					"[item type]\n\tID: %u\n\tName: %s\n\tPrice: %u\n\tUses count: %u\n\n",
 					elementPtr -> itemType_.ID,
 					elementPtr -> itemType_.name,
+					elementPtr -> itemType_.price,
 					elementPtr -> itemType_.usesCount
 				);
 				break;
@@ -809,39 +870,58 @@ void displayLink(link toDisplay, link *currentSimPtr)
 				break;
 				
 			case _person:
-				if(elementPtr -> person_.gender == MAN)
-					strcpy(genderToString, "man");
-				else if(elementPtr -> person_.gender == WOMAN)
-					strcpy(genderToString, "woman");
-				else
-					strcpy(genderToString, "other");
-				
-				if(elementPtr -> person_.smoker)
-					strcpy(smokerString, "yes");
-				else strcpy(smokerString, "no");
-				
-				if(elementPtr -> person_.remoteWorking)
-					strcpy(remoteWorkingString, "yes");
-				else strcpy(remoteWorkingString, "no");
-				
-				//[CREATE_PERSON_PARTICULARITY]
-				printf
-				(
-					"[person]\n\tID: %d\n\tFirst Name: %s\n\tLast Name: %s\n\tHouse ID: %d\n\tSportiness level: %d/2\n\tGender: %s\n\tSmoker: %s\n\tRemote worker: %s\n\tSalary: %.2f\n\tMoney: %.2f\n",
-					elementPtr -> person_.ID,
-					elementPtr -> person_.firstName,
-					elementPtr -> person_.lastName,
-					elementPtr -> person_.houseId,
-					elementPtr -> person_.sportiness,
-					genderToString,
-					smokerString,
-					remoteWorkingString,
-					elementPtr -> person_.salary,
-					elementPtr -> person_.money
-				);
-				
-				displayStats(elementPtr -> person_.stats_, "person stats");
-				printf("\n\n");
+				if(currentSimPtr != NULL)
+				{
+					//particularities
+					if(elementPtr -> person_.gender == MAN)
+						strcpy(genderToString, "man");
+					else if(elementPtr -> person_.gender == WOMAN)
+						strcpy(genderToString, "woman");
+					else
+						strcpy(genderToString, "other");
+					
+					if(elementPtr -> person_.smoker)
+						strcpy(smokerString, "yes");
+					else strcpy(smokerString, "no");
+					
+					if(elementPtr -> person_.remoteWorking)
+						strcpy(remoteWorkingString, "yes");
+					else strcpy(remoteWorkingString, "no");
+					
+					//[CREATE_PERSON_PARTICULARITY]
+					printf
+					(
+						"[person]\n\tID: %d\n\tFirst Name: %s\n\tLast Name: %s\n",
+						elementPtr -> person_.ID,
+						elementPtr -> person_.firstName,
+						elementPtr -> person_.lastName
+					);
+					
+					//[JOIN] building (house)
+					joinedLinkPtr = getJoinedLink(&toDisplay, _building, currentSimPtr, 1);
+					if(joinedLinkPtr != NULL)
+					{
+						//[JOIN] buildingType (house type (= house ?))
+						joinedLinkPtr2 = getJoinedLink(joinedLinkPtr, _buildingType, currentSimPtr, 1);
+						printf(
+							"\n\tLiving: %s (%s)",
+							joinedLinkPtr -> elementPtr -> building_.name,
+							joinedLinkPtr2 -> elementPtr -> buildingType_.name
+						);
+					}
+					
+					printf(
+						"\n\tSportiness level: %d/2\n\tGender: %s\n\tSmoker: %s\n\tRemote worker: %s\n\tSalary: %.2f\n",
+						elementPtr -> person_.sportiness,
+						genderToString,
+						smokerString,
+						remoteWorkingString,
+						elementPtr -> person_.salary
+					);
+					
+					displayStats(elementPtr -> person_.stats_, "person stats");
+					printf("\n\n");
+				}
 				break;
 				
 			#ifdef DEBUG
@@ -862,4 +942,122 @@ void displayChain(link* toDisplayPtr, link *currentSimPtr)
 		//Recursion
 		displayChain(toDisplayPtr -> nextLinkPtr, currentSimPtr);
 	}
+}
+
+link *getJoinedLink(link *mainLink, structId selectedStruct, link *currentSimPtr, unsigned short int joinIndex)
+{
+	long int joinId = nullId;
+	link *ret = NULL;
+	
+	//If joining needed on game files
+	savesFile *gameFile = NULL;
+	if(currentSimPtr != NULL)
+		gameFile = setGameFiles(currentSimPtr);
+	
+	element *elementPtr = mainLink -> elementPtr;
+	
+	//Getting the Id from the current element and the targetted element
+	if(mainLink != NULL)
+	{
+		switch(mainLink -> structType)
+		{
+			//[CREATE_STRUCTURE] [EDIT_STRUCTURE] [JOIN_STRUCTURE]
+			case _eventType:
+				switch(selectedStruct)
+				{
+					case _itemType:
+						joinId = elementPtr -> eventType_.requiredItemTypeId;
+						break;
+						
+					case _buildingType:
+						joinId = elementPtr -> eventType_.requiredBuildingTypeId;
+						break;
+				}
+				break;
+				
+			case _event:
+				switch(selectedStruct)
+				{
+					case _itemType:
+						joinId = elementPtr -> event_.itemId;
+						break;
+						
+					case _buildingType:
+						joinId = elementPtr -> event_.buildingId;
+						break;
+					
+					case _eventType:
+						joinId = elementPtr -> event_.eventTypeId;
+						break;
+					
+					case _person:
+						if(joinIndex <= 1)
+							joinId = elementPtr -> event_.transmitterId;
+						else
+							joinId = elementPtr -> event_.receiverId;
+						break;
+				}
+				break;
+				
+			case _building:
+				switch(selectedStruct)
+				{
+					case _buildingType:
+						joinId = elementPtr -> building_.typeId;
+						break;
+				}
+				break;
+				
+			case _item:
+				switch(selectedStruct)
+				{
+					case _itemType:
+						joinId = elementPtr -> item_.itemTypeId;
+						break;
+						
+					case _person:
+						joinId = elementPtr -> item_.proprietaryId;
+						break;
+						
+					case _building:
+						joinId = elementPtr -> item_.locationBuildingId;
+						break;
+				}
+				break;
+				
+			case _person:
+				switch(selectedStruct)
+				{
+					case _building:
+						joinId = elementPtr -> person_.houseId;
+						break;
+				}
+				break;
+				
+			default:
+				printf("<getJoinedLink> Warning: Un-handled structure type: %u\n", mainLink -> structType);
+		}
+	}
+	
+	//Operating
+	if(joinId != nullId)
+	{
+		//Choosing an file environment to join in
+		gameFile = gameFile == NULL
+			? globalFile
+			: gameFile;
+		
+		//Making a 'sql like' join
+		link 
+			*joiningChain = readChain(gameFile[selectedStruct]),
+			*joinedLinkPtr = chain_search(joiningChain, joinId);
+		
+		if(joinedLinkPtr != NULL)
+			ret = joinedLinkPtr;
+		else
+			printf("Warning: None of %s has ID = %d\n", gameFile[selectedStruct].name, joinId);
+		
+		//freeChain(joiningChain, NULL);
+	}
+	return ret;
 }

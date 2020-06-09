@@ -44,7 +44,7 @@ typedef struct buildingType
 
 typedef struct itemType
 {
-	unsigned int ID, usesCount;
+	unsigned int ID, price, usesCount;
 	char name[wordLength];
 }itemType;
 
@@ -89,6 +89,8 @@ typedef struct eventType // <=> action
 		duration_s;
 	char name[wordLength];
 	
+	bool selectableOnFailure;
+	
 	//Consequence on stats
 	stats 
 		onSuccess,
@@ -100,13 +102,14 @@ typedef struct eventType // <=> action
 
 typedef struct event
 {
-	unsigned int ID,
+	unsigned int 
+		ID,
 		transmitterId,
 		receiverId,
+		itemId,
+		buildingId,
 		eventTypeId,
 		eventTime;
-	
-	//Comment ?
 }event;
 
 typedef struct simulation
@@ -117,8 +120,7 @@ typedef struct simulation
 
 typedef union element
 {
-	//[CREATE_STRUCTURE]
-	
+	//[CREATE_STRUCTURE] [CREATE_GLOBAL_STRUCTURE]
 	eventType eventType_;
 	buildingType buildingType_;
 	itemType itemType_;

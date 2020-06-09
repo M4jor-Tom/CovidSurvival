@@ -43,6 +43,10 @@ long int getElementId(element *elementPtr, structId type);
 //Returns a link's ptr from a chain within wich an Id's one has been searched. Returns NULL if Id doesn't exists
 link *chain_search(link *chain, unsigned int ID);
 
+//Finds the ptr of one or more links from another's ptr and a choosen type. 
+//joinIndex means wich element index of a same type you want from a same type (0 or 1 in normal cases, almost each)
+link *getJoinedLink(link *mainLink, structId selectedStruct, link *currentSimPtr, unsigned short int joinIndex);
+
 
 // --- Human/Program interface functions ---
 

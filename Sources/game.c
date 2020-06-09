@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <conio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "../Headers/main.h"
 
@@ -77,6 +78,7 @@ link **setupGame()
 		*currentSimPtr = NULL;
 	int i;
 	char choice[] = "\0";
+	bool createSim = false;
 	
 	//Set each ptr of lists of data to NULL
 	memset(gameChains, 0, sizeof(link *) * lastStructId);
@@ -94,6 +96,8 @@ link **setupGame()
 		
 		//Getting the new simulations list
 		simulations = insertLink(simulations, currentSimPtr);
+		
+		createSim = true;
 	}
 	else
 	{
@@ -113,18 +117,21 @@ link **setupGame()
 	
 	//Get selected simulation
 	gameChains[_simulation] = currentSimPtr;
+	
+	if(createSim)
+	{
+		//Creating a character
+		printf("Design your character:\n");
+		gameChains[_person] = newLink("setupGame/no simulation found/create character", _person, true);
+		*gameChains[_person] = grabLink(_person);
+		setLinkId(gameChains[_person], 1);
 		
-	//Creating a character
-	printf("Design your character:\n");
-	gameChains[_person] = newLink("setupGame/no simulation found/create character", _person, true);
-	*gameChains[_person] = grabLink(_person);
-	setLinkId(gameChains[_person], 1);
+		//Save created character
+		writeChain(gameChains[_person], gameFile[_person]);
+	}
 	
 	//Rewriteing simulations in case a new's here
 	writeChain(simulations, gameFile[_simulation]);
-	
-	//Save created character
-	writeChain(gameChains[_person], gameFile[_person]);
 	
 	for(i = 0; i < lastStructId; i++)
 		if(gameChains[i] == NULL)
@@ -137,12 +144,29 @@ link **setupGame()
 bool playGame(link **gameChains)
 {
 	bool keepPlaying = true;
+	
+	link *newEvent = newLink("newEvent", _event, false);
+	*newEvent = grabLink(_event);
+	
 	system("cls");
 	printf("Game data:\n");
 	int i;
 	for(i = 0; i < lastStructId; i++)
 		displayChain(gameChains[i], gameChains[_simulation]);
 	
+	
+	gameChains[_event] = insertLink(gameChains[_event], newEvent);
+	
 	getch();
 	return keepPlaying;
+}
+
+void timeSet(link **gameChains, unsigned long int time)
+{
+	gameChains[_simulation] -> elementPtr -> simulation_.simuledTime = time;
+}
+
+void happen(link **gameChains)
+{
+	unsigned long int time = gameChains[_simulation] -> elementPtr -> simulation_.simuledTime;
 }
