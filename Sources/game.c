@@ -104,7 +104,7 @@ link **setupGame()
 		currentSimPtr = selectLink(simulations);
 		
 		//Freeing selection, ommiting choice
-		//freeChain(simulations, currentSimPtr);
+		freeChain(&simulations, currentSimPtr);
 	}
 	
 	//Creating game files from the source code's template
@@ -123,7 +123,7 @@ link **setupGame()
 		//Creating a character
 		printf("Design your character:\n");
 		gameChains[_person] = newLink("setupGame/no simulation found/create character", _person, true);
-		*gameChains[_person] = grabLink(_person);
+		*gameChains[_person] = grabLink(_person, NULL);
 		setLinkId(gameChains[_person], 1);
 		
 		//Save created character
@@ -146,7 +146,7 @@ bool playGame(link **gameChains)
 	bool keepPlaying = true;
 	
 	link *newEvent = newLink("newEvent", _event, false);
-	*newEvent = grabLink(_event);
+	*newEvent = grabLink(_event, gameChains[_simulation]);
 	
 	system("cls");
 	printf("Game data:\n");

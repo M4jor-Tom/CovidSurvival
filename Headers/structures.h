@@ -16,8 +16,8 @@ typedef struct stats
 //System enum: Created to know structures [CREATE_STRUCTURE]
 typedef enum structId
 {
-	_itemType, _buildingType, _eventType, _simulation, //global structures
-	_event, _building, _item, _person, //games structures
+	_itemType, _placeType, _eventType, _simulation, //global structures
+	_event, _place, _item, _person, //games structures
 	lastStructId
 }structId;
 
@@ -28,19 +28,19 @@ typedef struct savesFile
 	char path[70], name[wordLength], file[wordLength];
 }savesFile;
 
-typedef struct building
+typedef struct place
 {
 	unsigned int ID, typeId;
 	char name[wordLength];
 	location loc;
-}building;
+}place;
 
-typedef struct buildingType
+typedef struct placeType
 {
 	unsigned int ID;
 	char name[wordLength];
 	bool livingPlace, marketPlace, carePlace;
-}buildingType;
+}placeType;
 
 typedef struct itemType
 {
@@ -53,7 +53,7 @@ typedef struct item
 	unsigned int 
 		ID,
 		proprietaryId,
-		locationBuildingId,
+		locationPlaceId,
 		itemTypeId,
 		usedCount;
 	
@@ -75,7 +75,7 @@ typedef struct person
 		sportiness; //0, 1, 2
 	
 	bool smoker, remoteWorking;
-	float salary, money;
+	float salary;
 	stats stats_;
 }person;
 
@@ -84,7 +84,7 @@ typedef struct eventType // <=> action
 	unsigned int 
 		ID,
 		requiredItemTypeId,
-		requiredBuildingTypeId,
+		requiredPlaceTypeId,
 		itemTypeConsumption,
 		duration_s;
 	char name[wordLength];
@@ -107,7 +107,7 @@ typedef struct event
 		transmitterId,
 		receiverId,
 		itemId,
-		buildingId,
+		placeId,
 		eventTypeId,
 		eventTime;
 }event;
@@ -122,12 +122,12 @@ typedef union element
 {
 	//[CREATE_STRUCTURE] [CREATE_GLOBAL_STRUCTURE]
 	eventType eventType_;
-	buildingType buildingType_;
+	placeType placeType_;
 	itemType itemType_;
 	simulation simulation_;
 	
 	event event_;
-	building building_;
+	place place_;
 	item item_;
 	person person_;
 }element;

@@ -11,10 +11,10 @@ link *newLink(char *errorMessage, structId type, bool createElement);
 element *newElement(char *errorMessage);
 
 //Frees a link as well as its element if it exists
-void freeLink(link *linkPtr);
+void freeLink(link **linkPtrPtr);
 
 //Frees a chain as well as its elements if they exist
-void freeChain(link *chain, link *Excepted);
+void freeChain(link **chainPtr, link *Excepted);
 
 
 // --- Chaining functions ---
@@ -40,8 +40,14 @@ long int getLinkId(link *linkPtr);
 //Gets a link's element Id from the element's pointer and type
 long int getElementId(element *elementPtr, structId type);
 
+//Fetches a link ptr from informations
+link *getLinkById(structId _structId, long int Id, link *currentSimPtr);
+
 //Returns a link's ptr from a chain within wich an Id's one has been searched. Returns NULL if Id doesn't exists
 link *chain_search(link *chain, unsigned int ID);
+
+//Prints choices for the user to select an Id
+long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId);
 
 //Finds the ptr of one or more links from another's ptr and a choosen type. 
 //joinIndex means wich element index of a same type you want from a same type (0 or 1 in normal cases, almost each)
@@ -54,10 +60,10 @@ link *getJoinedLink(link *mainLink, structId selectedStruct, link *currentSimPtr
 char **initParticularityLabels();
 
 //Returns a link scanf'd by the user
-link grabLink(structId structType);
+link grabLink(structId structType, link *currentSimPtr);
 
 //Launches grabLink() as long as the user wants it
-link *grabChain(structId structType);
+link *grabChain(structId structType, link *currentSimPtr);
 
 //Gets a link's ptr out of a chain by user choice
 link *selectLink(link *chain);

@@ -75,9 +75,9 @@ int main()
 										if(elementChoice == lastStructId)
 											elementChoice = _itemType;
 									case 2:
-										//buildingType
+										//placeType
 										if(elementChoice == lastStructId)
-											elementChoice = _buildingType;
+											elementChoice = _placeType;
 									case 3:
 										//eventType
 										if(elementChoice == lastStructId)
@@ -87,15 +87,15 @@ int main()
 										if(elementChoice == lastStructId)
 											elementChoice = _simulation;
 										
-										//freeChain(existingChain, NULL);
+										freeChain(&existingChain, NULL);
 										existingChain = readChain(globalFile[elementChoice]);
 										switch(editionSelect)
 										{
 											case 1:
 												//Create
-												//freeLink(newLinkPtr);
+												//freeLink(&newLinkPtr);
 												newLinkPtr = newLink("main/create element", elementChoice, false);
-												*newLinkPtr = grabLink(elementChoice);
+												*newLinkPtr = grabLink(elementChoice, NULL);
 												
 												existingChain = insertLink(existingChain, newLinkPtr);
 												writeChain(existingChain, globalFile[elementChoice]);
@@ -143,7 +143,7 @@ int main()
 														//free(selectedLinkPtr -> elementPtr);
 														
 														//Give new data to this link
-														*selectedLinkPtr = grabLink(elementChoice);
+														*selectedLinkPtr = grabLink(elementChoice, NULL);
 														
 														//Give back Id and nextLinkPtr to selectedLink
 														setLinkId(selectedLinkPtr, idChoice);
@@ -210,29 +210,30 @@ void test(bool file, bool print)
 	//Testing link constructor
 	int i;
 	structId last = lastStructId, structType_ = 0;
+	
 	for(i = 0; i < last; i++)
 	{
-		link* linkPtr = newLink("test fails on empty link", structType_, false);
-		freeLink(linkPtr);
+		link *linkPtr = newLink("test fails on empty link", structType_, false);
+		freeLink(&linkPtr);
 		
 		linkPtr = newLink("test fails on link with element", structType_, true);
-		freeLink(linkPtr);
+		freeLink(&linkPtr);
+		if(print)
+		{
+			printf("deleted link: \n");
+			displayChain(linkPtr, NULL);
+		}
 	}
 	
-	//Testing displaying
-	link 
-		*linkPtr_ = newLink("second test fails on link with element", structType_, true),
-		*chain = linkPtr_;
+	//Testing displaying and freeing
+	link *chain = newLink("second test fails on link with element", structType_, true);
 	
 	//Creating a chain of 3 links of each type of element
 	for(i = 0; i < 20; i++)
 	{
 		//Next Link
-		linkPtr_ -> nextLinkPtr = newLink("second test fails on link with element in loop", 0/*structType_*/, true);
-		linkPtr_ = linkPtr_ -> nextLinkPtr;
-		linkPtr_ -> elementPtr -> eventType_.ID = i + 1;
+		chain = insertLink(chain, newLink("second test fails on link with element in loop", 0/*structType_*/, true));
 	}
-	linkPtr_ -> structType = structType_;
 	
 	if(print)
 	{
@@ -240,15 +241,11 @@ void test(bool file, bool print)
 		displayChain(chain, NULL);
 	}
 	
-	if(file)
-		//writeChain(chain, "test/test.test");
-		freeChain(chain, NULL);
+	freeChain(&chain, NULL);
 	
 	if(print)
 	{
-		/*printf("Deleted structures: \n");
-		displayChain(chain);*/
-		//printf("Read structures: \n");
-		
+		printf("Deleted structures: \n");
+		displayChain(chain, NULL);
 	}
 }

@@ -17,10 +17,10 @@ savesFile
 			.file = "itemType.covid"
 		},
 		{
-			.storedElements = _buildingType,
-			.name = "Building type",
+			.storedElements = _placeType,
+			.name = "Place type",
 			.path = "ressources/",
-			.file = "buildingType.covid"
+			.file = "placeType.covid"
 		},
 		{
 			.storedElements = _eventType,
@@ -43,10 +43,10 @@ savesFile
 		},
 		{
 			//gameFile template
-			.storedElements = _building,
-			.name = "Building",
+			.storedElements = _place,
+			.name = "Place",
 			.path = "saves/simulation_%u/",
-			.file = "building.surviver"
+			.file = "place.surviver"
 		},
 		{
 			//gameFile template
@@ -67,6 +67,10 @@ savesFile
 bool writeChain(link* chain, savesFile save)
 {
 	bool success = false;
+	
+	//Delete constant data before save (wich is hardcoded)
+	if(save.storedElements == _placeType)
+		chain = deleteLink(chain, 1);
 	
 	#ifdef DEBUG
 	if
@@ -137,7 +141,7 @@ link *readChain(savesFile save)
 		#ifdef DEBUG
 		printf("<readChain> Notice: File %s not found\n", baseName);
 		#endif
-		return NULL;
+		chain = NULL;
 	}
 	else 
 	{
@@ -191,19 +195,29 @@ link *readChain(savesFile save)
 			}
 		}
 	}
-		
-	//Undoing last action in while loop
-	//linkPtr = prevLinkPtr;
-	//freeLink(linkPtr -> nextLinkPtr);
-	
-	#ifdef DEBUG
-	if(elementsBufferPtr == NULL) 
-		printf("<readChain> Notice: Empty file, null return\n");
-	#endif
 	
 	fclose(filePtr);
 	
-	return chain[0];
+	//Add a constant data in the beginning of the chain
+	
+	if(save.storedElements == _placeType)
+	{
+		link *outSide = newLink("readChain/outSide", _placeType, true);
+		setLinkId(outSide, 1);
+		
+		//[EDIT_STRUCTURE]
+		strcpy(outSide -> elementPtr -> placeType_.name, "Outside");
+		
+		if(chain != NULL)
+			outSide -> nextLinkPtr = chain[0];
+		else
+			chain = safeMalloc(sizeof(link **), "readChain/constant data");
+		chain[0] = outSide;
+	}
+	
+	if(chain != NULL)
+		return chain[0];
+	else return NULL;
 }
 
 savesFile *setGameFiles(link *simulationLinkPtr)
@@ -248,4 +262,6 @@ char *baseName(savesFile saves)
 	
 	strcat(baseName, saves.path);
 	strcat(baseName, saves.file);
+	
+	return baseName;
 }
