@@ -254,7 +254,7 @@ long int getLinkId(link* linkPtr)
 
 link *getLinkById(structId _structId, long int Id, link *currentSimPtr)
 {
-	if(id != nullId)
+	if(Id != nullId)
 	{
 		//Fetches for link
 		savesFile *dataFile = setGameFiles(currentSimPtr);
@@ -478,6 +478,19 @@ int grabInt(char *instructions)
 	return ret;
 }
 
+float grabFloat(char *instructions)
+{
+	float ret = 0;
+	
+	if(instructions != NULL)
+		printf(instructions);
+		
+	scanf("%f", &ret);
+	getchar();
+	
+	return ret;
+}
+
 stats grabStats(char *instructions)
 {
 	stats recipient;
@@ -492,7 +505,7 @@ stats grabStats(char *instructions)
 	recipient.hygiene = grabInt("hygiene: ");
 	recipient.mentalHealth = grabInt("mentalHealth: ");
 	recipient.stamina = grabInt("stamina: ");
-	recipient.money = grabInt("money: ");
+	recipient.money = grabFloat("money: ");
 	
 	return recipient;
 }
@@ -503,7 +516,8 @@ link grabLink(structId structType, link *currentSimPtr)
 		link_,
 		*displayedChain = NULL,
 		*chosenLinkPtr = NULL,
-		*joinedLinkPtr = NULL;
+		*joinedLinkPtr = NULL,
+		*joinedLinkPtr2 = NULL;
 	memset(&link_, 0, sizeof(link));
 	link_.structType = structType;
 	link_.elementPtr = newElement("grabLink");
@@ -543,7 +557,7 @@ link grabLink(structId structType, link *currentSimPtr)
 			
 			//eventType
 			printf("\n\t[event]Event type: ");
-			recipient -> event_.receiverId = grabId(_eventType, currentSimPtr, false);
+			recipient -> event_.eventTypeId = grabId(_eventType, currentSimPtr, false);
 			
 			//person
 			printf("\n\tReceiver: ");
@@ -551,10 +565,23 @@ link grabLink(structId structType, link *currentSimPtr)
 			
 			//#TODO wtf I'm gettin tired joinedLinkPtr = getJoinedLink(getLinkById(_item, ))
 			//Does a joined structure (eventType) has a non-nullId value for join to itemType ? (means if I need an item of this event)
-			if(joinId != nullId)
+			
+			//Fetch an item ptr from event
+			joinedLinkPtr = getLinkById(_eventType, recipient -> event_.eventTypeId, currentSimPtr);
+			if(joinedLinkPtr -> elementPtr -> eventType_.requiredItemTypeId != nullId)
 			{
-				
+				joinedLinkPtr2 = getLinkById(_itemType, joinedLinkPtr -> elementPtr -> eventType_.requiredItemTypeId, currentSimPtr);
+				recipient -> event_.itemId = grabId(_item, currentSimPtr, false);
 			}
+			
+			//Fetch a place ptr from event
+			joinedLinkPtr = getLinkById(_eventType, recipient -> event_.eventTypeId, currentSimPtr);
+			if(joinedLinkPtr -> elementPtr -> eventType_.requiredPlaceTypeId != nullId)
+			{
+				joinedLinkPtr2 = getLinkById(_placeType, joinedLinkPtr -> elementPtr -> eventType_.requiredPlaceTypeId, currentSimPtr);
+				recipient -> event_.placeId = grabId(_place, currentSimPtr, false);
+			}
+			
 			break;
 		
 		case _eventType:
@@ -794,7 +821,7 @@ void displayStats(stats toDisplay, char *tagging)
 	//[CREATE_STATS]
 	printf
 	(
-		"[%s]\n\tHealth: %d\n\tHunger: %d\n\tHygiene: %d\n\tmentalHealth: %d\n\tStamina: %d\n\tmoney: %d\n",
+		"[%s]\n\tHealth: %d\n\tHunger: %d\n\tHygiene: %d\n\tmentalHealth: %d\n\tStamina: %d\n\tmoney: %.2f\n",
 		tagging,
 		toDisplay.health,
 		toDisplay.hunger,

@@ -10,7 +10,9 @@ typedef struct location
 
 typedef struct stats
 {
-	int health, mentalHealth, hunger, hygiene, stamina, money;
+	int health, mentalHealth, hunger, hygiene, stamina;
+	float money;
+	bool sick;
 }stats;
 
 //System enum: Created to know structures [CREATE_STRUCTURE]
@@ -56,6 +58,8 @@ typedef struct item
 		locationPlaceId,
 		itemTypeId,
 		usedCount;
+	
+	bool usedByEvent;
 	
 	location loc;
 }item;
