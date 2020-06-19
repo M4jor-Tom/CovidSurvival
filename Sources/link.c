@@ -141,7 +141,13 @@ link* insertLink(link* headLinkPtr, link* toInsertLinkPtr)
 		lastLinkPtr -> nextLinkPtr = toInsertLinkPtr;
 		
 		//Identifying the link by Id (auto increment)
-		setLinkId(toInsertLinkPtr, getLinkId(lastLinkPtr) + 1);
+		//Begining the autoincrement late to match hard and soft data easier (new hard data / range deleting below hardcodedMaxId)
+		unsigned int 
+			lastId = getLinkId(lastLinkPtr),
+			nextId = lastId > hardcodedMaxId
+				? lastId + 1
+				: hardcodedMaxId;
+		setLinkId(toInsertLinkPtr, nextId + 1);
 		return headLinkPtr;
 	}
 }

@@ -68,42 +68,9 @@ savesFile
 
 link *ommitHardcoded(link *chain, savesFile save)
 {
-	if (save.storedElements == _placeType)
-	{
-		//Outside
-		chain = deleteLink(chain, 1);
-
-		//Market
-		chain = deleteLink(chain, 2);
-	}
-	else if (save.storedElements == _eventType)
-	{
-		//Get out
-		chain = deleteLink(chain, 1);
-
-		//Shop
-		chain = deleteLink(chain, 2);
-
-		//Police control
-		chain = deleteLink(chain, 3);
-	}
-	else if (save.storedElements == _itemType)
-	{
-		//food
-		chain = deleteLink(chain, 1);
-
-		//Certificate
-		chain = deleteLink(chain, 2);
-	}
-	else if (save.storedElements == _place)
-	{
-		//House
-		chain = deleteLink(chain, 1);
-
-		//Store
-		chain = deleteLink(chain, 2);
-	}
-
+	int i;
+	for(i = 0; i < hardcodedMaxId; i++)
+		chain = deleteLink(chain, i);
 	return chain;
 }
 
@@ -131,7 +98,8 @@ link *getHardcoded(savesFile save)
 			},
 			house =
 			{
-				.name = "House"
+				.name = "House",
+				.livingPlace = true
 			};
 
 		//Chaining

@@ -27,6 +27,7 @@
 
 #define wordLength 40
 #define smallWordLength 20
+#define hardcodedMaxId 100
 
 #define MAN 0
 #define WOMAN 1
