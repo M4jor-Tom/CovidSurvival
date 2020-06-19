@@ -18,3 +18,9 @@ Sources/main.o
 ressources/
 
 saves/
+
+.vs/
+
+CovidSurvival/
+
+*.sln

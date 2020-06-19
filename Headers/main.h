@@ -1,5 +1,13 @@
 #pragma once
 
+#ifdef _MSC_VER
+
+	#define getch() _getch()
+	#define getche() _getche()
+
+#endif
+
+
 #define DEBUG
 
 #define nullId -1
@@ -27,6 +35,7 @@
 #define elements 3
 
 
+#include "dirent.h"
 #include "generic.h"
 #include "structures.h"
 #include "link.h"
