@@ -11,7 +11,7 @@ void elementsMenu(char *optionsLabel);
 //Displays a menu
 int menu(int menuType, char *optionsLabel);
 
-//Game setup function. Grabs information from player such as chosen simulation or character for new simulations
+//Game setup function. Grabs information from player such as chosen simulation or character for new simulations.
 link **setupGame();
 
 //One occurence of the simulation returns false when the game ends

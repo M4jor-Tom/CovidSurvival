@@ -72,7 +72,16 @@ bool writeChain(link* chain, savesFile save)
 	
 	//Delete constant data before save (wich is hardcoded)
 	if(save.storedElements == _placeType)
+		//Delete 'Outside' before writing
 		chain = deleteLink(chain, 1);
+	else if (save.storedElements == _eventType)
+	{
+		//Delete 'Get out' before writing
+		chain = deleteLink(chain, 1);
+
+		//Delete 'Shop' before writing
+		chain = deleteLink(chain, 2);
+	}
 	
 	#ifdef DEBUG
 	if
@@ -204,20 +213,63 @@ link *readChain(savesFile save)
 		fclose(filePtr);
 	
 	//Add a constant data in the beginning of the chain
-	
+	link* hardcodeHead = NULL;
 	if(save.storedElements == _placeType)
 	{
 		link *outSide = newLink("readChain/outSide", _placeType, true);
+		hardcodeHead = outSide;
 		setLinkId(outSide, 1);
 		
 		//[EDIT_STRUCTURE]
 		strcpy(outSide -> elementPtr -> placeType_.name, "Outside");
+	}
+	else if(save.storedElements == _eventType)
+	{
+		link
+			*getOutPtr = newLink("readChain/getOut", _eventType, true),
+			*shopPtr = newLink("readChain/shop", _eventType, true);
+		hardcodeHead = getOutPtr;
+
+		//Initialization
+		eventType getOut, shop;/*
+		memset(&getOut, 0, sizeof(eventType));
+		memset(&shop, 0, sizeof(eventType));*/
+
+		//Chaining
+		getOutPtr -> nextLinkPtr = shopPtr;
+
+		//Given values
+		getOut = (eventType)
+		{
+			.name = "Get out",
+			.requiredItemTypeId = nullId,
+			.requiredPlaceTypeId = nullId
+		};
 		
-		if(chain != NULL)
-			outSide -> nextLinkPtr = chain[0];
+		shop = (eventType)
+		{
+			.name = "Shop",
+			.requiredItemTypeId = nullId,
+			.requiredPlaceTypeId = nullId
+		};
+
+		//Pass values
+		getOutPtr->elementPtr->eventType_ = getOut;
+		shopPtr->elementPtr->eventType_ = shop;
+
+		//Setting Ids
+		setLinkId(getOutPtr, 1);
+		setLinkId(shopPtr, 2);
+	}
+
+	if (hardcodeHead != NULL)
+	{
+		if (chain != NULL)
+			//First link is alone
+			lastLink(hardcodeHead) -> nextLinkPtr = chain[0];
 		else
-			chain = safeMalloc(sizeof(link **), "readChain/constant data");
-		chain[0] = outSide;
+			chain = safeMalloc(sizeof(link**), "readChain/hardcoded data");
+		chain[0] = hardcodeHead;
 	}
 	
 	if(chain != NULL)

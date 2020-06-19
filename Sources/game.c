@@ -149,15 +149,24 @@ bool playGame(link **gameChains)
 	
 	link *newEvent = newLink("newEvent", _event, false);
 	*newEvent = grabLink(_event, gameChains[_simulation]);
+	gameChains[_event] = insertEvent(gameChains[_event], newEvent);
 	
 	system("cls");
 	printf("Game data:\n");
 	int i;
-	for(i = 0; i < lastStructId; i++)
+	savesFile *gameFile = setGameFiles(gameChains[_simulation]);
+	for (i = 0; i < lastStructId; i++)
+	{
 		displayChain(gameChains[i], gameChains[_simulation]);
-	
-	
-	gameChains[_event] = insertEvent(gameChains[_event], newEvent);
+		if (&gameFile[i] != NULL)
+			writeChain(gameChains[i], gameFile[i]);
+
+		#ifdef DEBUG
+			else printf("<playGame> Warning: Can't save structId %d\n", i);
+		#endif
+	}
+
+	free(gameFile);
 	
 	getch();
 	return keepPlaying;
@@ -177,6 +186,8 @@ link* insertEvent(link* chain, link* eventLinkPtr)
 {
 	if(eventLinkPtr != NULL && eventLinkPtr -> structType == _event)
 	{
+		setLinkId(eventLinkPtr, getLinkId(higherId(chain)) + 1);
+
 		link
 			*nextFromNewLinkPtr = chain,
 			*previousLinkPtr = NULL,

@@ -43,6 +43,9 @@ long int getElementId(element *elementPtr, structId type);
 //Fetches a link ptr from informations
 link *getLinkById(structId _structId, long int Id, link *currentSimPtr);
 
+//Fetches for the highest Id owner in a chain
+link* higherId(link* chain);
+
 //Returns a link's ptr from a chain within wich an Id's one has been searched. Returns NULL if Id doesn't exists
 link *chain_search(link *chain, unsigned int ID);
 

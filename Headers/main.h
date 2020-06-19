@@ -15,6 +15,7 @@
 #define SECONDS_PER_MINUTE 60
 #define SECONDS_PER_HOUR 3600
 #define SECONDS_PER_DAY 86400
+#define SECONDS_PER_WEEK 604800
 
 
 //Needs files conversion if changes

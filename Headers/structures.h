@@ -10,9 +10,9 @@ typedef struct location
 
 typedef struct stats
 {
-	int health, mentalHealth, hunger, hygiene, stamina;
+	int health, mentalHealth, hunger, hygiene, stamina, karma;
 	float money;
-	bool sick;
+	bool coronaVirus;
 }stats;
 
 //System enum: Created to know structures [CREATE_STRUCTURE]

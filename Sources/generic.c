@@ -173,9 +173,14 @@ unsigned int secondsTo(char *returnType, unsigned int duration_s)
 	unsigned int ret = 0;
 	
 	//strToLower(returnType);
-	
-	if(!strcmp(returnType, "day") || !strcmp(returnType, "days"))
+
+	if (!strcmp(returnType, "week") || !strcmp(returnType, "week"))
 	{
+		ret = duration_s / SECONDS_PER_WEEK;
+	}
+	else if(!strcmp(returnType, "day") || !strcmp(returnType, "days"))
+	{
+		duration_s = duration_s % SECONDS_PER_WEEK;
 		ret = duration_s / SECONDS_PER_DAY;
 	}
 	else if(!strcmp(returnType, "hour") || !strcmp(returnType, "hours"))

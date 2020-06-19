@@ -249,9 +249,20 @@ long int getElementId(element* elementPtr, structId type)
 
 long int getLinkId(link* linkPtr)
 {
-	if(linkPtr -> ID == nullId)
-		linkPtr -> ID = getElementId(linkPtr -> elementPtr, linkPtr -> structType);
-	return linkPtr -> ID;
+	if (linkPtr != NULL)
+	{
+		if(linkPtr -> ID == nullId)
+			linkPtr -> ID = getElementId(linkPtr -> elementPtr, linkPtr -> structType);
+		return linkPtr -> ID;
+	}
+	else
+	{
+		#ifdef DEBUG
+			printf("<getLinkPtr> Notice: NULL link ptr, returning 0\n");
+		#endif
+
+		return 0;
+	}
 }
 
 link *getLinkById(structId _structId, long int Id, link *currentSimPtr)
@@ -269,7 +280,23 @@ link *getLinkById(structId _structId, long int Id, link *currentSimPtr)
 	else return NULL;
 }
 
-link* chain_search(link* chain, unsigned int ID)
+link *higherId(link *chain)
+{
+	if (chain != NULL)
+	{
+		link* remainingChainHiestId = higherId(chain->nextLinkPtr);
+
+		if (remainingChainHiestId == NULL)
+			return chain;
+		else
+			return getLinkId(remainingChainHiestId) > getLinkId(chain)
+				? remainingChainHiestId
+				: chain;
+	}
+	else return NULL;
+}
+
+link *chain_search(link* chain, unsigned int ID)
 {
 	while(chain != NULL)
 	{
@@ -507,7 +534,13 @@ stats grabStats(char *instructions)
 	recipient.hygiene = grabInt("hygiene: ");
 	recipient.mentalHealth = grabInt("mentalHealth: ");
 	recipient.stamina = grabInt("stamina: ");
+	recipient.karma = grabInt("karma: ");
 	recipient.money = grabFloat("money: ");
+
+	printf("CoronaVirus (y/else): ");
+	recipient.coronaVirus = getch() == 'y'
+		? true
+		: false;
 	
 	return recipient;
 }
@@ -558,7 +591,7 @@ link grabLink(structId structType, link *currentSimPtr)
 			recipient -> event_.transmitterId = 1;
 			
 			//eventType
-			printf("\n\t[event]Event type: ");
+			printf("\n[event]Event type: ");
 			recipient -> event_.eventTypeId = grabId(_eventType, currentSimPtr, false);
 			
 			//person
@@ -583,6 +616,8 @@ link grabLink(structId structType, link *currentSimPtr)
 				joinedLinkPtr2 = getLinkById(_placeType, joinedLinkPtr -> elementPtr -> eventType_.requiredPlaceTypeId, currentSimPtr);
 				recipient -> event_.placeId = grabId(_place, currentSimPtr, false);
 			}
+
+			recipient -> event_.eventTime = grabInt("Happening time: ");
 			
 			break;
 		
@@ -823,14 +858,18 @@ void displayStats(stats toDisplay, char *tagging)
 	//[CREATE_STATS]
 	printf
 	(
-		"[%s]\n\tHealth: %d\n\tHunger: %d\n\tHygiene: %d\n\tmentalHealth: %d\n\tStamina: %d\n\tmoney: %.2f\n",
+		"[%s]\n\tHealth: %d\n\tHunger: %d\n\tHygiene: %d\n\tmentalHealth: %d\n\tStamina: %d\n\tmoney: %.2f\n\tKarma: %d%s\n",
 		tagging,
 		toDisplay.health,
 		toDisplay.hunger,
 		toDisplay.hygiene,
 		toDisplay.mentalHealth,
 		toDisplay.stamina,
-		toDisplay.money
+		toDisplay.money,
+		toDisplay.karma,
+		toDisplay.coronaVirus
+			? "\n\tCoronavirus"
+			: ""
 	);
 	
 	if(mustFreeTagging)
@@ -849,9 +888,15 @@ void displayLink(link toDisplay, link *currentSimPtr)
 		link 
 			*joinedLinkPtr = NULL,
 			*joinedLinkPtr2 = NULL;
+
+		unsigned int time = 0;
 		
 		//[PERSON_PARTICULARITY]
-		char genderToString[6] = "\0", smokerString[4] = "\0", remoteWorkingString[4] = "\0";
+		char
+			genderToString[6] = "\0",
+			smokerString[4] = "\0",
+			remoteWorkingString[4] = "\0",
+			weekDay[10] = "\0";
 		
 		//What to display ?
 		switch(toDisplay.structType)
@@ -864,7 +909,7 @@ void displayLink(link toDisplay, link *currentSimPtr)
 					elementPtr -> event_.ID
 				);
 				
-				//[JOIN] eventType
+				//[JOIN] event-eventType
 				joinedLinkPtr = getJoinedLink(&toDisplay, _eventType, currentSimPtr, 1);
 				if(joinedLinkPtr != NULL)
 				{
@@ -873,8 +918,52 @@ void displayLink(link toDisplay, link *currentSimPtr)
 						joinedLinkPtr -> elementPtr -> eventType_.name
 					);
 				}
+
+				time = elementPtr->event_.eventTime;
+				switch(secondsTo("day", time))
+				{
+					case 0:
+						strcpy(weekDay, "monday");
+						break;
+
+					case 1:
+						strcpy(weekDay, "tuesday");
+						break;
+
+					case 2:
+						strcpy(weekDay, "wednesday");
+						break;
+
+					case 3:
+						strcpy(weekDay, "thursday");
+						break;
+
+					case 4:
+						strcpy(weekDay, "friday");
+						break;
+
+					case 5:
+						strcpy(weekDay, "saturday");
+						break;
+
+					case 6:
+						strcpy(weekDay, "sunday");
+						break;
+
+					default:
+						strcpy(weekDay, "unknown");
+				}
+
+				printf(
+					"\n\tHappens on: Week %u, %s, at %u:%u:%u",
+					secondsTo("week", time),
+					weekDay,
+					secondsTo("hour", time),
+					secondsTo("minute", time),
+					secondsTo("second", time)
+				);
 				
-				//[JOIN] person
+				//[JOIN] event-person
 				joinedLinkPtr = getJoinedLink(&toDisplay, _person, currentSimPtr, 1);
 				if(joinedLinkPtr != NULL)
 				{
@@ -885,7 +974,7 @@ void displayLink(link toDisplay, link *currentSimPtr)
 					);
 				}
 				
-				//[JOIN] person
+				//[JOIN] event-person
 				joinedLinkPtr = getJoinedLink(&toDisplay, _person, currentSimPtr, 2);
 				if(joinedLinkPtr != NULL)
 				{
@@ -896,11 +985,11 @@ void displayLink(link toDisplay, link *currentSimPtr)
 					);
 				}
 				
-				//[JOIN] item
+				//[JOIN] event-item
 				joinedLinkPtr = getJoinedLink(&toDisplay, _item, currentSimPtr, 1);
 				if(joinedLinkPtr != NULL)
 				{
-					//[JOIN] itemType
+					//[JOIN] event-item-itemType
 					joinedLinkPtr2 = getJoinedLink(joinedLinkPtr, _itemType, currentSimPtr, 1);
 					printf(
 						"\n\tItem: %s (%u uses out of %u)",
@@ -910,11 +999,11 @@ void displayLink(link toDisplay, link *currentSimPtr)
 					);
 				}
 				
-				//[JOIN] place
+				//[JOIN] event-place
 				joinedLinkPtr = getJoinedLink(&toDisplay, _place, currentSimPtr, 1);
 				if(joinedLinkPtr != NULL)
 				{
-					//[JOIN] placeType
+					//[JOIN] event-place-placeType
 					joinedLinkPtr2 = getJoinedLink(joinedLinkPtr, _placeType, currentSimPtr, 1);
 					printf(
 						"\n\tLocation: %s (%s)",
