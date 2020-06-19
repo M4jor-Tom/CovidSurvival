@@ -112,8 +112,9 @@ typedef struct event
 		receiverId,
 		itemId,
 		placeId,
-		eventTypeId,
-		eventTime;
+		eventTypeId;
+
+	unsigned long int eventTime;
 }event;
 
 typedef struct simulation
