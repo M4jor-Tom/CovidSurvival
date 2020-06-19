@@ -279,7 +279,7 @@ link *getLinkById(structId _structId, long int Id, link *currentSimPtr)
 		savesFile *dataFile = setGameFiles(currentSimPtr);
 		link 
 			*chain = readChain(dataFile[_structId]),
-			*ret = chain_search(chain, (unsigned int)Id);
+			*ret = chain_search(chain, Id);
 		
 		return ret;
 	}
@@ -302,17 +302,18 @@ link *higherId(link *chain)
 	else return NULL;
 }
 
-link *chain_search(link* chain, unsigned int ID)
+link *chain_search(link* chain, long int ID)
 {
-	while(chain != NULL)
-	{
-		if(getLinkId(chain) == (long int)ID)
-			//If found
-			return chain;
+	if(ID != nullId)
+		while(chain != NULL)
+		{
+			if(getLinkId(chain) == ID)
+				//If found
+				return chain;
 			
-		//Next
-		chain = chain -> nextLinkPtr;
-	}
+			//Next
+			chain = chain -> nextLinkPtr;
+		}
 	
 	//Not found
 	return NULL;
@@ -813,7 +814,7 @@ link* grabChain(structId structType, link *currentSimPtr)
 link *selectLink(link *chain)
 {
 	link *chosenLinkPtr = NULL;
-	int idChoice = nullId;
+	long int idChoice = nullId;
 	
 	if(chain != NULL)
 	{
@@ -823,10 +824,10 @@ link *selectLink(link *chain)
 		do
 		{
 			//Getting choice's link ptr from Id
-			scanf("%d", &idChoice);
+			scanf("%ld", &idChoice);
 			getchar();
 			
-			chosenLinkPtr = chain_search(chain, (unsigned int)idChoice);
+			chosenLinkPtr = chain_search(chain, idChoice);
 		}while(chosenLinkPtr == NULL || idChoice == nullId);
 	}
 	else 
