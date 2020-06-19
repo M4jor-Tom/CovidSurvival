@@ -10,7 +10,7 @@ link* getHardcoded(savesFile save)
 		link
 			* outSidePtr = newLink("readChain/outSide", _placeType, true),
 			* storePtr = newLink("readChain/store", _placeType, true),
-			* housePtr = newLink("readChain/store", _placeType, true);
+			* housePtr = newLink("readChain/house", _placeType, true);
 		hardcodeHead = outSidePtr;
 
 		//Initialization
@@ -123,7 +123,7 @@ link* getHardcoded(savesFile save)
 	else if (save.storedElements == _place)
 	{
 		link
-			* outTherePtr = newLink("readChain/house", _place, true),
+			* outTherePtr = newLink("readChain/outThere", _place, true),
 			* housePtr = newLink("readChain/house", _place, true),
 			* storePtr = newLink("readChain/store", _place, true);
 		hardcodeHead = outTherePtr;

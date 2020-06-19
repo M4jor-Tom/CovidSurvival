@@ -46,8 +46,11 @@ link *getLinkById(structId _structId, long int Id, link *currentSimPtr);
 //Fetches for the highest Id owner in a chain
 link* higherId(link* chain);
 
+//Checks every specific joinId (to sortBy's structId) of chain's links (gameChain of chainType), and keep only the corresponding ones (to sortJoinId)
+link* sortChainByJoins(link **gameChains, structId chainType, structId sortBy, unsigned long int sortJoinId, unsigned short int joinIndex);
+
 //Returns a link's ptr from a chain within wich an Id's one has been searched. Returns NULL if Id doesn't exists
-link *chain_search(link *chain, unsigned int ID);
+link *chain_search(link *chain, long int ID);
 
 //Prints choices for the user to select an Id
 long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId);

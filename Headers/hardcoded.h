@@ -5,3 +5,9 @@ link* getHardcoded(savesFile save);
 
 //Gets rid of hardcoded data loaded within the RAM
 link* ommitHardcoded(link* chain, savesFile save);
+
+void getOut(link **gameChains);
+
+void shop(link **gameChains);
+
+void policeControl(link **gameChains);
