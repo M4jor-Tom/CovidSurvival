@@ -100,7 +100,9 @@ bool writeChain(link* chain, savesFile save)
 		#ifdef DEBUG
 		printf("<writeChain> Notice: Null chain, deleting file %s\n", baseName);
 		#endif
-		fclose(filePtr);
+		if(filePtr != NULL)
+			fclose(filePtr);
+
 		if(remove(baseName) == 0)
 		{
 			#ifdef DEBUG
@@ -198,7 +200,8 @@ link *readChain(savesFile save)
 		}
 	}
 	
-	fclose(filePtr);
+	if(filePtr != NULL)
+		fclose(filePtr);
 	
 	//Add a constant data in the beginning of the chain
 	

@@ -98,7 +98,7 @@ int main()
 												//freeLink(&newLinkPtr);
 												newLinkPtr = newLink("main/create element", elementChoice, false);
 												*newLinkPtr = grabLink(elementChoice, NULL);
-												
+
 												existingChain = insertLink(existingChain, newLinkPtr);
 												writeChain(existingChain, globalFile[elementChoice]);
 												

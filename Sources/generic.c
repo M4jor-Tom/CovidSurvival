@@ -5,7 +5,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "../Headers/dirent.h"
+#ifdef _MSC_VER
+	#include <direct.h>
+#endif
 
 #include "../Headers/main.h"
 
@@ -127,7 +129,7 @@ int mkSdir(char *path)
 		*folder = NULL,
 		existingPath[1024] = "\0", 
 		separator[2] = "/",
-		*_path = safeMalloc(sizeof(path), "mkSdir/path copy");
+		*_path = safeMalloc(sizeof(char) * (strlen(path) + 1), "mkSdir/path copy");
 	int ret = 0, sizeofExistingPath = 0;
 	DIR *dir_;
 	
@@ -145,7 +147,11 @@ int mkSdir(char *path)
 		else
 		{
 			//If it needs to be created
-			ret = mkdir(existingPath);
+			#ifdef _MSC_VER
+				ret = _mkdir(existingPath);
+			#else
+				ret = mkdir(existingPath);
+			#endif
 			
 			#ifdef DEBUG
 			if(ret != -1)
@@ -155,12 +161,10 @@ int mkSdir(char *path)
 			#endif
 		}
 		
-		
 		folder = strtok(NULL, separator);
 	}
-	
+
 	free(_path);
-	
 	return ret;
 }
 

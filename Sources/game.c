@@ -157,7 +157,7 @@ bool playGame(link **gameChains)
 		displayChain(gameChains[i], gameChains[_simulation]);
 	
 	
-	gameChains[_event] = insertLink(gameChains[_event], newEvent);
+	gameChains[_event] = insertEvent(gameChains[_event], newEvent);
 	
 	getch();
 	return keepPlaying;
@@ -171,4 +171,68 @@ void timeSet(link **gameChains, unsigned long int time)
 void happen(link **gameChains)
 {
 	unsigned long int time = gameChains[_simulation] -> elementPtr -> simulation_.simuledTime;
+}
+
+link* insertEvent(link* chain, link* eventLinkPtr)
+{
+	if(eventLinkPtr != NULL && eventLinkPtr -> structType == _event)
+	{
+		link
+			*nextFromNewLinkPtr = chain,
+			*previousLinkPtr = NULL,
+			*ret = NULL;
+		while (
+			nextFromNewLinkPtr != NULL
+			&&
+			eventLinkPtr->elementPtr->event_.eventTime >
+			nextFromNewLinkPtr->elementPtr->event_.eventTime
+		)
+		{
+			//While the current eventTime is bigger than the selected one and as long te selected one exists
+
+			//The ptr that could've been next is a past one
+			previousLinkPtr = nextFromNewLinkPtr;
+
+			//Go to the next one
+			nextFromNewLinkPtr = nextFromNewLinkPtr -> nextLinkPtr;
+		}
+
+		//Now, eventLink's eventTime is greater than nextFromNewLink's one, or there's no more nextFromNewLink.
+		//The new eventLink must be added after nextFromNewLinkPtr.
+
+		if(previousLinkPtr == NULL)
+		{
+			//If the new event must be first
+			ret = eventLinkPtr;
+
+			if (chain != NULL)
+				//... and not the last
+				ret -> nextLinkPtr = chain;
+		}
+		else
+		{
+			//If the new event must be in the middle or in last
+
+			//Chain header returned
+			ret = chain;
+
+			//eventLinkPtr insertion in the middle
+			previousLinkPtr -> nextLinkPtr = eventLinkPtr;
+			eventLinkPtr -> nextLinkPtr = nextFromNewLinkPtr;
+		}
+		return ret;
+	}
+	else
+	{
+		#ifdef DEBUG
+			//Error return and printing
+			printf("<insertEvent> Error: eventLinkPtr = %d", eventLinkPtr);
+			if (eventLinkPtr != NULL)
+				printf(", eventLinkPtr -> structType = %d", eventLinkPtr->structType);
+
+			printf("\n");
+		#endif
+
+		return NULL;
+	}
 }

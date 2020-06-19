@@ -10,11 +10,11 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "../Headers/dirent.h"
 #include <errno.h>
 #include <io.h> /* _findfirst and _findnext set errno iff they return -1 */
 #include <stdlib.h>
 #include <string.h>
+#include "../Headers/main.h"
 
 #ifdef __cplusplus
 extern "C"

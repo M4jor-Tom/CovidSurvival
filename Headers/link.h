@@ -25,7 +25,7 @@ link* lastLink(link* chain);
 //Deletes a link by Id and returns the list head (which can be different if the first link is the one deleted)
 link* deleteLink(link *chain, unsigned int Id);
 
-//Inserts a created link et the end of a chain
+//Inserts a created link at the end of a chain
 link* insertLink(link *headLinkPtr, link *toInsertLinkPtr);
 
 //Gives an Id to both link and corresponding element
