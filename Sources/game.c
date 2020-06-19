@@ -155,7 +155,7 @@ bool playGame(link **gameChains)
 	printf("Game data:\n");
 	int i;
 	savesFile *gameFile = setGameFiles(gameChains[_simulation]);
-	for (i = 0; i < lastStructId; i++)
+	for(i = 0; i < lastStructId; i++)
 	{
 		displayChain(gameChains[i], gameChains[_simulation]);
 		if (&gameFile[i] != NULL)
@@ -172,14 +172,132 @@ bool playGame(link **gameChains)
 	return keepPlaying;
 }
 
-void timeSet(link **gameChains, unsigned long int time)
+void setTime(link **gameChains, unsigned long int time)
 {
 	gameChains[_simulation] -> elementPtr -> simulation_.simuledTime = time;
 }
 
-void happen(link **gameChains)
+unsigned long int getTime(link **gameChains)
 {
-	unsigned long int time = gameChains[_simulation] -> elementPtr -> simulation_.simuledTime;
+	return gameChains[_simulation]->elementPtr->simulation_.simuledTime;;
+}
+
+unsigned long int getEventTime(link* event)
+{
+	return event -> elementPtr -> event_.eventTime;
+}
+
+link *getIncomingEvent(link **gameChains)
+{
+	if(gameChains != NULL && gameChains[_event] != NULL)
+	{
+		unsigned long int simTime = getTime(gameChains);
+		link
+			* eventsCursor = gameChains[_event];
+		while(eventsCursor != NULL)
+		{
+			if(eventsCursor->elementPtr->event_.eventTime > simTime)
+				//Found an event that's in the future
+				return eventsCursor;
+
+			eventsCursor = eventsCursor -> nextLinkPtr;
+		}
+		return NULL;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+unsigned long int getEventDuration(link *event, link **gameChains)
+{
+	if (gameChains != NULL)
+	{
+		//[JOIN] event-eventType
+		link* eventType_ = getJoinedLink(event, _eventType, gameChains[_simulation], 1);
+		unsigned long int duration = eventType_->elementPtr->eventType_.duration_s;
+		freeLink(&eventType_);
+		return duration;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+unsigned long int getEventEnd(link *event, link **gameChains)
+{
+	return event -> elementPtr -> event_.eventTime + getEventDuration(event, gameChains);
+}
+
+link *getHappeningEvent(link **gameChains)
+{
+	if(gameChains != NULL && gameChains[_event] != NULL)
+	{
+		unsigned long int simTime = getTime(gameChains);
+		link *eventsCursor = gameChains[_event];
+
+		while(
+			eventsCursor != NULL 
+			&& 
+			getEventEnd(eventsCursor, gameChains) < simTime
+		)
+		{
+			//While the event is in the past, pass it
+			eventsCursor = eventsCursor -> nextLinkPtr;
+		}
+
+		//Now eventsCursor points to an event that is ended in the future
+		//Les's know if it began
+
+		if(eventsCursor != NULL && eventsCursor -> elementPtr -> event_.eventTime < simTime)
+			return eventsCursor;
+	}
+	return NULL;
+}
+
+bool inChain(link *chain, link *linkPtr)
+{
+	bool found = false;
+	while(chain != NULL && found == false)
+	{
+		found = linkPtr == chain;
+
+		chain = chain -> nextLinkPtr;
+	}
+	return found;
+}
+
+void happenEvent(link **gameChains, link *event, bool forward)
+{
+	if(gameChains != NULL && gameChains[_event] != NULL)
+	{
+		//Process event's consequences
+
+
+		//Set time to event's end
+		setTime(gameChains, getEventEnd(event, gameChains));
+	}
+}
+
+void run(link **gameChains, unsigned long int nextTime, bool forward)
+{
+	link *nextEvent = getIncomingEvent(gameChains);
+	if(getEventTime(nextEvent) < nextTime)
+	{
+		//Skip time till it's next event
+		setTime(gameChains, getEventTime(nextEvent));
+
+		//Happen event (time will go to event's end)
+		happenEvent(gameChains, nextEvent, forward);
+
+		//Run next event (if there is)
+		run(gameChains, nextTime, forward);
+	}
+	else
+		//Set requested time (nothing happend since time has gone)
+		setTime(gameChains, nextTime);
 }
 
 link* insertEvent(link* chain, link* eventLinkPtr)

@@ -494,7 +494,7 @@ char **initParticularityLabels()
 }
 
 
-int grabInt(char *instructions)
+long long int grabInt(char *instructions)
 {
 	int ret = 0;
 	
@@ -617,7 +617,7 @@ link grabLink(structId structType, link *currentSimPtr)
 				recipient -> event_.placeId = grabId(_place, currentSimPtr, false);
 			}
 
-			recipient -> event_.eventTime = grabInt("Happening time: ");
+			recipient -> event_.eventTime = (unsigned long int)grabInt("Happening time: ");
 			
 			break;
 		
