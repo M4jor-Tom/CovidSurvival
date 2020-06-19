@@ -45,3 +45,4 @@
 #include "link.h"
 #include "filesManagement.h"
 #include "game.h"
+#include "hardcoded.h"
