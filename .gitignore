@@ -1,19 +1,9 @@
 
-CovidSurvival.dev
+*.dev
 
-CovidSurvival.exe
+*.exe
 
-CovidSurvival.layout
-
-Sources/filesManagement.o
-
-Sources/game.o
-
-Sources/generic.o
-
-Sources/link.o
-
-Sources/main.o
+*.layout
 
 ressources/
 
@@ -22,6 +12,8 @@ saves/
 .vs/
 
 CovidSurvival/
+
+Debug/
 
 *.sln
 
