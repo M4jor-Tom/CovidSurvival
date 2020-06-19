@@ -95,6 +95,14 @@ link *ommitHardcoded(link *chain, savesFile save)
 		//Certificate
 		chain = deleteLink(chain, 2);
 	}
+	else if (save.storedElements == _place)
+	{
+		//House
+		chain = deleteLink(chain, 1);
+
+		//Store
+		chain = deleteLink(chain, 2);
+	}
 
 	return chain;
 }
@@ -104,50 +112,75 @@ link *getHardcoded(savesFile save)
 	link *hardcodeHead = NULL;
 	if (save.storedElements == _placeType)
 	{
-		link* outSide = newLink("readChain/outSide", _placeType, true);
-		hardcodeHead = outSide;
-		setLinkId(outSide, 1);
+		link
+			* outSidePtr = newLink("readChain/outSide", _placeType, true),
+			* storePtr = newLink("readChain/store", _placeType, true),
+			* housePtr = newLink("readChain/store", _placeType, true);
+		hardcodeHead = outSidePtr;
 
-		//[EDIT_STRUCTURE]
-		strcpy(outSide->elementPtr->placeType_.name, "Outside");
+		//Initialization
+		placeType
+			outSide =
+			{
+				.name = "Outside"
+			},
+			store =
+			{
+				.name = "Store",
+				.marketPlace = true
+			},
+			house =
+			{
+				.name = "House"
+			};
+
+		//Chaining
+		outSidePtr->nextLinkPtr = storePtr;
+		storePtr->nextLinkPtr = housePtr;
+
+		//Pass values
+		outSidePtr->elementPtr->placeType_ = outSide;
+		storePtr->elementPtr->placeType_ = store;
+		housePtr->elementPtr->placeType_ = house;
+
+		//Setting Ids
+		setLinkId(outSidePtr, 1);
+		setLinkId(storePtr, 2);
+		setLinkId(housePtr, 3);
 	}
 	else if (save.storedElements == _eventType)
 	{
 		link
-			* getOutPtr = newLink("readChain/getOut", _eventType, true),
-			* shopPtr = newLink("readChain/shop", _eventType, true),
-			* policePtr = newLink("readChain/police", _eventType, true);
+			*getOutPtr = newLink("readChain/getOut", _eventType, true),
+			*shopPtr = newLink("readChain/shop", _eventType, true),
+			*policePtr = newLink("readChain/police", _eventType, true);
 		hardcodeHead = getOutPtr;
 
 		//Initialization
-		eventType getOut, shop, police;
+		eventType
+			getOut =
+			{
+				.name = "Get out",
+				.requiredItemTypeId = nullId,
+				.requiredPlaceTypeId = 1	//Outside
+			},
+			shop =
+			{
+				.name = "Shop",
+				.requiredItemTypeId = nullId,
+				.requiredPlaceTypeId = 2	//Store
+			},
+			police =
+			{
+				.name = "Police_control",
+				.requiredItemTypeId = 2,	//Exit_certificate
+				.requiredPlaceTypeId = nullId,
+				.selectableOnFailure = true
+			};
 
 		//Chaining
 		getOutPtr->nextLinkPtr = shopPtr;
 		shopPtr->nextLinkPtr = policePtr;
-
-		//Given values
-		getOut = (eventType)
-		{
-			.name = "Get out",
-			.requiredItemTypeId = nullId,
-			.requiredPlaceTypeId = nullId
-		};
-
-		shop = (eventType)
-		{
-			.name = "Shop",
-			.requiredItemTypeId = nullId,
-			.requiredPlaceTypeId = nullId
-		};
-
-		police = (eventType)
-		{
-			.name = "Police_control",
-			.requiredItemTypeId = 2,	//Exit_certificate
-			.requiredPlaceTypeId = nullId,
-			.selectableOnFailure = true
-		};
 
 		//Pass values
 		getOutPtr->elementPtr->eventType_ = getOut;
@@ -167,24 +200,21 @@ link *getHardcoded(savesFile save)
 		hardcodeHead = foodPtr;
 
 		//Initialization
-		itemType food, cert;
+		itemType
+			food =
+			{
+				.name = "Food",
+				.price = 5,
+				.usesCount = 1
+			},
+			cert =
+			{
+				.name = "Exit certificate",
+				.usesCount = 1
+			};
 
 		//Chaining
 		foodPtr->nextLinkPtr = certPtr;
-
-		//Given values
-		food = (itemType)
-		{
-			.name = "Food",
-			.price = 5,
-			.usesCount = 1
-		};
-
-		cert = (itemType)
-		{
-			.name = "Exit certificate",
-			.usesCount = 1
-		};
 
 		//Pass values
 		foodPtr->elementPtr->itemType_ = food;
@@ -193,6 +223,37 @@ link *getHardcoded(savesFile save)
 		//Setting Ids
 		setLinkId(foodPtr, 1);
 		setLinkId(certPtr, 2);
+	}
+	else if (save.storedElements == _place)
+	{
+		link
+			*housePtr = newLink("readChain/house", _place, true),
+			*storePtr = newLink("readChain/store", _place, true);
+		hardcodeHead = housePtr;
+
+		//Initialization
+		place
+			house =
+			{
+				.name = "Your home",
+				.placeTypeId = 3	//House
+			},
+			store =
+			{
+				.name = "A store",
+				.placeTypeId = 2	//Store
+			};
+
+		//Chaining
+		housePtr->nextLinkPtr = storePtr;
+
+		//Pass values
+		housePtr->elementPtr->place_ = house;
+		storePtr->elementPtr->place_ = store;
+
+		//Setting Ids
+		setLinkId(housePtr, 1);
+		setLinkId(storePtr, 2);
 	}
 
 	return hardcodeHead;

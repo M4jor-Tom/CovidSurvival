@@ -32,7 +32,7 @@ typedef struct savesFile
 
 typedef struct place
 {
-	unsigned int ID, typeId;
+	unsigned int ID, placeTypeId;
 	char name[wordLength];
 	location loc;
 }place;

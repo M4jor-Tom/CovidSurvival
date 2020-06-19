@@ -405,7 +405,7 @@ link *getJoinedLink(link *mainLink, structId selectedStruct, link *currentSimPtr
 				switch(selectedStruct)
 				{
 					case _placeType:
-						joinId = elementPtr -> place_.typeId;
+						joinId = elementPtr -> place_.placeTypeId;
 						break;
 				}
 				break;
