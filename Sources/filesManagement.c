@@ -66,22 +66,144 @@ savesFile
 		}
 	};
 
+link *ommitHardcoded(link *chain, savesFile save)
+{
+	if (save.storedElements == _placeType)
+	{
+		//Outside
+		chain = deleteLink(chain, 1);
+
+		//Market
+		chain = deleteLink(chain, 2);
+	}
+	else if (save.storedElements == _eventType)
+	{
+		//Get out
+		chain = deleteLink(chain, 1);
+
+		//Shop
+		chain = deleteLink(chain, 2);
+
+		//Police control
+		chain = deleteLink(chain, 3);
+	}
+	else if (save.storedElements == _itemType)
+	{
+		//food
+		chain = deleteLink(chain, 1);
+
+		//Certificate
+		chain = deleteLink(chain, 2);
+	}
+
+	return chain;
+}
+
+link *getHardcoded(savesFile save)
+{
+	link *hardcodeHead = NULL;
+	if (save.storedElements == _placeType)
+	{
+		link* outSide = newLink("readChain/outSide", _placeType, true);
+		hardcodeHead = outSide;
+		setLinkId(outSide, 1);
+
+		//[EDIT_STRUCTURE]
+		strcpy(outSide->elementPtr->placeType_.name, "Outside");
+	}
+	else if (save.storedElements == _eventType)
+	{
+		link
+			* getOutPtr = newLink("readChain/getOut", _eventType, true),
+			* shopPtr = newLink("readChain/shop", _eventType, true),
+			* policePtr = newLink("readChain/police", _eventType, true);
+		hardcodeHead = getOutPtr;
+
+		//Initialization
+		eventType getOut, shop, police;
+
+		//Chaining
+		getOutPtr->nextLinkPtr = shopPtr;
+		shopPtr->nextLinkPtr = policePtr;
+
+		//Given values
+		getOut = (eventType)
+		{
+			.name = "Get out",
+			.requiredItemTypeId = nullId,
+			.requiredPlaceTypeId = nullId
+		};
+
+		shop = (eventType)
+		{
+			.name = "Shop",
+			.requiredItemTypeId = nullId,
+			.requiredPlaceTypeId = nullId
+		};
+
+		police = (eventType)
+		{
+			.name = "Police_control",
+			.requiredItemTypeId = 2,	//Exit_certificate
+			.requiredPlaceTypeId = nullId,
+			.selectableOnFailure = true
+		};
+
+		//Pass values
+		getOutPtr->elementPtr->eventType_ = getOut;
+		shopPtr->elementPtr->eventType_ = shop;
+		policePtr->elementPtr->eventType_ = police;
+
+		//Setting Ids
+		setLinkId(getOutPtr, 1);
+		setLinkId(shopPtr, 2);
+		setLinkId(policePtr, 3);
+	}
+	else if (save.storedElements == _itemType)
+	{
+		link
+			* foodPtr = newLink("readChain/food", _itemType, true),
+			* certPtr = newLink("readChain/cert", _itemType, true);
+		hardcodeHead = foodPtr;
+
+		//Initialization
+		itemType food, cert;
+
+		//Chaining
+		foodPtr->nextLinkPtr = certPtr;
+
+		//Given values
+		food = (itemType)
+		{
+			.name = "Food",
+			.price = 5,
+			.usesCount = 1
+		};
+
+		cert = (itemType)
+		{
+			.name = "Exit certificate",
+			.usesCount = 1
+		};
+
+		//Pass values
+		foodPtr->elementPtr->itemType_ = food;
+		certPtr->elementPtr->itemType_ = cert;
+
+		//Setting Ids
+		setLinkId(foodPtr, 1);
+		setLinkId(certPtr, 2);
+	}
+
+	return hardcodeHead;
+}
+
 bool writeChain(link* chain, savesFile save)
 {
 	bool success = false;
 	
-	//Delete constant data before save (wich is hardcoded)
-	if(save.storedElements == _placeType)
-		//Delete 'Outside' before writing
-		chain = deleteLink(chain, 1);
-	else if (save.storedElements == _eventType)
-	{
-		//Delete 'Get out' before writing
-		chain = deleteLink(chain, 1);
-
-		//Delete 'Shop' before writing
-		chain = deleteLink(chain, 2);
-	}
+	//Delete hard data before save (wich is hardcoded) to avoid dobloons
+	chain = ommitHardcoded(chain, save);
 	
 	#ifdef DEBUG
 	if
@@ -151,7 +273,7 @@ link *readChain(savesFile save)
 	
 	if(filePtr == NULL)
 	{
-		#ifdef DEBUG
+		#ifdef DEBUG_NOTICE
 		printf("<readChain> Notice: File %s not found\n", baseName);
 		#endif
 		chain = NULL;
@@ -213,56 +335,9 @@ link *readChain(savesFile save)
 		fclose(filePtr);
 	
 	//Add a constant data in the beginning of the chain
-	link* hardcodeHead = NULL;
-	if(save.storedElements == _placeType)
-	{
-		link *outSide = newLink("readChain/outSide", _placeType, true);
-		hardcodeHead = outSide;
-		setLinkId(outSide, 1);
-		
-		//[EDIT_STRUCTURE]
-		strcpy(outSide -> elementPtr -> placeType_.name, "Outside");
-	}
-	else if(save.storedElements == _eventType)
-	{
-		link
-			*getOutPtr = newLink("readChain/getOut", _eventType, true),
-			*shopPtr = newLink("readChain/shop", _eventType, true);
-		hardcodeHead = getOutPtr;
+	link *hardcodeHead = getHardcoded(save);
 
-		//Initialization
-		eventType getOut, shop;/*
-		memset(&getOut, 0, sizeof(eventType));
-		memset(&shop, 0, sizeof(eventType));*/
-
-		//Chaining
-		getOutPtr -> nextLinkPtr = shopPtr;
-
-		//Given values
-		getOut = (eventType)
-		{
-			.name = "Get out",
-			.requiredItemTypeId = nullId,
-			.requiredPlaceTypeId = nullId
-		};
-		
-		shop = (eventType)
-		{
-			.name = "Shop",
-			.requiredItemTypeId = nullId,
-			.requiredPlaceTypeId = nullId
-		};
-
-		//Pass values
-		getOutPtr->elementPtr->eventType_ = getOut;
-		shopPtr->elementPtr->eventType_ = shop;
-
-		//Setting Ids
-		setLinkId(getOutPtr, 1);
-		setLinkId(shopPtr, 2);
-	}
-
-	if (hardcodeHead != NULL)
+	if(hardcodeHead != NULL)
 	{
 		if (chain != NULL)
 			//First link is alone
