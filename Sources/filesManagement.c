@@ -140,7 +140,7 @@ link *getHardcoded(savesFile save)
 			},
 			police =
 			{
-				.name = "Police_control",
+				.name = "Police control",
 				.requiredItemTypeId = 2,	//Exit_certificate
 				.requiredPlaceTypeId = nullId,
 				.selectableOnFailure = true
@@ -195,12 +195,18 @@ link *getHardcoded(savesFile save)
 	else if (save.storedElements == _place)
 	{
 		link
+			*outTherePtr = newLink("readChain/house", _place, true),
 			*housePtr = newLink("readChain/house", _place, true),
 			*storePtr = newLink("readChain/store", _place, true);
-		hardcodeHead = housePtr;
+		hardcodeHead = outTherePtr;
 
 		//Initialization
 		place
+			outThere =
+			{
+				.name = "Out there",
+				.placeTypeId = 1	//outSide
+			},
 			house =
 			{
 				.name = "Your home",
@@ -213,15 +219,18 @@ link *getHardcoded(savesFile save)
 			};
 
 		//Chaining
+		outTherePtr->nextLinkPtr = housePtr;
 		housePtr->nextLinkPtr = storePtr;
 
 		//Pass values
+		outTherePtr->elementPtr->place_ = outThere;
 		housePtr->elementPtr->place_ = house;
 		storePtr->elementPtr->place_ = store;
 
 		//Setting Ids
-		setLinkId(housePtr, 1);
-		setLinkId(storePtr, 2);
+		setLinkId(outTherePtr, 1);
+		setLinkId(housePtr, 2);
+		setLinkId(storePtr, 3);
 	}
 
 	return hardcodeHead;

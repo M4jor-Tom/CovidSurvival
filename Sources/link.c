@@ -129,7 +129,7 @@ link* insertLink(link* headLinkPtr, link* toInsertLinkPtr)
 	if(headLinkPtr == NULL)
 	{
 		//Null list
-		setLinkId(toInsertLinkPtr, 1);
+		setLinkId(toInsertLinkPtr, hardcodedMaxId + 1);
 		return toInsertLinkPtr;
 	}
 	else
@@ -263,8 +263,8 @@ long int getLinkId(link* linkPtr)
 	}
 	else
 	{
-		#ifdef DEBUG
-			printf("<getLinkPtr> Notice: NULL link ptr, returning 0\n");
+		#ifdef DEBUG_NOTICE
+			printf("<getLinkId> Notice: NULL link ptr, returning 0\n");
 		#endif
 
 		return 0;
@@ -594,7 +594,7 @@ link grabLink(structId structType, link *currentSimPtr)
 			
 		case _event:
 			//On part du principe que le joueur à un Id de 1
-			recipient -> event_.transmitterId = 1;
+			recipient -> event_.transmitterId = playerId;
 			
 			//eventType
 			printf("\n[event]Event type: ");

@@ -126,7 +126,7 @@ link **setupGame()
 		printf("Design your character:\n");
 		gameChains[_person] = newLink("setupGame/no simulation found/create character", _person, true);
 		*gameChains[_person] = grabLink(_person, NULL);
-		setLinkId(gameChains[_person], 1);
+		setLinkId(gameChains[_person], hardcodedMaxId + 1);
 		
 		//Save created character
 		writeChain(gameChains[_person], gameFile[_person]);
@@ -149,8 +149,14 @@ bool playGame(link **gameChains)
 	
 	link *newEvent = newLink("newEvent", _event, false);
 	*newEvent = grabLink(_event, gameChains[_simulation]);
-	gameChains[_event] = insertEvent(gameChains[_event], newEvent);
-	
+
+	//Event schedulement
+	bool eventInserted = false;
+	gameChains[_event] = insertEvent(gameChains, gameChains[_event], newEvent, &eventInserted);
+	printf("[i]Event %s\n\n->\n", eventInserted ? "scheduled" : "unschedulable");
+	getch();
+
+	//Game data display
 	system("cls");
 	printf("Game data:\n");
 	int i;
@@ -300,11 +306,20 @@ void run(link **gameChains, unsigned long int nextTime, bool forward)
 		setTime(gameChains, nextTime);
 }
 
-link* insertEvent(link* chain, link* eventLinkPtr)
+link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *couldInsert)
 {
+	if (couldInsert != NULL)
+		*couldInsert = false;
+
 	if(eventLinkPtr != NULL && eventLinkPtr -> structType == _event)
 	{
-		setLinkId(eventLinkPtr, getLinkId(higherId(chain)) + 1);
+		unsigned int
+			lastId = getLinkId(higherId(chain)),
+			newId = lastId > hardcodedMaxId
+				? lastId
+				: hardcodedMaxId;
+		
+		setLinkId(eventLinkPtr, newId + 1);
 
 		link
 			*nextFromNewLinkPtr = chain,
@@ -332,11 +347,30 @@ link* insertEvent(link* chain, link* eventLinkPtr)
 		if(previousLinkPtr == NULL)
 		{
 			//If the new event must be first
-			ret = eventLinkPtr;
+			if (chain == NULL)
+			{
+				ret = eventLinkPtr;
 
-			if (chain != NULL)
-				//... and not the last
-				ret -> nextLinkPtr = chain;
+				if (couldInsert != NULL)
+					*couldInsert = true;
+			}
+			else if(getEventEnd(eventLinkPtr, gameChains) < getEventTime(chain))
+			{
+				//[SCHEDULABLE]If the end of the event we want to schedule is BEFORE the begining of the next one, insert.
+				ret = eventLinkPtr;
+				
+				if (chain != NULL)
+					//... and not the last
+					ret->nextLinkPtr = chain;
+
+				if(couldInsert != NULL)
+					*couldInsert = true;
+			}
+			else
+			{
+				//[UNSCHEDULABLE]If the event we want to schedule ends after the next one begins, don't insert
+				ret = chain;
+			}
 		}
 		else
 		{
@@ -348,6 +382,9 @@ link* insertEvent(link* chain, link* eventLinkPtr)
 			//eventLinkPtr insertion in the middle
 			previousLinkPtr -> nextLinkPtr = eventLinkPtr;
 			eventLinkPtr -> nextLinkPtr = nextFromNewLinkPtr;
+
+			if(couldInsert != NULL)
+				*couldInsert = true;
 		}
 		return ret;
 	}

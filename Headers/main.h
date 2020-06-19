@@ -9,9 +9,11 @@
 
 
 #define DEBUG
-//#define DEBUG_NOTICE
+#define DEBUG_NOTICE
 
+#define hardcodedMaxId 100
 #define nullId -1
+#define playerId (hardcodedMaxId + 1)
 
 #define SECONDS_PER_MINUTE 60
 #define SECONDS_PER_HOUR 3600
@@ -27,7 +29,6 @@
 
 #define wordLength 40
 #define smallWordLength 20
-#define hardcodedMaxId 100
 
 #define MAN 0
 #define WOMAN 1

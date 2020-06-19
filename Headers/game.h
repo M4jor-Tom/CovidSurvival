@@ -19,4 +19,4 @@ bool playGame(link **gameChains);
 
 //Like insertLink from link.h, inserts a link in a chain but only for events.
 //Will insert event in the right place so it's time-sorted
-link *insertEvent(link *chain, link *eventLinkPtr);
+link* insertEvent(link** gameChains, link* chain, link* eventLinkPtr, bool* couldInsert);
