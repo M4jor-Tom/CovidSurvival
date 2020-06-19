@@ -24,3 +24,5 @@ saves/
 CovidSurvival/
 
 *.sln
+
+*.o

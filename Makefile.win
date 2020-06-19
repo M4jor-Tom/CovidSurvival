@@ -4,8 +4,8 @@
 CPP      = g++.exe
 CC       = gcc.exe
 WINDRES  = windres.exe
-OBJ      = Sources/filesManagement.o Sources/game.o Sources/generic.o Sources/link.o Sources/main.o
-LINKOBJ  = Sources/filesManagement.o Sources/game.o Sources/generic.o Sources/link.o Sources/main.o
+OBJ      = Sources/dirent.o Sources/filesManagement.o Sources/game.o Sources/generic.o Sources/link.o Sources/main.o
+LINKOBJ  = Sources/dirent.o Sources/filesManagement.o Sources/game.o Sources/generic.o Sources/link.o Sources/main.o
 LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib" -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc
 INCS     = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
 CXXINCS  = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
@@ -23,6 +23,9 @@ clean: clean-custom
 
 $(BIN): $(OBJ)
 	$(CC) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+Sources/dirent.o: Sources/dirent.c
+	$(CC) -c Sources/dirent.c -o Sources/dirent.o $(CFLAGS)
 
 Sources/filesManagement.o: Sources/filesManagement.c
 	$(CC) -c Sources/filesManagement.c -o Sources/filesManagement.o $(CFLAGS)
