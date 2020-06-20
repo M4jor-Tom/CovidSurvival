@@ -23,6 +23,12 @@ int random(int min, int max);
 //Uses mkdir for each time there's a new shash in the string
 int mkSdir(char *path);
 
+long long int grabInt(char* instructions);
+
+float grabFloat(char* instructions);
+
+unsigned long long int grabDateTime(char* instructions);
+
 //Translates a duration in seconds to its corresponding time unity in an amount that can't be over its superior-unit increment
 //Returns 0 if this unit contains more seconds than inputed
 unsigned int secondsTo(char *returnType, unsigned int duration_s);

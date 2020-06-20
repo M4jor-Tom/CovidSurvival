@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <conio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -143,10 +144,107 @@ link **setupGame()
 	return gameChains;
 }
 
+void inGameActions(link** gameChains)
+{
+	system("cls");
+	printf("\n\tWhat do ?\n");
+	printf("\n\tWait-----------------1");
+	printf("\n\tDo actions-----------2");
+	printf("\n\tWatch informations---3\n\n");
+	int select = 0;
+	do
+	{
+		if (select == 0)
+			printf("\rSelect one of those: ");
+		else
+			printf("\rSelect one existing of those: ");
+
+
+		select = getche();
+	}while(select != '1' && select != '2' && select != '3' && select != '&' && select != 'é' && select != '"');
+
+	link
+		*eventChoice = NULL,
+		*newEvent = NULL,
+		*filteredChain = NULL;
+	element filter;
+	structId chainType;
+	bool couldInsert = false;
+
+	switch (select)
+	{
+		case '1':
+		case '&':
+			run(gameChains, grabDateTime("Till when do you want to wait ?"), true);
+			break;
+
+		case '2':
+		case 'é':
+			eventChoice = selectLink(gameChains[_eventType]);
+			newEvent = newLink("inGameActionsMenu/newEvent malloc", _event, false);
+			*newEvent = grabLink(_event, gameChains[_simulation]);
+			gameChains[_event] = insertEvent(gameChains, gameChains[_event], newEvent, &couldInsert);
+			printf("[i]Event %s\n\n->\n", couldInsert ? "scheduled" : "unschedulable");
+			break;
+
+		case '3':
+		case '"':
+			printf("\nWich information type do you want to watch ?\n1.Inventory\n2.Schedulements\n3.Inmates\n");
+			do
+			{
+				if (select == 0)
+					printf("\rSelect one of those: ");
+				else
+					printf("\rSelect one existing of those: ");
+
+				select = getche();
+				printf("\n");
+			}while(select != '1' && select != '2' && select != '3' && select != '&' && select != 'é' && select != '"');
+
+			switch (select)
+			{
+				case '1':
+				case '&':
+					chainType = _item;
+					filter = (element)
+					{
+						.item_.locationPersonId = playerId
+					};
+					break;
+
+				case '2':
+				case 'é':
+					chainType = _event;
+					filter = (element)
+					{
+						.event_.transmitterId = playerId
+					};
+					break;
+
+				case '3':
+				case '"':
+					chainType = _person;
+					filter = (element)
+					{
+						.person_.houseId = 2 // Your house
+					};
+					break;
+			}
+
+			filteredChain = filterChainBy(gameChains, chainType, filter);
+			displayChain(filteredChain, gameChains[_simulation]);
+			freeChain(&filteredChain, NULL);
+			printf("\n->\n");
+			getch();
+			break;
+	}
+}
+
 bool playGame(link **gameChains)
 {
 	bool keepPlaying = true;
-	
+	inGameActions(gameChains);
+	/*
 	link *newEvent = newLink("newEvent", _event, false);
 	*newEvent = grabLink(_event, gameChains[_simulation]);
 
@@ -164,7 +262,7 @@ bool playGame(link **gameChains)
 	for(i = 0; i < lastStructId; i++)
 	{
 		displayChain(gameChains[i], gameChains[_simulation]);
-		if (&gameFile[i] != NULL)
+		if(&gameFile[i] != NULL)
 			writeChain(gameChains[i], gameFile[i]);
 
 		#ifdef DEBUG
@@ -172,9 +270,7 @@ bool playGame(link **gameChains)
 		#endif
 	}
 
-	free(gameFile);
-	
-	getch();
+	free(gameFile);*/
 	return keepPlaying;
 }
 
@@ -228,7 +324,7 @@ unsigned long int getEventDuration(link *event, link **gameChains)
 	}
 	else
 	{
-		return NULL;
+		return 0;
 	}
 }
 
@@ -275,15 +371,31 @@ bool inChain(link *chain, link *linkPtr)
 	return found;
 }
 
-void happenEvent(link **gameChains, link *event, bool forward)
+void happenEvent(link **gameChains, link *eventLinkPtr, bool forward)
 {
-	if(gameChains != NULL && gameChains[_event] != NULL)
+	if(gameChains != NULL && gameChains[_event] != NULL && eventLinkPtr != NULL)
 	{
-		//Process event's consequences
+		link *eventTypePtr = getJoinedLink(eventLinkPtr, _eventType, gameChains[_simulation], 1);
 
+		//Process event's consequences
+		switch(getLinkId(eventTypePtr))
+		{
+			case getOutEventTypeId:
+				break;
+
+			case shopEventTypeId:
+				shop(gameChains, 3);
+				break;
+
+			case policeControlEventTypeId:
+				break;
+
+			default:
+				break;
+		}
 
 		//Set time to event's end
-		setTime(gameChains, getEventEnd(event, gameChains));
+		setTime(gameChains, getEventEnd(eventLinkPtr, gameChains));
 	}
 }
 

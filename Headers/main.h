@@ -38,6 +38,10 @@
 #define edition 2
 #define elements 3
 
+#define getOutEventTypeId 1
+#define shopEventTypeId 2
+#define policeControlEventTypeId 3
+
 
 #include "dirent.h"
 #include "generic.h"

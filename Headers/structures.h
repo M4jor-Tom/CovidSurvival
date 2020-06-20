@@ -55,11 +55,11 @@ typedef struct item
 	unsigned int 
 		ID,
 		proprietaryId,
+		locationPersonId,
 		locationPlaceId,
 		itemTypeId,
-		usedCount;
-	
-	bool usedByEvent;
+		usedCount,
+		usedByEventId;
 	
 	location loc;
 }item;

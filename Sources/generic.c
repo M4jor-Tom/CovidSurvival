@@ -5,9 +5,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#ifdef _MSC_VER
-	#include <direct.h>
-#endif
 
 #include "../Headers/main.h"
 
@@ -17,7 +14,7 @@ void *safeMalloc(int sizeof_, char *errorMessage)
 	if(malloc_ == NULL)
 	{
 		#ifdef DEBUG
-		printf("<safeMalloc> Error: %s\n", errorMessage);
+		printf("\n<safeMalloc> Error: %s\n", errorMessage);
 		#endif
 		return 0;
 	}
@@ -33,7 +30,7 @@ void *safeRealloc(void *ptr, int sizeof_, char *errorMessage)
 	if(realloc_ == NULL)
 	{
 		#ifdef DEBUG
-		printf("<safeRealloc> Error: %s\n", errorMessage);
+		printf("\n<safeRealloc> Error: %s\n", errorMessage);
 		#endif
 		return 0;
 	}
@@ -168,13 +165,79 @@ int mkSdir(char *path)
 	return ret;
 }
 
+long long int grabInt(char* instructions)
+{
+	int ret = 0;
+
+	if (instructions != NULL)
+		printf(instructions);
+
+	scanf("%d", &ret);
+	getchar();
+
+	return ret;
+}
+
+float grabFloat(char* instructions)
+{
+	float ret = 0;
+
+	if (instructions != NULL)
+		printf(instructions);
+
+	scanf("%f", &ret);
+	getchar();
+
+	return ret;
+}
+
+unsigned long long int grabDateTime(char* instructions)
+{
+	unsigned int weeks = 0, days = 0, hours = 0, minutes = 0, seconds = 0;
+	unsigned long long int ret = 0;
+
+	if(instructions != NULL)
+		printf(instructions);
+	
+	//Grabbing
+	printf("Week number: ");
+	scanf("%u", &weeks);
+	getchar();
+
+	printf("Day: \n\t1.Monday\n\t2.Tuesday\n\t3.Wednsesday\n\t4.Thursday\n\t5.Friday\n\t6.Saturday\n\t7.Sunday\n\n");
+	scanf("%u", &days);
+	getchar();
+
+	printf("Hours: ");
+	scanf("%u", &hours);
+	getchar();
+
+	printf("Minutes: ");
+	scanf("%u", &minutes);
+	getchar();
+
+	printf("Seconds: ");
+	scanf("%u", &seconds);
+	getchar();
+
+	//Conversion
+	ret = 
+		(unsigned long long int)seconds + 
+		(unsigned long long int)minutes * SECONDS_PER_MINUTE + 
+		(unsigned long long int)hours * SECONDS_PER_HOUR + 
+		(unsigned long long int)days * SECONDS_PER_DAY + 
+		(unsigned long long int)weeks * SECONDS_PER_WEEK;
+
+	return ret;
+}
+
 unsigned int secondsTo(char *returnType, unsigned int duration_s)
 {
 	unsigned int ret = 0;
 	
 	//strToLower(returnType);
 
-	if (!strcmp(returnType, "week") || !strcmp(returnType, "week"))
+	if (!strcmp(returnType, "week") || !strcmp(returnType, "weeks"))
 	{
 		ret = duration_s / SECONDS_PER_WEEK;
 	}

@@ -97,7 +97,7 @@ link* deleteLink(link *chain, unsigned int Id)
 	link *previousLinkPtr = NULL, *chainHeaderPtr;
 	bool deleted = false;
 	chainHeaderPtr = chain;
-	
+
 	while(chain != NULL && deleted == false)
 	{
 		//While chain's running and nothing's deleted
@@ -109,10 +109,9 @@ link* deleteLink(link *chain, unsigned int Id)
 				//If it's not the first to delete
 				previousLinkPtr -> nextLinkPtr = chain -> nextLinkPtr;
 			else
-				//If it's the frst to delete, returned header becomes the second one
+				//If it's the frst to delete, returned header becomes the second one 
 				chainHeaderPtr = chain -> nextLinkPtr;
 			
-			//freeLink(chain);
 			deleted = true;
 		}
 		
@@ -120,7 +119,7 @@ link* deleteLink(link *chain, unsigned int Id)
 		previousLinkPtr = chain;
 		chain = chain -> nextLinkPtr;
 	}
-	
+
 	return chainHeaderPtr;
 }
 
@@ -304,19 +303,26 @@ link *higherId(link *chain)
 
 link* chainCopy(link* toCopy)
 {
-	link* ret = NULL;
+	link *ret = NULL;
 	if(toCopy != NULL)
-		ret = newLink("chainCopy/ret init", toCopy->structType, true);
+	{
+		//First link to copy
+		ret = newLink("chainCopy/cursor init", toCopy->structType, true);
+		*ret = *toCopy;
+		*ret-> elementPtr = *toCopy -> elementPtr;
+
+		//Recurse
+		ret -> nextLinkPtr = chainCopy(toCopy->nextLinkPtr);
+	}/*
 	while(toCopy != NULL)
 	{
-		*ret = *toCopy;
-		*ret -> elementPtr = *toCopy -> elementPtr;
-		if (toCopy->nextLinkPtr != NULL)
-		{
-			ret -> nextLinkPtr = newLink("chainCopy/ret nextLink", toCopy->structType, true);
-			ret = ret->nextLinkPtr;
-		}
-	}
+		//Other links to copy
+		*cursor = *toCopy;
+		*cursor-> elementPtr = *toCopy -> elementPtr;
+
+		cursor-> nextLinkPtr = newLink("chainCopy/cursor nextLink", toCopy->structType, true);
+		cursor = cursor->nextLinkPtr;
+	}*/
 	return ret;
 }
 
@@ -329,10 +335,13 @@ link* filterChainBy(link** gameChains, structId chainType, element criterion)
 		#endif
 
 		//Copy of full data, to be filtered with criterion.
-			link
-				* filteredChain = chainCopy(gameChains[chainType]),
-				* head = filteredChain,
-				* previousLink = filteredChain;
+		link
+			* filteredChain = chainCopy(gameChains[chainType]),
+			* head = filteredChain,
+			* previousLink = filteredChain;
+
+		printf("FULL\n");
+		displayChain(filteredChain, gameChains[_simulation]);
 
 		while (filteredChain != NULL)
 		{
@@ -346,7 +355,12 @@ link* filterChainBy(link** gameChains, structId chainType, element criterion)
 						//[perf-flag]
 						filteredChain = deleteLink(previousLink, getLinkId(filteredChain));
 					}
-					else if (criterion.item_.proprietaryId != 0 && filtered.item_.proprietaryId != criterion.item_.proprietaryId)
+					else if(criterion.item_.proprietaryId != 0 && filtered.item_.proprietaryId != criterion.item_.proprietaryId)
+					{
+						//[perf-flag]
+						filteredChain = deleteLink(previousLink, getLinkId(filteredChain));
+					}
+					else if(criterion.item_.locationPersonId != 0 && filtered.item_.locationPersonId != criterion.item_.locationPersonId)
 					{
 						//[perf-flag]
 						filteredChain = deleteLink(previousLink, getLinkId(filteredChain));
@@ -356,14 +370,17 @@ link* filterChainBy(link** gameChains, structId chainType, element criterion)
 				default:
 					#ifdef DEBUG
 						if(!warned)
-							printf("<sortChainBy> Warning: unhandeled structId: %d, NULL returned\n", chainType);
+							printf("<filterChainBy> Warning: unhandeled structId: %d, NULL returned\n", chainType);
 						warned = true;
 					#endif
 			}
 			previousLink = filteredChain;
 			filteredChain = filteredChain->nextLinkPtr;
 		}
-		return filteredChain;
+
+		printf("FILTERED\n");
+		displayChain(head, gameChains[_simulation]);
+		return head;
 	}
 	else
 	{
@@ -494,7 +511,10 @@ link *getJoinedLink(link *mainLink, structId selectedStruct, link *currentSimPtr
 						break;
 						
 					case _person:
-						joinId = elementPtr -> item_.proprietaryId;
+						if (joinIndex <= 1)
+							joinId = elementPtr->item_.proprietaryId;
+						else
+							joinId = elementPtr->item_.locationPersonId;
 						break;
 						
 					case _place:
@@ -533,7 +553,7 @@ link *getJoinedLink(link *mainLink, structId selectedStruct, link *currentSimPtr
 		if(joinedLinkPtr != NULL)
 			ret = joinedLinkPtr;
 		else
-			printf("Warning: None of %s has ID = %d\n", dataFile[selectedStruct].name, joinId);
+			printf("\nWarning: None of %s has ID = %d\n", dataFile[selectedStruct].name, joinId);
 		
 		freeChain(&joiningChain, joinedLinkPtr);
 	}
@@ -567,33 +587,6 @@ char **initParticularityLabels()
 	strcpy(particularityLabels[cursor], "remoteWorker");
 	
 	return particularityLabels;
-}
-
-
-long long int grabInt(char *instructions)
-{
-	int ret = 0;
-	
-	if(instructions != NULL)
-		printf(instructions);
-		
-	scanf("%d", &ret);
-	getchar();
-	
-	return ret;
-}
-
-float grabFloat(char *instructions)
-{
-	float ret = 0;
-	
-	if(instructions != NULL)
-		printf(instructions);
-		
-	scanf("%f", &ret);
-	getchar();
-	
-	return ret;
 }
 
 stats grabStats(char *instructions)
@@ -721,18 +714,22 @@ link grabLink(structId structType, link *currentSimPtr)
 				//Choosing a link, getting its Id
 				chosenLinkPtr = selectLink(displayedChain);
 				
-				if(chosenLinkPtr != NULL)
+				if (chosenLinkPtr != NULL)
+				{
 					idChoice = chosenLinkPtr -> ID;
 				
-				//Getting itemType consumption
-				printf(
-					"%s consumption (?/%u) ",
-					chosenLinkPtr -> elementPtr -> itemType_.name,
-					chosenLinkPtr -> elementPtr -> itemType_.usesCount
-				);
+					//Getting itemType consumption
+					printf(
+						"%s consumption (?/%u) ",
+						chosenLinkPtr -> elementPtr -> itemType_.name,
+						chosenLinkPtr -> elementPtr -> itemType_.usesCount
+					);
+
+					scanf("%u", &recipient -> eventType_.itemTypeConsumption);
+					getchar();
+				}
+					
 				
-				scanf("%u", &recipient -> eventType_.itemTypeConsumption);
-				getchar();
 				
 				//Freeing this chain done for pure display
 				freeChain(&displayedChain, NULL);
@@ -1122,7 +1119,7 @@ void displayLink(link toDisplay, link *currentSimPtr)
 						displayStats(elementPtr -> eventType_.consequenceFor[cursor], tag);
 					}
 				
-				//[JOIN] itemType
+				//[JOIN] eventType-itemType
 				joinedLinkPtr = getJoinedLink(&toDisplay, _itemType, currentSimPtr, 1);
 				if(joinedLinkPtr != NULL)
 					printf(
@@ -1132,7 +1129,7 @@ void displayLink(link toDisplay, link *currentSimPtr)
 						joinedLinkPtr -> elementPtr -> itemType_.usesCount
 					);
 				
-				//[JOIN] placeType
+				//[JOIN] eventType-placeType
 				joinedLinkPtr = getJoinedLink(&toDisplay, _placeType, currentSimPtr, 1);
 				if(joinedLinkPtr != NULL)
 					printf(
@@ -1158,7 +1155,7 @@ void displayLink(link toDisplay, link *currentSimPtr)
 					elementPtr -> place_.name
 				);
 				
-				//[JOIN] placeType
+				//[JOIN] place-placeType
 				joinedLinkPtr = getJoinedLink(&toDisplay, _placeType, currentSimPtr, 1);
 				if(joinedLinkPtr != NULL)
 				{
@@ -1196,7 +1193,7 @@ void displayLink(link toDisplay, link *currentSimPtr)
 						elementPtr -> item_.ID
 					);
 					
-					//[JOIN] itemType
+					//[JOIN] item-itemType
 					joinedLinkPtr = getJoinedLink(&toDisplay, _itemType, currentSimPtr, 1);
 					if(joinedLinkPtr != NULL)
 						printf
@@ -1205,7 +1202,7 @@ void displayLink(link toDisplay, link *currentSimPtr)
 							joinedLinkPtr -> elementPtr -> itemType_.name
 						);
 					
-					//[JOIN] person
+					//[JOIN] item-person::proprietary
 					joinedLinkPtr = getJoinedLink(&toDisplay, _person, currentSimPtr, 1);
 					if(joinedLinkPtr != NULL)
 						printf
@@ -1214,8 +1211,19 @@ void displayLink(link toDisplay, link *currentSimPtr)
 							joinedLinkPtr -> elementPtr -> person_.firstName,
 							joinedLinkPtr -> elementPtr -> person_.lastName
 						);
+
+
+					//[JOIN] item-person::holder [!It's not necessary to use -joinedLinkPtr2- but it is to check if it's NULL later]
+					joinedLinkPtr2 = getJoinedLink(&toDisplay, _person, currentSimPtr, 2);
+					if(joinedLinkPtr2 != NULL)
+						printf
+						(
+							"\tHeld by: %s %s\n",
+							joinedLinkPtr2->elementPtr->person_.firstName,
+							joinedLinkPtr2->elementPtr->person_.lastName
+						);
 					
-					//[JOIN] place
+					//[JOIN] item-place
 					joinedLinkPtr = getJoinedLink(&toDisplay, _place, currentSimPtr, 1);
 					if(joinedLinkPtr != NULL)
 					{
@@ -1224,14 +1232,14 @@ void displayLink(link toDisplay, link *currentSimPtr)
 							"\tLocation: %s\n",
 							joinedLinkPtr -> elementPtr -> place_.name
 						);
-						displayLocation(joinedLinkPtr -> elementPtr -> place_.loc, "location ");
+						displayLocation(joinedLinkPtr -> elementPtr -> place_.loc, "location");
 					}
-					else
-						displayLocation(elementPtr -> item_.loc, "location ");
+					else if(joinedLinkPtr2 != NULL)
+						displayLocation(elementPtr -> item_.loc, "location");
 					
 					printf
 					(
-						"tTimes used: %u\n\n",
+						"\tTimes used: %u\n\n",
 						elementPtr -> item_.usedCount
 					);
 				}
