@@ -55,24 +55,24 @@ link* getHardcoded(savesFile save)
 		//Initialization
 		eventType
 			getOut =
-		{
-			.name = "Get out",
-			.requiredItemTypeId = nullId,
-			.requiredPlaceTypeId = 1	//Outside
-		},
+			{
+				.name = "Get out",
+				.requiredItemTypeId = nullId,
+				.requiredPlaceTypeId = 1	//Outside
+			},
 			shop =
-		{
-			.name = "Shop",
-			.requiredItemTypeId = nullId,
-			.requiredPlaceTypeId = 2	//Store
-		},
+			{
+				.name = "Shop",
+				.requiredItemTypeId = nullId,
+				.requiredPlaceTypeId = 2	//Store
+			},
 			police =
-		{
-			.name = "Police control",
-			.requiredItemTypeId = 2,	//Exit_certificate
-			.requiredPlaceTypeId = nullId,
-			.selectableOnFailure = true
-		};
+			{
+				.name = "Police control",
+				.requiredItemTypeId = 2,	//Exit_certificate
+				.requiredPlaceTypeId = nullId,
+				.selectableOnFailure = true
+			};
 
 		//Chaining
 		getOutPtr->nextLinkPtr = shopPtr;
@@ -98,16 +98,16 @@ link* getHardcoded(savesFile save)
 		//Initialization
 		itemType
 			food =
-		{
-			.name = "Food",
-			.price = 5,
-			.usesCount = 1
-		},
+			{
+				.name = "Food",
+				.price = 5,
+				.usesCount = 1
+			},
 			cert =
-		{
-			.name = "Exit certificate",
-			.usesCount = 1
-		};
+			{
+				.name = "Exit certificate",
+				.usesCount = 1
+			};
 
 		//Chaining
 		foodPtr->nextLinkPtr = certPtr;
@@ -131,20 +131,20 @@ link* getHardcoded(savesFile save)
 		//Initialization
 		place
 			outThere =
-		{
-			.name = "Out there",
-			.placeTypeId = 1	//outSide
-		},
+			{
+				.name = "Out there",
+				.placeTypeId = 1	//outSide
+			},
 			house =
-		{
-			.name = "Your home",
-			.placeTypeId = 3	//House
-		},
+			{
+				.name = "Your home",
+				.placeTypeId = 3	//House
+			},
 			store =
-		{
-			.name = "A store",
-			.placeTypeId = 2	//Store
-		};
+			{
+				.name = "Food store",
+				.placeTypeId = 2	//Store
+			};
 
 		//Chaining
 		outTherePtr->nextLinkPtr = housePtr;
@@ -160,6 +160,29 @@ link* getHardcoded(savesFile save)
 		setLinkId(housePtr, 2);
 		setLinkId(storePtr, 3);
 	}
+	else if (save.storedElements == _item)
+	{
+	link
+		* sFoodPtr = newLink("readChain/sFood", _item, true);
+		hardcodeHead = sFoodPtr;
+
+		//Initialization
+		item
+		sFood =
+		{
+			.itemTypeId = 1,	//Food
+			.locationPlaceId = 3	//Food store
+		};
+
+		//Chaining
+		//sFoodPtr->nextLinkPtr =
+
+		//Pass values
+		sFoodPtr->elementPtr->item_ = sFood;
+
+		//Setting Ids
+		setLinkId(sFoodPtr, 1);
+	}
 
 	return hardcodeHead;
 }
@@ -170,4 +193,35 @@ link* ommitHardcoded(link* chain, savesFile save)
 	for (i = 0; i < hardcodedMaxId; i++)
 		chain = deleteLink(chain, i);
 	return chain;
+}
+
+void shop(link** gameChains, unsigned long int shopId)
+{
+	if (gameChains != NULL && gameChains[_placeType] != NULL && gameChains[_place] != NULL)
+	{
+		//Get all game items
+		link* buyableItems = gameChains[_item];
+
+		//Get only items located at the store
+		element itemsFilter =
+		{
+			.item_.locationPlaceId = shopId
+		};
+
+		//[perf-flag] Get an Id from a chain
+		buyableItems = filterChainBy(gameChains, _item, itemsFilter);
+		unsigned long int chosenId = getLinkId(selectLink(buyableItems));
+		freeChain(&buyableItems, NULL);
+
+		person *playerPtr = &gameChains[_person] -> elementPtr -> person_;	//The first person in gameChains is the player
+		playerPtr->stats_.money;	//To compare with itemType's price before buying
+		
+		//The player buys the item
+		link *boughtItem = getLinkById(_item, chosenId, gameChains[_simulation]);
+		boughtItem->elementPtr->item_ = (item)
+		{
+			.proprietaryId = playerId,	//Because he bought it
+			.locationPlaceId = nullId	//And he took it on himself
+		};
+	}
 }

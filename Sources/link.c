@@ -302,6 +302,75 @@ link *higherId(link *chain)
 	else return NULL;
 }
 
+link* chainCopy(link* toCopy)
+{
+	link* ret = NULL;
+	if(toCopy != NULL)
+		ret = newLink("chainCopy/ret init", toCopy->structType, true);
+	while(toCopy != NULL)
+	{
+		*ret = *toCopy;
+		*ret -> elementPtr = *toCopy -> elementPtr;
+		if (toCopy->nextLinkPtr != NULL)
+		{
+			ret -> nextLinkPtr = newLink("chainCopy/ret nextLink", toCopy->structType, true);
+			ret = ret->nextLinkPtr;
+		}
+	}
+	return ret;
+}
+
+link* filterChainBy(link** gameChains, structId chainType, element criterion)
+{
+	if (gameChains != NULL && gameChains[chainType] != NULL)
+	{
+		#ifdef DEBUG
+			bool warned = false;
+		#endif
+
+		//Copy of full data, to be filtered with criterion.
+			link
+				* filteredChain = chainCopy(gameChains[chainType]),
+				* head = filteredChain,
+				* previousLink = filteredChain;
+
+		while (filteredChain != NULL)
+		{
+			element filtered = *filteredChain -> elementPtr;
+			switch (chainType)
+			{
+				//[CREATE_STRUCTURE] [EDIT_STRUCTURE]
+				case _item:
+					if(criterion.item_.itemTypeId != 0 && filtered.item_.itemTypeId != criterion.item_.itemTypeId)
+					{
+						//[perf-flag]
+						filteredChain = deleteLink(previousLink, getLinkId(filteredChain));
+					}
+					else if (criterion.item_.proprietaryId != 0 && filtered.item_.proprietaryId != criterion.item_.proprietaryId)
+					{
+						//[perf-flag]
+						filteredChain = deleteLink(previousLink, getLinkId(filteredChain));
+					}
+					break;
+
+				default:
+					#ifdef DEBUG
+						if(!warned)
+							printf("<sortChainBy> Warning: unhandeled structId: %d, NULL returned\n", chainType);
+						warned = true;
+					#endif
+			}
+			previousLink = filteredChain;
+			filteredChain = filteredChain->nextLinkPtr;
+		}
+		return filteredChain;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
 link *chain_search(link* chain, long int ID)
 {
 	if(ID != nullId)
