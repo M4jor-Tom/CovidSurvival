@@ -105,12 +105,16 @@ link* deleteLink(link *chain, unsigned int Id)
 		{
 			//Must delete
 			//Next link for who's deleted becomes it for the previous one
-			if(previousLinkPtr != NULL)
+			if (previousLinkPtr != NULL)
+			{
 				//If it's not the first to delete
-				previousLinkPtr -> nextLinkPtr = chain -> nextLinkPtr;
+				previousLinkPtr->nextLinkPtr = chain->nextLinkPtr;
+			}
 			else
+			{
 				//If it's the frst to delete, returned header becomes the second one 
-				chainHeaderPtr = chain -> nextLinkPtr;
+				chainHeaderPtr = chain->nextLinkPtr;
+			}
 			
 			deleted = true;
 		}
@@ -340,9 +344,6 @@ link* filterChainBy(link** gameChains, structId chainType, element criterion)
 			* head = filteredChain,
 			* previousLink = filteredChain;
 
-		printf("FULL\n");
-		displayChain(filteredChain, gameChains[_simulation]);
-
 		while (filteredChain != NULL)
 		{
 			element filtered = *filteredChain -> elementPtr;
@@ -350,21 +351,13 @@ link* filterChainBy(link** gameChains, structId chainType, element criterion)
 			{
 				//[CREATE_STRUCTURE] [EDIT_STRUCTURE]
 				case _item:
-					if(criterion.item_.itemTypeId != 0 && filtered.item_.itemTypeId != criterion.item_.itemTypeId)
-					{
+					if(
+						criterion.item_.itemTypeId != 0 && filtered.item_.itemTypeId != criterion.item_.itemTypeId
+						|| criterion.item_.proprietaryId != 0 && filtered.item_.proprietaryId != criterion.item_.proprietaryId
+						|| criterion.item_.locationPersonId != 0 && filtered.item_.locationPersonId != criterion.item_.locationPersonId
+					)
 						//[perf-flag]
-						filteredChain = deleteLink(previousLink, getLinkId(filteredChain));
-					}
-					else if(criterion.item_.proprietaryId != 0 && filtered.item_.proprietaryId != criterion.item_.proprietaryId)
-					{
-						//[perf-flag]
-						filteredChain = deleteLink(previousLink, getLinkId(filteredChain));
-					}
-					else if(criterion.item_.locationPersonId != 0 && filtered.item_.locationPersonId != criterion.item_.locationPersonId)
-					{
-						//[perf-flag]
-						filteredChain = deleteLink(previousLink, getLinkId(filteredChain));
-					}
+						head = deleteLink(head, getLinkId(filteredChain));
 					break;
 
 				default:
@@ -378,8 +371,6 @@ link* filterChainBy(link** gameChains, structId chainType, element criterion)
 			filteredChain = filteredChain->nextLinkPtr;
 		}
 
-		printf("FILTERED\n");
-		displayChain(head, gameChains[_simulation]);
 		return head;
 	}
 	else
