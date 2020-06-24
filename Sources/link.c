@@ -349,6 +349,7 @@ link* filterChainBy(link* gameChain, structId chainType, element criterion)
 		while (filteredChain != NULL)
 		{
 			element filtered = *filteredChain -> elementPtr;
+			filter = false;
 			switch (chainType)
 			{
 				//[CREATE_STRUCTURE] [EDIT_STRUCTURE]
@@ -358,20 +359,20 @@ link* filterChainBy(link* gameChain, structId chainType, element criterion)
 				//This means the value is (!= 0) esteemed, and (!= criterion's) unwanted, so filtered
 				case _item:
 					if (
-						criterion.item_.itemTypeId != 0 && filtered.item_.itemTypeId != criterion.item_.itemTypeId
-						&& criterion.item_.proprietaryId != 0 && filtered.item_.proprietaryId != criterion.item_.proprietaryId
-						&& criterion.item_.locationPersonId != 0 && filtered.item_.locationPersonId != criterion.item_.locationPersonId
+						(criterion.item_.itemTypeId != 0 && filtered.item_.itemTypeId != criterion.item_.itemTypeId)
+						|| (criterion.item_.proprietaryId != 0 && filtered.item_.proprietaryId != criterion.item_.proprietaryId)
+						|| (criterion.item_.locationPersonId != 0 && filtered.item_.locationPersonId != criterion.item_.locationPersonId)
 						)
 						filter = true;
 					break;
 
 				case _event:
 					if (
-						criterion.event_.eventTypeId != 0 && filtered.event_.eventTypeId != criterion.event_.eventTypeId
-						&& criterion.event_.itemId != 0 && filtered.event_.itemId != criterion.event_.itemId
-						&& criterion.event_.placeId != 0 && filtered.event_.placeId != criterion.event_.placeId
-						&& criterion.event_.receiverId != 0 && filtered.event_.receiverId != criterion.event_.receiverId
-						&& criterion.event_.transmitterId != 0 && filtered.event_.transmitterId != criterion.event_.transmitterId
+						(criterion.event_.eventTypeId != 0 && filtered.event_.eventTypeId != criterion.event_.eventTypeId)
+						|| (criterion.event_.itemId != 0 && filtered.event_.itemId != criterion.event_.itemId)
+						|| (criterion.event_.placeId != 0 && filtered.event_.placeId != criterion.event_.placeId)
+						|| (criterion.event_.receiverId != 0 && filtered.event_.receiverId != criterion.event_.receiverId)
+						|| (criterion.event_.transmitterId != 0 && filtered.event_.transmitterId != criterion.event_.transmitterId)
 						)
 						filter = true;
 					break;

@@ -265,7 +265,6 @@ bool playGame(link **gameChains)
 	//Before saving, load simulations and edit only current simulation
 	//link* allSims = readChain(gameFile[_simulation]);
 
-	system("cls");
 	for(i = 0; i < lastStructId; i++)
 	{
 		if(&gameFile[i] != NULL)
@@ -275,8 +274,6 @@ bool playGame(link **gameChains)
 			else printf("<playGame> Warning: Can't save structId %d\n", i);
 		#endif
 	}
-	getch();
-	system("cls");
 
 	free(gameFile);
 	return keepPlaying;
