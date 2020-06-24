@@ -93,7 +93,9 @@ typedef struct eventType // <=> action
 		duration_s;
 	char name[wordLength];
 	
-	bool selectableOnFailure;
+	bool 
+		executableOnFailure,
+		userSelectable;
 	
 	//Consequence on stats
 	stats 

@@ -132,6 +132,7 @@ link **setupGame()
 		printf("Design your character:\n");
 		gameChains[_person] = newLink("setupGame/no simulation found/create character", _person, true);
 		*gameChains[_person] = grabLink(_person, NULL);
+		gameChains[_person] -> elementPtr -> person_.houseId = 2;
 		setLinkId(gameChains[_person], hardcodedMaxId + 1);
 		
 		//Save created character
@@ -193,6 +194,7 @@ void inGameActions(link** gameChains, bool *keepPlaying)
 			*newEvent = grabLink(_event, gameChains[_simulation]);
 			gameChains[_event] = insertEvent(gameChains, gameChains[_event], newEvent, &couldInsert);
 			printf("[i]Event %s\n\n->\n", couldInsert ? "scheduled" : "unschedulable");
+			getch();
 			break;
 
 		case '3':
@@ -241,7 +243,7 @@ void inGameActions(link** gameChains, bool *keepPlaying)
 					break;
 			}
 
-			filteredChain = filterChainBy(gameChains[chainType], chainType, filter);
+			filteredChain = filterChainBy(gameChains[chainType], filter);
 			displayChain(filteredChain, gameChains[_simulation]);
 			freeChain(&filteredChain, NULL);
 			printf("\n->\n");
@@ -261,9 +263,6 @@ bool playGame(link **gameChains)
 
 	int i;
 	savesFile *gameFile = setGameFiles(gameChains[_simulation]);
-
-	//Before saving, load simulations and edit only current simulation
-	//link* allSims = readChain(gameFile[_simulation]);
 
 	for(i = 0; i < lastStructId; i++)
 	{
@@ -453,7 +452,7 @@ link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *coul
 			*ret = NULL;
 
 		//Getting user's events
-		filtered = filterChainBy(gameChains[_event], _event, (element){.event_.transmitterId = playerId, .event_.receiverId = playerId});
+		filtered = filterChainBy(gameChains[_event], (element){.event_.transmitterId = playerId, .event_.receiverId = playerId});
 
 		//Skipping past
 		while(

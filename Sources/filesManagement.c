@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define savesFilesTemplate "saves/simulation_%u/"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -40,28 +41,28 @@ savesFile
 			//gameFile template
 			.storedElements = _event,
 			.name = "Event",
-			.path = "saves/simulation_%u/",
+			.path = savesFilesTemplate,
 			.file = "event.surviver"
 		},
 		{
 			//gameFile template
 			.storedElements = _place,
 			.name = "Place",
-			.path = "saves/simulation_%u/",
+			.path = savesFilesTemplate,
 			.file = "place.surviver"
 		},
 		{
 			//gameFile template
 			.storedElements = _item,
 			.name = "Item",
-			.path = "saves/simulation_%u/",
+			.path = savesFilesTemplate,
 			.file = "item.surviver"
 		},
 		{
 			//gameFile template
 			.storedElements = _person,
 			.name = "Person",
-			.path = "saves/simulation_%u/",
+			.path = savesFilesTemplate,
 			.file = "person.surviver"
 		}
 	};
@@ -234,7 +235,7 @@ savesFile *setGameFiles(link *simulationLinkPtr)
 		//Decide whether the file's wideness is
 		if(!strstr(gameFilePtr[i].path, "%u"))
 			//GameWide file
-			sprintf(gameFilePtr[i].path, globalFile[i].path, simulationLinkPtr -> ID);
+			sprintf(gameFilePtr[i].path, globalFile[i].path, (unsigned int)getLinkId(simulationLinkPtr));
 		else
 			//Global file
 			strcpy(gameFilePtr[i].path, globalFile[i].path);

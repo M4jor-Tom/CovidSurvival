@@ -331,7 +331,7 @@ link* chainCopy(link* toCopy)
 	return ret;
 }
 
-link* filterChainBy(link* gameChain, structId chainType, element criterion)
+link* filterChainBy(link* gameChain, element criterion)
 {
 	if(gameChain != NULL)
 	{
@@ -350,7 +350,7 @@ link* filterChainBy(link* gameChain, structId chainType, element criterion)
 		{
 			element filtered = *filteredChain -> elementPtr;
 			filter = false;
-			switch (chainType)
+			switch (gameChain -> structType)
 			{
 				//[CREATE_STRUCTURE] [EDIT_STRUCTURE]
 				//Will filter (delete) if:
@@ -377,10 +377,26 @@ link* filterChainBy(link* gameChain, structId chainType, element criterion)
 						filter = true;
 					break;
 
+				case _eventType:
+					if (
+						(criterion.eventType_.requiredItemTypeId != 0 && filtered.eventType_.requiredItemTypeId != criterion.eventType_.requiredItemTypeId)
+						|| (criterion.eventType_.requiredPlaceTypeId != 0 && filtered.eventType_.requiredPlaceTypeId != criterion.eventType_.requiredPlaceTypeId)
+						|| (criterion.eventType_.userSelectable != 0 && filtered.eventType_.userSelectable != criterion.eventType_.userSelectable)
+						)
+						filter = true;
+					break;
+
+				case _person:
+					if (
+						(criterion.person_.houseId != 0 && filtered.person_.houseId != criterion.person_.houseId)
+						)
+						filter = true;
+					break;
+
 				default:
 					#ifdef DEBUG
 						if(!warned)
-							printf("<filterChainBy> Warning: unhandeled structId: %d, unfiltered returned\n", chainType);
+							printf("<filterChainBy> Warning: unhandeled structId: %d, unfiltered returned\n", gameChain -> structType);
 						warned = true;
 					#endif
 			}
@@ -422,6 +438,7 @@ long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId)
 	long int joinId = nullId;
 	link
 		*displayedChain = NULL,
+		*restrictedChain = NULL,
 		*ret = NULL;
 	
 	//If joining needed on game files
@@ -436,6 +453,14 @@ long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId)
 	
 	//Display choices
 	displayedChain = readChain(dataFile[retStructId]);
+
+	//Particular cases filtering
+	if (retStructId == _eventType)
+	{
+		restrictedChain = filterChainBy(displayedChain, (element){.eventType_.userSelectable = true});
+		freeChain(&displayedChain, NULL);
+		displayedChain = restrictedChain;
+	}
 	
 	//HMI
 	printf("Select among one of those:\n");
@@ -703,6 +728,8 @@ link grabLink(structId structType, link *currentSimPtr)
 			break;
 		
 		case _eventType:
+			recipient->eventType_.userSelectable = true;
+
 			printf("[event type]\n\tName: ");
 			scanf("%s", recipient -> eventType_.name);
 			
@@ -785,7 +812,7 @@ link grabLink(structId structType, link *currentSimPtr)
 				recipient -> eventType_.onFailure = grabStats("\tStats added to receiver's on failure:\n");
 			
 			printf("Make option selectable on failure ? (y/any)\n");
-			recipient -> eventType_.selectableOnFailure = getche() == 'y';
+			recipient -> eventType_.executableOnFailure = getche() == 'y';
 			
 			//Particular cases consequences
 			printf("Create particular cases ? (y/any)\n");
@@ -1144,7 +1171,7 @@ void displayLink(link toDisplay, link *currentSimPtr)
 				
 				printf(
 					"\t-%selectable on failure",
-					toDisplay.elementPtr -> eventType_.selectableOnFailure
+					toDisplay.elementPtr -> eventType_.executableOnFailure
 						? "S"
 						: "Not s"
 				);

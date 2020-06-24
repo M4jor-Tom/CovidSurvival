@@ -59,14 +59,16 @@ link* getHardcoded(savesFile save)
 				.name = "Get out\n",
 				.duration_s = 3600,
 				.requiredItemTypeId = nullId,
-				.requiredPlaceTypeId = 1	//Outside
+				.requiredPlaceTypeId = 1,	//Outside
+				.userSelectable = true
 			},
 			shop =
 			{
 				.name = "Shop\n",
 				.duration_s = 300,
 				.requiredItemTypeId = nullId,
-				.requiredPlaceTypeId = 2	//Store
+				.requiredPlaceTypeId = 2,	//Store
+				.userSelectable = true
 			},
 			police =
 			{
@@ -74,7 +76,7 @@ link* getHardcoded(savesFile save)
 				.duration_s = 300,
 				.requiredItemTypeId = 2,	//Exit_certificate
 				.requiredPlaceTypeId = nullId,
-				.selectableOnFailure = true
+				.executableOnFailure = true
 			};
 
 		//Chaining

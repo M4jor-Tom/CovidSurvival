@@ -50,7 +50,7 @@ long int highestId(link* chain);
 link* higherId(link* chain);
 
 //Checks every specific joinId of chain's links (gameChain of chainType), and keep only the corresponding ones (to non-null values of criterion)
-link* filterChainBy(link *gameChain, structId chainType, element criterion);
+link* filterChainBy(link *gameChain, element criterion);
 
 //Returns a link's ptr from a chain within wich an Id's one has been searched. Returns NULL if Id doesn't exists
 link *chain_search(link *chain, long int ID);
