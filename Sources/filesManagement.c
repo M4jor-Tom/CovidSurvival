@@ -70,7 +70,7 @@ savesFile
 bool writeChain(link* chain, savesFile save)
 {
 	bool success = false;
-	
+
 	//Delete hard data before save (wich is hardcoded) to avoid dobloons
 	chain = ommitHardcoded(chain, save);
 	
@@ -100,6 +100,8 @@ bool writeChain(link* chain, savesFile save)
 		#ifdef DEBUG
 		printf("<writeChain> Notice: Null chain, deleting file %s\n", baseName);
 		#endif
+
+
 		if(filePtr != NULL)
 			fclose(filePtr);
 

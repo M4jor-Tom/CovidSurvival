@@ -66,7 +66,7 @@ void *safeAlloc(void *ptr, int sizeof_, char *errorMessage)
 
 void freeMatress(void **mainHeader, unsigned int headersLength)
 {
-	int i;
+	unsigned int i;
 	for(i = 0; i < headersLength; i++)
 		free(mainHeader[i]);
 	//freeHyper(mainHeader, &headersLength, 2);
@@ -93,7 +93,7 @@ char toLower(char char_)
 
 void strToLower(char* str)
 {
-	int i;
+	unsigned int i;
 	for(i = 0; i < strlen(str); i++)
 	{
 		str[i] = toLower(str[i]);
@@ -119,7 +119,7 @@ int mkSdir(char *path)
 {
 	if(sizeof(path) > 1024)
 	{
-		printf("<mkSdir> Error: Path length shall be 1024 characters long, it's %d to much (%d)\n[path]: %s\n", sizeof(path) - 1024, sizeof(path), path);
+		printf("<mkSdir> Error: Path length shall be 1024 characters long, it's %u to much (%u)\n[path]: %s\n", sizeof(path) - 1024, sizeof(path), path);
 	}
 	
 	char 
@@ -191,6 +191,53 @@ float grabFloat(char* instructions)
 	return ret;
 }
 
+void displayTime(unsigned long long int time)
+{
+	char weekDay[10] = "\0";
+	switch (secondsTo("day", time))
+	{
+		case 0:
+			strcpy(weekDay, "monday");
+			break;
+
+		case 1:
+			strcpy(weekDay, "tuesday");
+			break;
+
+		case 2:
+			strcpy(weekDay, "wednesday");
+			break;
+
+		case 3:
+			strcpy(weekDay, "thursday");
+			break;
+
+		case 4:
+			strcpy(weekDay, "friday");
+			break;
+
+		case 5:
+			strcpy(weekDay, "saturday");
+			break;
+
+		case 6:
+			strcpy(weekDay, "sunday");
+			break;
+
+		default:
+			strcpy(weekDay, "unknown");
+	}
+
+	printf(
+		"Week %u, %s, %u:%u:%u",
+		secondsTo("week", time),
+		weekDay,
+		secondsTo("hour", time),
+		secondsTo("minute", time),
+		secondsTo("second", time)
+	);
+}
+
 unsigned long long int grabDateTime(char* instructions)
 {
 	unsigned int weeks = 0, days = 0, hours = 0, minutes = 0, seconds = 0;
@@ -200,7 +247,7 @@ unsigned long long int grabDateTime(char* instructions)
 		printf(instructions);
 	
 	//Grabbing
-	printf("Week number: ");
+	printf("\nWeek number: ");
 	scanf("%u", &weeks);
 	getchar();
 
@@ -225,7 +272,7 @@ unsigned long long int grabDateTime(char* instructions)
 		(unsigned long long int)seconds + 
 		(unsigned long long int)minutes * SECONDS_PER_MINUTE + 
 		(unsigned long long int)hours * SECONDS_PER_HOUR + 
-		(unsigned long long int)days * SECONDS_PER_DAY + 
+		(unsigned long long int)(days - 1) * SECONDS_PER_DAY + 
 		(unsigned long long int)weeks * SECONDS_PER_WEEK;
 
 	return ret;

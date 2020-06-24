@@ -120,7 +120,7 @@ typedef struct event
 typedef struct simulation
 {
 	unsigned int ID;
-	unsigned long int simuledTime;
+	unsigned long long int simuledTime;
 }simulation;
 
 typedef union element

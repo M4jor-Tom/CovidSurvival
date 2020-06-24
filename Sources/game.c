@@ -96,18 +96,23 @@ link **setupGame()
 	{
 		//Creating a game
 		currentSimPtr = newLink("setupGame/no simulation found/create simulation", _simulation, true);
+
+		setLinkId(currentSimPtr, highestId(simulations) + 1);
 		
 		//Getting the new simulations list
-		simulations = insertLink(simulations, currentSimPtr);
+		currentSimPtr -> nextLinkPtr = simulations;
+		simulations = currentSimPtr;
 		
 		createSim = true;
 	}
 	else
 	{
 		currentSimPtr = selectLink(simulations);
-		
+
+		simulations = makeFirstLink(getLinkId(currentSimPtr), simulations);
+
 		//Freeing selection, ommiting choice
-		freeChain(&simulations, currentSimPtr);
+		//freeChain(&simulations, currentSimPtr);
 	}
 	
 	//Creating game files from the source code's template
@@ -119,7 +124,7 @@ link **setupGame()
 			mkSdir(gameFile[i].path);
 	
 	//Get selected simulation
-	gameChains[_simulation] = currentSimPtr;
+	gameChains[_simulation] = simulations;
 	
 	if(createSim)
 	{
@@ -138,19 +143,23 @@ link **setupGame()
 	
 	for(i = 0; i < lastStructId; i++)
 		if(gameChains[i] == NULL)
+		{
 			//Load chain
 			gameChains[i] = readChain(gameFile[i]);
+		}
 	
 	return gameChains;
 }
 
-void inGameActions(link** gameChains)
+void inGameActions(link** gameChains, bool *keepPlaying)
 {
 	system("cls");
+	printf("Simulation %ld, ", getLinkId(gameChains[_simulation])); printf("["); displayTime(getTime(gameChains)); printf("]\n");
 	printf("\n\tWhat do ?\n");
 	printf("\n\tWait-----------------1");
 	printf("\n\tDo actions-----------2");
-	printf("\n\tWatch informations---3\n\n");
+	printf("\n\tWatch informations---3\n");
+	printf("\n\tLeave simulation-----4\n\n");
 	int select = 0;
 	do
 	{
@@ -161,7 +170,7 @@ void inGameActions(link** gameChains)
 
 
 		select = getche();
-	}while(select != '1' && select != '2' && select != '3' && select != '&' && select != 'é' && select != '"');
+	}while(select != '1' && select != '2' && select != '3' &&select != '4' && select != '&' && select != 'é' && select != '"' && select != '\'');
 
 	link
 		*eventChoice = NULL,
@@ -175,12 +184,11 @@ void inGameActions(link** gameChains)
 	{
 		case '1':
 		case '&':
-			run(gameChains, grabDateTime("Till when do you want to wait ?"), true);
+			run(gameChains, grabDateTime("\nTill when do you want to wait ?"), true);
 			break;
 
 		case '2':
 		case 'é':
-			eventChoice = selectLink(gameChains[_eventType]);
 			newEvent = newLink("inGameActionsMenu/newEvent malloc", _event, false);
 			*newEvent = grabLink(_event, gameChains[_simulation]);
 			gameChains[_event] = insertEvent(gameChains, gameChains[_event], newEvent, &couldInsert);
@@ -208,7 +216,8 @@ void inGameActions(link** gameChains)
 					chainType = _item;
 					filter = (element)
 					{
-						.item_.locationPersonId = playerId
+						.item_.locationPersonId = playerId,
+						.item_.proprietaryId = playerId
 					};
 					break;
 
@@ -217,7 +226,8 @@ void inGameActions(link** gameChains)
 					chainType = _event;
 					filter = (element)
 					{
-						.event_.transmitterId = playerId
+						.event_.transmitterId = playerId,
+						.event_.receiverId = playerId
 					};
 					break;
 
@@ -231,11 +241,15 @@ void inGameActions(link** gameChains)
 					break;
 			}
 
-			filteredChain = filterChainBy(gameChains, chainType, filter);
+			filteredChain = filterChainBy(gameChains[chainType], chainType, filter);
 			displayChain(filteredChain, gameChains[_simulation]);
 			freeChain(&filteredChain, NULL);
 			printf("\n->\n");
 			getch();
+			break;
+		case '4':
+		case '\'':
+			*keepPlaying = false;
 			break;
 	}
 }
@@ -243,25 +257,17 @@ void inGameActions(link** gameChains)
 bool playGame(link **gameChains)
 {
 	bool keepPlaying = true;
-	inGameActions(gameChains);
-	/*
-	link *newEvent = newLink("newEvent", _event, false);
-	*newEvent = grabLink(_event, gameChains[_simulation]);
+	inGameActions(gameChains, &keepPlaying);
 
-	//Event schedulement
-	bool eventInserted = false;
-	gameChains[_event] = insertEvent(gameChains, gameChains[_event], newEvent, &eventInserted);
-	printf("[i]Event %s\n\n->\n", eventInserted ? "scheduled" : "unschedulable");
-	getch();
-
-	//Game data display
-	system("cls");
-	printf("Game data:\n");
 	int i;
 	savesFile *gameFile = setGameFiles(gameChains[_simulation]);
+
+	//Before saving, load simulations and edit only current simulation
+	//link* allSims = readChain(gameFile[_simulation]);
+
+	system("cls");
 	for(i = 0; i < lastStructId; i++)
 	{
-		displayChain(gameChains[i], gameChains[_simulation]);
 		if(&gameFile[i] != NULL)
 			writeChain(gameChains[i], gameFile[i]);
 
@@ -269,22 +275,24 @@ bool playGame(link **gameChains)
 			else printf("<playGame> Warning: Can't save structId %d\n", i);
 		#endif
 	}
+	getch();
+	system("cls");
 
-	free(gameFile);*/
+	free(gameFile);
 	return keepPlaying;
 }
 
-void setTime(link **gameChains, unsigned long int time)
+void setTime(link **gameChains, unsigned long long int time)
 {
 	gameChains[_simulation] -> elementPtr -> simulation_.simuledTime = time;
 }
 
-unsigned long int getTime(link **gameChains)
+unsigned long long int getTime(link **gameChains)
 {
 	return gameChains[_simulation]->elementPtr->simulation_.simuledTime;;
 }
 
-unsigned long int getEventTime(link* event)
+unsigned long long int getEventTime(link* event)
 {
 	return event -> elementPtr -> event_.eventTime;
 }
@@ -293,7 +301,7 @@ link *getIncomingEvent(link **gameChains)
 {
 	if(gameChains != NULL && gameChains[_event] != NULL)
 	{
-		unsigned long int simTime = getTime(gameChains);
+		unsigned long long int simTime = getTime(gameChains);
 		link
 			* eventsCursor = gameChains[_event];
 		while(eventsCursor != NULL)
@@ -312,13 +320,13 @@ link *getIncomingEvent(link **gameChains)
 	}
 }
 
-unsigned long int getEventDuration(link *event, link **gameChains)
+unsigned long long int getEventDuration(link *event, link **gameChains)
 {
 	if (gameChains != NULL)
 	{
 		//[JOIN] event-eventType
 		link* eventType_ = getJoinedLink(event, _eventType, gameChains[_simulation], 1);
-		unsigned long int duration = eventType_->elementPtr->eventType_.duration_s;
+		unsigned long long int duration = eventType_->elementPtr->eventType_.duration_s;
 		freeLink(&eventType_);
 		return duration;
 	}
@@ -328,7 +336,7 @@ unsigned long int getEventDuration(link *event, link **gameChains)
 	}
 }
 
-unsigned long int getEventEnd(link *event, link **gameChains)
+unsigned long long int getEventEnd(link *event, link **gameChains)
 {
 	return event -> elementPtr -> event_.eventTime + getEventDuration(event, gameChains);
 }
@@ -337,7 +345,7 @@ link *getHappeningEvent(link **gameChains)
 {
 	if(gameChains != NULL && gameChains[_event] != NULL)
 	{
-		unsigned long int simTime = getTime(gameChains);
+		unsigned long long int simTime = getTime(gameChains);
 		link *eventsCursor = gameChains[_event];
 
 		while(
@@ -399,11 +407,18 @@ void happenEvent(link **gameChains, link *eventLinkPtr, bool forward)
 	}
 }
 
-void run(link **gameChains, unsigned long int nextTime, bool forward)
+void run(link **gameChains, unsigned long long int nextTime, bool forward)
 {
 	link *nextEvent = getIncomingEvent(gameChains);
-	if(getEventTime(nextEvent) < nextTime)
+
+	printf("\nRun from "); displayTime(getTime(gameChains)); printf(" to "); displayTime(nextTime); printf(".");
+
+	if(nextEvent != NULL && getEventTime(nextEvent) < nextTime)
 	{
+		printf("\nFirst encounter: ");
+		displayTime(getEventTime(nextEvent)); 
+		getch();
+
 		//Skip time till it's next event
 		setTime(gameChains, getEventTime(nextEvent));
 
@@ -420,13 +435,14 @@ void run(link **gameChains, unsigned long int nextTime, bool forward)
 
 link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *couldInsert)
 {
-	if (couldInsert != NULL)
+	if(couldInsert != NULL)
 		*couldInsert = false;
 
 	if(eventLinkPtr != NULL && eventLinkPtr -> structType == _event)
 	{
-		unsigned int
-			lastId = getLinkId(higherId(chain)),
+		//Get/Setting Id for new
+		long int
+			lastId = highestId(chain),
 			newId = lastId > hardcodedMaxId
 				? lastId
 				: hardcodedMaxId;
@@ -436,8 +452,14 @@ link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *coul
 		link
 			*nextFromNewLinkPtr = chain,
 			*previousLinkPtr = NULL,
+			*filtered = NULL,
 			*ret = NULL;
-		while (
+
+		//Getting user's events
+		filtered = filterChainBy(gameChains[_event], _event, (element){.event_.transmitterId = playerId, .event_.receiverId = playerId});
+
+		//Skipping past
+		while(
 			nextFromNewLinkPtr != NULL
 			&&
 			eventLinkPtr->elementPtr->event_.eventTime >
@@ -456,6 +478,7 @@ link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *coul
 		//Now, eventLink's eventTime is greater than nextFromNewLink's one, or there's no more nextFromNewLink.
 		//The new eventLink must be added after nextFromNewLinkPtr.
 
+		//Inserting event
 		if(previousLinkPtr == NULL)
 		{
 			//If the new event must be first
@@ -504,7 +527,7 @@ link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *coul
 	{
 		#ifdef DEBUG
 			//Error return and printing
-			printf("<insertEvent> Error: eventLinkPtr = %d", eventLinkPtr);
+			printf("<insertEvent> Error: eventLinkPtr = %llu", (unsigned long long)eventLinkPtr);
 			if (eventLinkPtr != NULL)
 				printf(", eventLinkPtr -> structType = %d", eventLinkPtr->structType);
 

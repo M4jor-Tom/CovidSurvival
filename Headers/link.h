@@ -43,11 +43,14 @@ long int getElementId(element *elementPtr, structId type);
 //Fetches a link ptr from informations
 link *getLinkById(structId _structId, long int Id, link *currentSimPtr);
 
-//Fetches for the highest Id owner in a chain
+//Fetches for the highest Id in chain. Returns hardcodedMaxId if NULL chain
+long int highestId(link* chain);
+
+//Fetches for the highest Id owner in a chain. Returns NULL if NULL chain
 link* higherId(link* chain);
 
 //Checks every specific joinId of chain's links (gameChain of chainType), and keep only the corresponding ones (to non-null values of criterion)
-link* filterChainBy(link **gameChains, structId chainType, element criterion);
+link* filterChainBy(link *gameChain, structId chainType, element criterion);
 
 //Returns a link's ptr from a chain within wich an Id's one has been searched. Returns NULL if Id doesn't exists
 link *chain_search(link *chain, long int ID);
@@ -73,6 +76,9 @@ link *grabChain(structId structType, link *currentSimPtr);
 
 //Gets a link's ptr out of a chain by user choice
 link *selectLink(link *chain);
+
+//Sorts a chain so the selected Id's gets first
+link* makeFirstLink(long int linkId, link* chain);
 
 
 //Displays a link

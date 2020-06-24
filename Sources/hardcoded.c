@@ -57,18 +57,21 @@ link* getHardcoded(savesFile save)
 			getOut =
 			{
 				.name = "Get out\n",
+				.duration_s = 3600,
 				.requiredItemTypeId = nullId,
 				.requiredPlaceTypeId = 1	//Outside
 			},
 			shop =
 			{
 				.name = "Shop\n",
+				.duration_s = 300,
 				.requiredItemTypeId = nullId,
 				.requiredPlaceTypeId = 2	//Store
 			},
 			police =
 			{
 				.name = "Police control\n",
+				.duration_s = 300,
 				.requiredItemTypeId = 2,	//Exit_certificate
 				.requiredPlaceTypeId = nullId,
 				.selectableOnFailure = true
@@ -142,7 +145,7 @@ link* getHardcoded(savesFile save)
 			},
 			store =
 			{
-				.name = "Food store\n",
+				.name = "Some polyvalent store\n",
 				.placeTypeId = 2	//Store
 			};
 
@@ -231,7 +234,7 @@ bool shop(link** gameChains, unsigned long int shopId)
 		//Getting data about bougt item and player's money
 		//link *chosenItem = getLinkById(_item, chosenId, gameChains[_simulation]);
 		//link *chosenItemType = getJoinedLink(chosenItem, _itemType, gameChains[_simulation], 1);
-		person *playerPtr = &gameChains[_person] -> elementPtr -> person_;	//The first person in gameChains is the player
+		person* playerPtr = &getLinkById(_person, playerId, gameChains[_simulation]) -> elementPtr -> person_;
 		float
 			money = playerPtr->stats_.money,
 			price = selectedItemType->elementPtr->itemType_.price;
@@ -248,6 +251,7 @@ bool shop(link** gameChains, unsigned long int shopId)
 			createdItem -> elementPtr -> item_.itemTypeId = selectedItemTypeId;
 			createdItem -> elementPtr -> item_.proprietaryId = playerId;
 			createdItem -> elementPtr -> item_.locationPersonId = playerId;
+			createdItem -> elementPtr -> item_.locationPlaceId = nullId;
 			gameChains[_item] = insertLink(gameChains[_item], createdItem);
 
 			playerPtr->stats_.money = money - price;

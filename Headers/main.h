@@ -2,6 +2,7 @@
 
 #ifdef _MSC_VER
 
+	#include <direct.h>
 	#define getch() _getch()
 	#define getche() _getche()
 

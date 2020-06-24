@@ -27,6 +27,9 @@ long long int grabInt(char* instructions);
 
 float grabFloat(char* instructions);
 
+//Prints week#, week::day, hour:minute:second
+void displayTime(unsigned long long int time);
+
 unsigned long long int grabDateTime(char* instructions);
 
 //Translates a duration in seconds to its corresponding time unity in an amount that can't be over its superior-unit increment

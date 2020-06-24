@@ -15,10 +15,13 @@ int menu(int menuType, char *optionsLabel);
 link **setupGame();
 
 //Runs the simulation till expected. Will go to the end of events if running till then.
-void run(link** gameChains, unsigned long int nextTime, bool forward);
+void run(link** gameChains, unsigned long long int nextTime, bool forward);
 
 //One occurence of the simulation returns false when the game ends
 bool playGame(link **gameChains);
+
+//Gets simulation time
+unsigned long long int getTime(link** gameChains);
 
 //Like insertLink from link.h, inserts a link in a chain but only for events.
 //Will insert event in the right place so it's time-sorted

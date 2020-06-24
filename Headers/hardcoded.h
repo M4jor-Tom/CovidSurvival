@@ -8,6 +8,6 @@ link* ommitHardcoded(link* chain, savesFile save);
 
 void getOut(link **gameChains);
 
-void shop(link **gameChains, unsigned long int shopId);
+bool shop(link** gameChains, unsigned long int shopId);
 
 void policeControl(link **gameChains);

@@ -44,6 +44,8 @@ int main()
 			case 1:
 				gameChains = setupGame();
 				while(playGame(gameChains));
+
+				system("cls");
 				break;
 			
 			case 2:

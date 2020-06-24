@@ -289,6 +289,14 @@ link *getLinkById(structId _structId, long int Id, link *currentSimPtr)
 	else return NULL;
 }
 
+long int highestId(link* chain)
+{
+	link* ptr = higherId(chain);
+	return ptr == NULL
+		? hardcodedMaxId
+		: getLinkId(ptr);
+}
+
 link *higherId(link *chain)
 {
 	if (chain != NULL)
@@ -312,35 +320,29 @@ link* chainCopy(link* toCopy)
 	{
 		//First link to copy
 		ret = newLink("chainCopy/cursor init", toCopy->structType, true);
-		*ret = *toCopy;
-		*ret-> elementPtr = *toCopy -> elementPtr;
+
+		setLinkId(ret, getLinkId(toCopy));
+
+		*(ret-> elementPtr) = *(toCopy -> elementPtr);
 
 		//Recurse
 		ret -> nextLinkPtr = chainCopy(toCopy->nextLinkPtr);
-	}/*
-	while(toCopy != NULL)
-	{
-		//Other links to copy
-		*cursor = *toCopy;
-		*cursor-> elementPtr = *toCopy -> elementPtr;
-
-		cursor-> nextLinkPtr = newLink("chainCopy/cursor nextLink", toCopy->structType, true);
-		cursor = cursor->nextLinkPtr;
-	}*/
+	}
 	return ret;
 }
 
-link* filterChainBy(link** gameChains, structId chainType, element criterion)
+link* filterChainBy(link* gameChain, structId chainType, element criterion)
 {
-	if (gameChains != NULL && gameChains[chainType] != NULL)
+	if(gameChain != NULL)
 	{
 		#ifdef DEBUG
 			bool warned = false;
 		#endif
+		bool filter = false;
 
 		//Copy of full data, to be filtered with criterion.
 		link
-			* filteredChain = chainCopy(gameChains[chainType]),
+			* filteredChain = chainCopy(gameChain),
 			* head = filteredChain,
 			* previousLink = filteredChain;
 
@@ -350,23 +352,41 @@ link* filterChainBy(link** gameChains, structId chainType, element criterion)
 			switch (chainType)
 			{
 				//[CREATE_STRUCTURE] [EDIT_STRUCTURE]
+				//Will filter (delete) if:
+				//-value of filter != 0 (uninitialzed) 
+				//-value of filter != criterion's
+				//This means the value is (!= 0) esteemed, and (!= criterion's) unwanted, so filtered
 				case _item:
-					if(
+					if (
 						criterion.item_.itemTypeId != 0 && filtered.item_.itemTypeId != criterion.item_.itemTypeId
-						|| criterion.item_.proprietaryId != 0 && filtered.item_.proprietaryId != criterion.item_.proprietaryId
-						|| criterion.item_.locationPersonId != 0 && filtered.item_.locationPersonId != criterion.item_.locationPersonId
-					)
-						//[perf-flag]
-						head = deleteLink(head, getLinkId(filteredChain));
+						&& criterion.item_.proprietaryId != 0 && filtered.item_.proprietaryId != criterion.item_.proprietaryId
+						&& criterion.item_.locationPersonId != 0 && filtered.item_.locationPersonId != criterion.item_.locationPersonId
+						)
+						filter = true;
+					break;
+
+				case _event:
+					if (
+						criterion.event_.eventTypeId != 0 && filtered.event_.eventTypeId != criterion.event_.eventTypeId
+						&& criterion.event_.itemId != 0 && filtered.event_.itemId != criterion.event_.itemId
+						&& criterion.event_.placeId != 0 && filtered.event_.placeId != criterion.event_.placeId
+						&& criterion.event_.receiverId != 0 && filtered.event_.receiverId != criterion.event_.receiverId
+						&& criterion.event_.transmitterId != 0 && filtered.event_.transmitterId != criterion.event_.transmitterId
+						)
+						filter = true;
 					break;
 
 				default:
 					#ifdef DEBUG
 						if(!warned)
-							printf("<filterChainBy> Warning: unhandeled structId: %d, NULL returned\n", chainType);
+							printf("<filterChainBy> Warning: unhandeled structId: %d, unfiltered returned\n", chainType);
 						warned = true;
 					#endif
 			}
+
+			if(filter)
+				head = deleteLink(head, getLinkId(filteredChain));
+
 			previousLink = filteredChain;
 			filteredChain = filteredChain->nextLinkPtr;
 		}
@@ -589,13 +609,13 @@ stats grabStats(char *instructions)
 		printf(instructions);
 	
 	//[CREATE_STATS]
-	recipient.health = grabInt("health: ");
-	recipient.hunger = grabInt("hunger: ");
-	recipient.hygiene = grabInt("hygiene: ");
-	recipient.mentalHealth = grabInt("mentalHealth: ");
-	recipient.stamina = grabInt("stamina: ");
-	recipient.karma = grabInt("karma: ");
-	recipient.money = grabFloat("money: ");
+	recipient.health = (int)grabInt("health: ");
+	recipient.hunger = (int)grabInt("hunger: ");
+	recipient.hygiene = (int)grabInt("hygiene: ");
+	recipient.mentalHealth = (int)grabInt("mentalHealth: ");
+	recipient.stamina = (int)grabInt("stamina: ");
+	recipient.karma = (int)grabInt("karma: ");
+	recipient.money = (float)grabFloat("money: ");
 
 	printf("CoronaVirus (y/else): ");
 	recipient.coronaVirus = getch() == 'y'
@@ -823,7 +843,7 @@ link grabLink(structId structType, link *currentSimPtr)
 			
 		case _simulation:
 			printf("[simulation]\nSimuled time: ");
-			scanf("%u", &recipient -> simulation_.simuledTime);
+			scanf("%llu", &recipient -> simulation_.simuledTime);
 			break;
 			
 		#ifdef DEBUG
@@ -872,7 +892,8 @@ link *selectLink(link *chain)
 {
 	link *chosenLinkPtr = NULL;
 	long int idChoice = nullId;
-	
+	bool redo = false;
+
 	if(chain != NULL)
 	{
 		//User query + choices display
@@ -881,11 +902,17 @@ link *selectLink(link *chain)
 		do
 		{
 			//Getting choice's link ptr from Id
+			if (redo) printf("\rPlease re-select: ");
+			else printf("Please select: ");
+			redo = false;
+
 			scanf("%ld", &idChoice);
 			getchar();
 			
 			chosenLinkPtr = chain_search(chain, idChoice);
-		}while(chosenLinkPtr == NULL || idChoice == nullId);
+			if (chosenLinkPtr == NULL || idChoice == nullId)
+				redo = true;
+		}while(redo);
 	}
 	else 
 	{
@@ -893,6 +920,33 @@ link *selectLink(link *chain)
 	}
 	
 	return chosenLinkPtr;
+}
+
+link *makeFirstLink(long int linkId, link* chain)
+{
+	link
+		*newHead = NULL, 
+		*currentHead = chain;
+	while (chain != NULL)
+	{
+
+		if(linkId == getLinkId(chain->nextLinkPtr))
+		{
+			//Id corresponds t the next one
+			//Save searched Id's owner
+			newHead = chain->nextLinkPtr;
+
+			//Skip it in the chain
+			chain->nextLinkPtr = chain->nextLinkPtr->nextLinkPtr;
+
+			newHead->nextLinkPtr = currentHead;
+		}
+		else
+			chain = chain->nextLinkPtr;
+	}
+	return newHead == NULL
+		? currentHead
+		: newHead;
 }
 
 void displayLocation(location toDisplay, char *tagging)
@@ -983,49 +1037,8 @@ void displayLink(link toDisplay, link *currentSimPtr)
 					);
 				}
 
-				time = elementPtr->event_.eventTime;
-				switch(secondsTo("day", time))
-				{
-					case 0:
-						strcpy(weekDay, "monday");
-						break;
-
-					case 1:
-						strcpy(weekDay, "tuesday");
-						break;
-
-					case 2:
-						strcpy(weekDay, "wednesday");
-						break;
-
-					case 3:
-						strcpy(weekDay, "thursday");
-						break;
-
-					case 4:
-						strcpy(weekDay, "friday");
-						break;
-
-					case 5:
-						strcpy(weekDay, "saturday");
-						break;
-
-					case 6:
-						strcpy(weekDay, "sunday");
-						break;
-
-					default:
-						strcpy(weekDay, "unknown");
-				}
-
-				printf(
-					"\n\tHappens on: Week %u, %s, at %u:%u:%u",
-					secondsTo("week", time),
-					weekDay,
-					secondsTo("hour", time),
-					secondsTo("minute", time),
-					secondsTo("second", time)
-				);
+				printf("\tHappening: ");
+				displayTime(elementPtr->event_.eventTime);
 				
 				//[JOIN] event-person
 				joinedLinkPtr = getJoinedLink(&toDisplay, _person, currentSimPtr, 1);
@@ -1250,7 +1263,7 @@ void displayLink(link toDisplay, link *currentSimPtr)
 			case _simulation:
 				printf
 				(
-					"[simulation]\n\tID: %u\n\tSimuled time: %u\n\n",
+					"[simulation]\n\tID: %u\n\tSimuled time: %llu\n\n",
 					elementPtr -> simulation_.ID,
 					elementPtr -> simulation_.simuledTime
 				);
