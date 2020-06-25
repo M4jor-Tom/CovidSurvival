@@ -403,12 +403,11 @@ bool eventApply(link** gameChains, link* eventLinkPtr, bool forward)
 {
 	//Wich event ?
 	event happening = eventLinkPtr -> elementPtr -> event_;
-
-	//Wich event type ?
 	eventType happeningType = getLinkById(_eventType, happening.eventTypeId, gameChains[_simulation]) -> elementPtr -> eventType_;
 
 	//Wich item consummed ?
-	item *consumedPtr = getLinkById(_item, happening.itemId, gameChains[_simulation]);
+	item *consumedPtr = &getLinkById(_item, happening.itemId, gameChains[_simulation]) -> elementPtr -> item_;
+	itemType consumedType = getLinkById(_itemType, consumedPtr -> itemTypeId, gameChains[_simulation]) -> elementPtr -> itemType_;
 
 	//Who is targetted ?
 	person *receiverPtr = &getLinkById(_person, happening.receiverId, gameChains[_simulation])->elementPtr->person_;
@@ -422,6 +421,15 @@ bool eventApply(link** gameChains, link* eventLinkPtr, bool forward)
 	{
 		//Success
 		receiverPtr->stats_ = operateStats(receiverPtr->stats_, happeningType.onSuccess);
+		if (consumedPtr != NULL)
+		{
+			consumedPtr->usedCount = consumedPtr->usedCount + happeningType.itemTypeConsumption;
+			if (consumedPtr->usedCount >= consumedType.usesCount)
+			{
+				//Person's item broke
+				deleteLink(gameChains[_item], getLinkId(consumedPtr));
+			}
+		}
 	}
 	else if(happeningType.executableOnFailure)
 	{

@@ -60,7 +60,11 @@ link* getHardcoded(savesFile save)
 				.duration_s = 3600,
 				.requiredItemTypeId = nullId,
 				.requiredPlaceTypeId = 1,	//Outside
-				.userSelectable = true
+				.userSelectable = true,
+				.onSuccess =
+				{
+					.mentalHealth = 30
+				}
 			},
 			shop =
 			{
@@ -76,7 +80,16 @@ link* getHardcoded(savesFile save)
 				.duration_s = 300,
 				.requiredItemTypeId = 2,	//Exit_certificate
 				.requiredPlaceTypeId = nullId,
-				.executableOnFailure = true
+				.executableOnFailure = true,
+				.onSuccess =
+				{
+					.mentalHealth = 15
+				},
+				.onFailure =
+				{
+					.mentalHealth = -40,
+					.money = -135.0
+				}
 			};
 
 		//Chaining

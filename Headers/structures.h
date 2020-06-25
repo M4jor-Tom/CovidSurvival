@@ -32,7 +32,8 @@ typedef struct savesFile
 
 typedef struct place
 {
-	unsigned int ID, placeTypeId;
+	unsigned int ID;
+	long int placeTypeId;
 	char name[wordLength];
 	location loc;
 }place;
@@ -54,12 +55,14 @@ typedef struct item
 {
 	unsigned int 
 		ID,
+		usedCount,
+		usedByEventId;
+
+	long int
 		proprietaryId,
 		locationPersonId,
 		locationPlaceId,
-		itemTypeId,
-		usedCount,
-		usedByEventId;
+		itemTypeId;
 	
 	location loc;
 }item;
@@ -73,7 +76,8 @@ typedef enum personParticularity
 typedef struct person
 {
 	char firstName[wordLength], lastName[wordLength];
-	unsigned int ID, houseId, placeId;
+	unsigned int ID;
+	long int houseId, placeId;
 	unsigned short int 
 		gender, //0, 1, 2
 		sportiness; //0, 1, 2
@@ -88,9 +92,11 @@ typedef struct eventType // <=> action
 {
 	unsigned int
 		ID,
-		requiredItemTypeId,
-		requiredPlaceTypeId,
 		itemTypeConsumption;
+
+	long int
+		requiredItemTypeId,
+		requiredPlaceTypeId;
 
 	unsigned long long int duration_s;
 
@@ -111,8 +117,8 @@ typedef struct eventType // <=> action
 
 typedef struct event
 {
-	unsigned int 
-		ID,
+	unsigned int ID;
+	long int
 		transmitterId,
 		receiverId,
 		itemId,

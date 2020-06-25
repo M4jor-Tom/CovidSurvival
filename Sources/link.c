@@ -736,25 +736,26 @@ link grabLink(structId structType, link *currentSimPtr)
 			//#TODO wtf I'm gettin tired joinedLinkPtr = getJoinedLink(getLinkById(_item, ))
 			//Does a joined structure (eventType) has a non-nullId value for join to itemType ? (means if I need an item of this event)
 			
-			//Fetch an item ptr from event
+			//[INNER JOIN] event-item
 			joinedLinkPtr = getLinkById(_eventType, recipient -> event_.eventTypeId, currentSimPtr);
-			if(joinedLinkPtr -> elementPtr -> eventType_.requiredItemTypeId != nullId)
+			if (joinedLinkPtr->elementPtr->eventType_.requiredItemTypeId != nullId)
 			{
-				joinedLinkPtr2 = getLinkById(_itemType, joinedLinkPtr -> elementPtr -> eventType_.requiredItemTypeId, currentSimPtr);
-				recipient->event_.itemId = 
+				//joinedLinkPtr2 = getLinkById(_itemType, joinedLinkPtr -> elementPtr -> eventType_.requiredItemTypeId, currentSimPtr);
+				recipient->event_.itemId =
 					grabId(
-						_item, 
-						currentSimPtr, 
-						false, 
+						_item,
+						currentSimPtr,
+						false,
 						(element){.item_.itemTypeId = joinedLinkPtr->elementPtr->eventType_.requiredItemTypeId}
 					);
 			}
+			else recipient->event_.itemId = nullId;
 			
-			//Fetch a place ptr from event
+			//[INNER JOIN] event-place
 			joinedLinkPtr = getLinkById(_eventType, recipient -> event_.eventTypeId, currentSimPtr);
 			if(joinedLinkPtr -> elementPtr -> eventType_.requiredPlaceTypeId != nullId)
 			{
-				joinedLinkPtr2 = getLinkById(_placeType, joinedLinkPtr -> elementPtr -> eventType_.requiredPlaceTypeId, currentSimPtr);
+				//joinedLinkPtr2 = getLinkById(_placeType, joinedLinkPtr -> elementPtr -> eventType_.requiredPlaceTypeId, currentSimPtr);
 				recipient -> event_.placeId = 
 					grabId(
 						_place, 
@@ -763,6 +764,7 @@ link grabLink(structId structType, link *currentSimPtr)
 						(element){.place_.placeTypeId = joinedLinkPtr->elementPtr->eventType_.requiredPlaceTypeId}
 					);
 			}
+			else recipient->event_.placeId = nullId;
 
 			recipient -> event_.eventTime = (unsigned long int)grabDateTime("Happening time: ");
 			
