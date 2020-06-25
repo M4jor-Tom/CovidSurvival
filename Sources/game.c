@@ -482,24 +482,23 @@ void run(link **gameChains, unsigned long long int nextTime, bool forward)
 
 	printf("\nWait from "); displayTime(getTime(gameChains)); printf(" to "); displayTime(nextTime); printf(".");
 
-	if(nextEvent != NULL && getEventTime(nextEvent) < nextTime)
+	if(nextEvent == NULL || getEventTime(nextEvent) > nextTime)
+		//Set requested time (nothing happend since time has gone)
+		setTime(gameChains, nextTime);
+	else while(getEventTime(getIncomingEvent(gameChains)) < nextTime)
 	{
-		printf("\nFirst encounter: ");
+		nextEvent = getIncomingEvent(gameChains);
+		printf("\nBeeep-beeep-beeep ! A schedule alert rings on your phone: ");
 		displayTime(getEventTime(nextEvent)); 
 		getch();
+		printf("\n");
 
 		//Skip time till it's next event
 		setTime(gameChains, getEventTime(nextEvent));
 
 		//Happen event (time will go to event's end)
 		happenEvent(gameChains, nextEvent, forward);
-
-		//Run next event (if there is)
-		run(gameChains, nextTime, forward);
 	}
-	else
-		//Set requested time (nothing happend since time has gone)
-		setTime(gameChains, nextTime);
 }
 
 link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *couldInsert)
