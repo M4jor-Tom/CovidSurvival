@@ -148,7 +148,7 @@ link* insertLink(link* headLinkPtr, link* toInsertLinkPtr)
 		unsigned int 
 			lastId = getLinkId(lastLinkPtr),
 			nextId = lastId > hardcodedMaxId
-				? lastId + 1
+				? lastId
 				: hardcodedMaxId;
 		setLinkId(toInsertLinkPtr, nextId + 1);
 		return headLinkPtr;
@@ -780,11 +780,11 @@ link grabLink(structId structType, link *currentSimPtr)
 				displayedChain = readChain(globalFile[_itemType]);
 				
 				//Choosing a link, getting its Id
-				chosenLinkPtr = selectLink(displayedChain);
+				chosenLinkPtr = selectLink(displayedChain, true);
 				
 				if (chosenLinkPtr != NULL)
 				{
-					idChoice = chosenLinkPtr -> ID;
+					idChoice = getLinkId(chosenLinkPtr);
 				
 					//Getting itemType consumption
 					printf(
@@ -821,10 +821,10 @@ link grabLink(structId structType, link *currentSimPtr)
 				displayedChain = readChain(globalFile[_placeType]);
 				
 				//Choosing a link, getting its Id
-				chosenLinkPtr = selectLink(displayedChain);
+				chosenLinkPtr = selectLink(displayedChain, true);
 				
 				if(chosenLinkPtr != NULL)
-					idChoice = chosenLinkPtr -> ID;
+					idChoice = getLinkId(chosenLinkPtr);
 				
 				//Freeing this chain done for pure display
 				freeChain(&displayedChain, NULL);
@@ -945,7 +945,7 @@ link* grabChain(structId structType, link *currentSimPtr)
 	return chain;
 }
 
-link *selectLink(link *chain)
+link *selectLink(link *chain, bool allowEscape)
 {
 	link *chosenLinkPtr = NULL;
 	long int idChoice = nullId;
@@ -954,7 +954,11 @@ link *selectLink(link *chain)
 	if(chain != NULL)
 	{
 		//User query + choices display
-		printf("Please select among %ss: (Enter %d to escape)\n", globalFile[chain -> structType].name, nullId);
+		if(allowEscape)
+			printf("Please select among %ss: (%d to escape)\n", globalFile[chain -> structType].name, nullId);
+		else
+			printf("Please select among %ss:\n", globalFile[chain->structType].name);
+
 		displayChain(chain, NULL);
 		do
 		{
@@ -967,7 +971,7 @@ link *selectLink(link *chain)
 			getchar();
 			
 			chosenLinkPtr = chain_search(chain, idChoice);
-			if (chosenLinkPtr == NULL || idChoice == nullId)
+			if (chosenLinkPtr == NULL && (idChoice != nullId || !allowEscape))
 				redo = true;
 		}while(redo);
 	}

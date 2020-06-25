@@ -218,36 +218,22 @@ bool shop(link** gameChains, unsigned long int shopId)
 	if (gameChains != NULL && gameChains[_placeType] != NULL && gameChains[_place] != NULL)
 	{
 		//Get all game itemTypes
-		link* buyableItems = gameChains[_itemType];
+		link* selectedItemType = selectLink(gameChains[_itemType], true);
+		if(selectedItemType == NULL)
+			return false;
 
-		//Get only items located at the store
-		/*element itemsFilter =
-		{
-			.itemType_
-		};*/
-
-		//[perf-flag] (Getting Id of bought item) Copy chain to filtered, choose within filtered, free filtered
-		//buyableItems = filterChainBy(gameChains, _item, itemsFilter);
-		link* selectedItemType = selectLink(buyableItems);
 		unsigned long int selectedItemTypeId = getLinkId(selectedItemType);
-		//freeChain(&buyableItems, NULL);
 
 
 		//Getting data about bougt item and player's money
-		//link *chosenItem = getLinkById(_item, chosenId, gameChains[_simulation]);
-		//link *chosenItemType = getJoinedLink(chosenItem, _itemType, gameChains[_simulation], 1);
 		person* playerPtr = &getLinkById(_person, playerId, gameChains[_simulation]) -> elementPtr -> person_;
 		float
 			money = playerPtr->stats_.money,
 			price = selectedItemType->elementPtr->itemType_.price;
-		//freeLink(&chosenItemType);
 
 		if(price < money)
 		{
 			//The player buys the item
-			//chosenItem->elementPtr->item_.proprietaryId = playerId;	//Because he bought it
-			//chosenItem->elementPtr->item_.locationPersonId = playerId;	//And he took it on himself
-
 			//Creating the item corresponding to the player's expectations
 			link* createdItem = newLink("shop/item creation", _item, true);
 			createdItem -> elementPtr -> item_.itemTypeId = selectedItemTypeId;

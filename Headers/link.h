@@ -75,7 +75,7 @@ link grabLink(structId structType, link *currentSimPtr);
 link *grabChain(structId structType, link *currentSimPtr);
 
 //Gets a link's ptr out of a chain by user choice
-link *selectLink(link *chain);
+link* selectLink(link* chain, bool allowEscape);
 
 //Sorts a chain so the selected Id's gets first
 link* makeFirstLink(long int linkId, link* chain);

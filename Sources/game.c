@@ -107,7 +107,9 @@ link **setupGame()
 	}
 	else
 	{
-		currentSimPtr = selectLink(simulations);
+		currentSimPtr = selectLink(simulations, true);
+		if(currentSimPtr == NULL)
+			return NULL;
 
 		simulations = makeFirstLink(getLinkId(currentSimPtr), simulations);
 
@@ -259,23 +261,28 @@ void inGameActions(link** gameChains, bool *keepPlaying)
 
 bool playGame(link **gameChains)
 {
-	bool keepPlaying = true;
-	inGameActions(gameChains, &keepPlaying);
-
-	int i;
-	savesFile *gameFile = setGameFiles(gameChains[_simulation]);
-
-	for(i = 0; i < lastStructId; i++)
+	bool keepPlaying = false;
+	if (gameChains != NULL)
 	{
-		if(&gameFile[i] != NULL)
-			writeChain(gameChains[i], gameFile[i]);
+		keepPlaying = true;
+		inGameActions(gameChains, &keepPlaying);
 
-		#ifdef DEBUG
-			else printf("<playGame> Warning: Can't save structId %d\n", i);
-		#endif
+		int i;
+		savesFile* gameFile = setGameFiles(gameChains[_simulation]);
+
+		for (i = 0; i < lastStructId; i++)
+		{
+			if (&gameFile[i] != NULL)
+				writeChain(gameChains[i], gameFile[i]);
+
+			#ifdef DEBUG
+				else printf("<playGame> Warning: Can't save structId %d\n", i);
+			#endif
+		}
+
+		free(gameFile);
 	}
-
-	free(gameFile);
+	
 	return keepPlaying;
 }
 
