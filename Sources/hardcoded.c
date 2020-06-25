@@ -237,7 +237,7 @@ bool shop(link** gameChains, bool forward)
 	if (gameChains != NULL && gameChains[_placeType] != NULL && gameChains[_place] != NULL)
 	{
 		//Get all game itemTypes
-		link* selectedItemType = selectLink(gameChains[_itemType], true);
+		link* selectedItemType = selectLink(gameChains[_itemType], true, NULL, (element){NULL});
 		if(selectedItemType == NULL)
 			return false;
 
@@ -261,7 +261,7 @@ bool shop(link** gameChains, bool forward)
 			createdItem -> elementPtr -> item_.locationPlaceId = nullId;
 			gameChains[_item] = insertLink(gameChains[_item], createdItem);
 
-			playerPtr->stats_.money = money - price;
+			gameChains[_person]->elementPtr->person_.stats_.money = money - price;
 
 			bought = true;
 		}

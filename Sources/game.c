@@ -107,7 +107,7 @@ link **setupGame()
 	}
 	else
 	{
-		currentSimPtr = selectLink(simulations, true);
+		currentSimPtr = selectLink(simulations, true, NULL, (element){NULL});
 		if(currentSimPtr == NULL)
 			return NULL;
 

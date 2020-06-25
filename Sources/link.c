@@ -442,7 +442,7 @@ link *chain_search(link* chain, long int ID)
 
 long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId, element choiceFilter)
 {
-	long int joinId = nullId;
+	long int retId = nullId;
 	link
 		*displayedChain = NULL,
 		*restrictedChain = NULL,
@@ -460,37 +460,20 @@ long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId, ele
 	
 	//Display choices
 	displayedChain = readChain(dataFile[retStructId]);
-
-	//Particular cases filtering
-	if (retStructId == _eventType)
-	{
-		restrictedChain = filterChainBy(displayedChain, choiceFilter);
-		freeChain(&displayedChain, NULL);
-		displayedChain = restrictedChain;
-	}
-
-	if (retStructId == _place)
-	{
-		restrictedChain = filterChainBy(displayedChain, choiceFilter);
-		freeChain(&displayedChain, NULL);
-		displayedChain = restrictedChain;
-	}
 	
 	//HMI
-	printf("Select among one of those:\n");
-	displayChain(displayedChain, currentSimPtr);
-	scanf("%ld", &joinId);
-	getchar();
+	retId = getLinkId(selectLink(displayedChain, allowNullId, currentSimPtr, choiceFilter));
 	
 	//End
 	freeChain(&displayedChain, NULL);
 	
 	//Good grab case
-	if(joinId != nullId || allowNullId)
-		return joinId;
+	return retId;
+	/*if(retId != nullId || allowNullId)
+		return retId;
 
 	//Recursion for retry
-	else return grabId(retStructId, currentSimPtr, allowNullId, choiceFilter);
+	else return grabId(retStructId, currentSimPtr, allowNullId, choiceFilter);*/
 }
 
 link *getJoinedLink(link *mainLink, structId selectedStruct, link *currentSimPtr, unsigned short int joinIndex)
@@ -794,7 +777,7 @@ link grabLink(structId structType, link *currentSimPtr)
 				displayedChain = readChain(globalFile[_itemType]);
 				
 				//Choosing a link, getting its Id
-				chosenLinkPtr = selectLink(displayedChain, true);
+				chosenLinkPtr = selectLink(displayedChain, true, currentSimPtr, (element){NULL});
 				
 				if (chosenLinkPtr != NULL)
 				{
@@ -835,7 +818,7 @@ link grabLink(structId structType, link *currentSimPtr)
 				displayedChain = readChain(globalFile[_placeType]);
 				
 				//Choosing a link, getting its Id
-				chosenLinkPtr = selectLink(displayedChain, true);
+				chosenLinkPtr = selectLink(displayedChain, true, NULL, (element){NULL});
 				
 				if(chosenLinkPtr != NULL)
 					idChoice = getLinkId(chosenLinkPtr);
@@ -959,9 +942,9 @@ link* grabChain(structId structType, link *currentSimPtr)
 	return chain;
 }
 
-link *selectLink(link *chain, bool allowEscape)
+link *selectLink(link *chain, bool allowEscape, link *currentSimPtr, element choiceFilter)
 {
-	link *chosenLinkPtr = NULL;
+	link *chosenLinkPtr = NULL, *displayedChain = chainCopy(chain), *temp = NULL;
 	long int idChoice = nullId;
 	bool redo = false;
 
@@ -973,7 +956,14 @@ link *selectLink(link *chain, bool allowEscape)
 		else
 			printf("Please select among %ss:\n", globalFile[chain->structType].name);
 
-		displayChain(chain, NULL);
+		
+		temp = filterChainBy(displayedChain, choiceFilter);
+		freeChain(&displayedChain, NULL);
+		displayedChain = temp;
+
+		displayChain(displayedChain, currentSimPtr);
+		freeChain(&displayedChain, NULL);
+
 		do
 		{
 			//Getting choice's link ptr from Id
