@@ -13,52 +13,52 @@
 savesFile
 	globalFile[structuresCount] = 
 	{
-		{
+		[_itemType] = {
 			.storedElements = _itemType,
 			.name = "Item type",
 			.path = "ressources/",
 			.file = "itemType.covid"
 		},
-		{
+		[_placeType] = {
 			.storedElements = _placeType,
 			.name = "Place type",
 			.path = "ressources/",
 			.file = "placeType.covid"
 		},
-		{
+		[_eventType] = {
 			.storedElements = _eventType,
 			.name = "Event type",
 			.path = "ressources/",
 			.file = "eventType.covid"
 		},
-		{
+		[_simulation] = {
 			.storedElements = _simulation,
 			.name = "Simulation",
 			.path = "saves/",
 			.file = "simulation.covid"
 		},
-		{
+		[_event] = {
 			//gameFile template
 			.storedElements = _event,
 			.name = "Event",
 			.path = savesFilesTemplate,
 			.file = "event.surviver"
 		},
-		{
+		[_place] = {
 			//gameFile template
 			.storedElements = _place,
 			.name = "Place",
 			.path = savesFilesTemplate,
 			.file = "place.surviver"
 		},
-		{
+		[_item] = {
 			//gameFile template
 			.storedElements = _item,
 			.name = "Item",
 			.path = savesFilesTemplate,
 			.file = "item.surviver"
 		},
-		{
+		[_person] = {
 			//gameFile template
 			.storedElements = _person,
 			.name = "Person",
