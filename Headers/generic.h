@@ -27,6 +27,8 @@ long long int grabInt(char* instructions);
 
 float grabFloat(char* instructions);
 
+int returnInRange(int min, int val, int max);
+
 //Prints week#, week::day, hour:minute:second
 void displayTime(unsigned long long int time);
 

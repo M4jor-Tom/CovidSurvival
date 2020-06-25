@@ -458,7 +458,7 @@ long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId, ele
 		? globalFile
 		: dataFile;
 	
-	//Display choices
+	//Get full choices
 	displayedChain = readChain(dataFile[retStructId]);
 	
 	//HMI
@@ -467,13 +467,7 @@ long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId, ele
 	//End
 	freeChain(&displayedChain, NULL);
 	
-	//Good grab case
 	return retId;
-	/*if(retId != nullId || allowNullId)
-		return retId;
-
-	//Recursion for retry
-	else return grabId(retStructId, currentSimPtr, allowNullId, choiceFilter);*/
 }
 
 link *getJoinedLink(link *mainLink, structId selectedStruct, link *currentSimPtr, unsigned short int joinIndex)
@@ -760,7 +754,7 @@ link grabLink(structId structType, link *currentSimPtr)
 			scanf("%s", recipient -> eventType_.name);
 			
 			printf("\tDuration: ");
-			scanf("%u", &recipient -> eventType_.duration_s);
+			scanf("%llu", &recipient -> eventType_.duration_s);
 			
 			//Item consumed on eventing
 			idChoice = nullId;

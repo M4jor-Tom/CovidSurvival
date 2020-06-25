@@ -10,4 +10,6 @@ void getOut(link **gameChains, bool forward);
 
 bool shop(link** gameChains, bool forward);
 
-//void policeControl(link **gameChains);
+void idle(link** gameChains, unsigned long long int time, bool forward);
+
+bool policeControl(link **gameChains);

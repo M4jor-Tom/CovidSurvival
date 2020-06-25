@@ -191,6 +191,16 @@ float grabFloat(char* instructions)
 	return ret;
 }
 
+int returnInRange(int min, int val, int max)
+{
+	val = min < val
+		? val
+		: min;
+	return max > val
+		? val
+		: max;
+}
+
 void displayTime(unsigned long long int time)
 {
 	char weekDay[10] = "\0";

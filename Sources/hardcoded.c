@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "../Headers/main.h"
 
@@ -17,16 +18,16 @@ link* getHardcoded(savesFile save)
 		placeType
 			outSide =
 		{
-			.name = "Outside\n"
+			.name = "Outside"
 		},
 			store =
 		{
-			.name = "Store\n",
+			.name = "Store",
 			.marketPlace = true
 		},
 			house =
 		{
-			.name = "House\n",
+			.name = "House",
 			.livingPlace = true
 		};
 
@@ -68,7 +69,7 @@ link* getHardcoded(savesFile save)
 			},
 			shop =
 			{
-				.name = "Shop\n",
+				.name = "Shop",
 				.duration_s = 300,
 				.requiredItemTypeId = nullId,
 				.requiredPlaceTypeId = 2,	//Store
@@ -76,7 +77,7 @@ link* getHardcoded(savesFile save)
 			},
 			police =
 			{
-				.name = "Police control\n",
+				.name = "Police control",
 				.duration_s = 300,
 				.requiredItemTypeId = 2,	//Exit_certificate
 				.requiredPlaceTypeId = nullId,
@@ -110,33 +111,42 @@ link* getHardcoded(savesFile save)
 	{
 		link
 			* foodPtr = newLink("readChain/food", _itemType, true),
-			* certPtr = newLink("readChain/cert", _itemType, true);
+			* certPtr = newLink("readChain/cert", _itemType, true),
+			*maskPtr = newLink("readChain/mask", _itemType, true);
 		hardcodeHead = foodPtr;
 
 		//Initialization
 		itemType
 			food =
 			{
-				.name = "Food\n",
+				.name = "Food",
 				.price = 5,
 				.usesCount = 1
 			},
 			cert =
 			{
-				.name = "Exit certificate\n",
+				.name = "Exit certificate",
+				.usesCount = 1
+			},
+			mask =
+			{
+				.name = "Mask",
 				.usesCount = 1
 			};
 
 		//Chaining
 		foodPtr->nextLinkPtr = certPtr;
+		certPtr->nextLinkPtr = maskPtr;
 
 		//Pass values
 		foodPtr->elementPtr->itemType_ = food;
 		certPtr->elementPtr->itemType_ = cert;
+		maskPtr->elementPtr->itemType_ = mask;
 
 		//Setting Ids
 		setLinkId(foodPtr, 1);
 		setLinkId(certPtr, 2);
+		setLinkId(maskPtr, 3);
 	}
 	else if (save.storedElements == _place)
 	{
@@ -150,17 +160,17 @@ link* getHardcoded(savesFile save)
 		place
 			outThere =
 			{
-				.name = "Out there\n",
+				.name = "Out there",
 				.placeTypeId = 1	//outSide
 			},
 			house =
 			{
-				.name = "Your home\n",
+				.name = "Your home",
 				.placeTypeId = 3	//House
 			},
 			store =
 			{
-				.name = "Some polyvalent store\n",
+				.name = "Some polyvalent store",
 				.placeTypeId = 2	//Store
 			};
 
@@ -227,8 +237,12 @@ link* ommitHardcoded(link* chain, savesFile save)
 
 void getOut(link** gameChains, bool forward)
 {
-	if(random(0, 100) < copsProba)
-		eventApply(gameChains, getLinkById(_event, policeControlEventTypeId, gameChains[_simulation]), forward);
+	if (random(0, 100) < copsProba)
+	{
+		policeControl(gameChains);
+		printf("\nCops controlled you\n");
+		getch();
+	}
 }
 
 bool shop(link** gameChains, bool forward)
@@ -268,9 +282,55 @@ bool shop(link** gameChains, bool forward)
 	}
 	return bought;
 }
-/*
-void policeControl(link** gameChains)
+
+void move(link** gameChains, bool forward)
 {
+	//Instruction
+	printf("\nYou choose to move around !\n");
+
+	//Data grab
+	long int placeId = grabId(_place, gameChains[_simulation], true, (element){NULL});
+	if (placeId != nullId)
+	{
+		//Go somewhere
+		getLinkById(_person, playerId, gameChains[_simulation]) -> elementPtr ->person_.placeId = placeId;
+	}
+	else printf("\nWell, you stay where you are...\n");
+}
+
+void idle(link** gameChains, unsigned long long int time, bool forward)
+{
+	if (gameChains != NULL)
+	{
+		link* personsChain = gameChains[_person];
+		int i, j = 0;
+		while (personsChain != NULL)
+		{
+			for (i = 0, j = 0; i < time; i = i + timeForConsequence, j++)
+			{
+				gameChains[_person]->elementPtr->person_.stats_ =
+					operateStats(
+						gameChains[_person]->elementPtr->person_.stats_,
+						(stats)
+						{
+							.hunger = -1,
+							.hygiene = -1,
+							.mentalHealth = -1,
+							.stamina = 1
+						}
+					);
+			}
+			personsChain = personsChain -> nextLinkPtr;
+		}
+		printf("You idled enought to loose %d hunger, hygiene, and mentalhealth, and won %d stamina", j, j);
+		setTime(gameChains, getTime(gameChains) + time);
+	}
+}
+
+
+bool policeControl(link** gameChains)
+{
+	bool playerIsRegular = true;
 	if(gameChains)
 	{
 		link
@@ -278,16 +338,24 @@ void policeControl(link** gameChains)
 			*ownedInventory = filterChainBy(inventory, (element) {.item_.proprietaryId = playerId}),
 			*exitCertificate = filterChainBy(ownedInventory, (element){.item_.itemTypeId = 2});
 
-		bool playerIsRegular = exitCertificate != NULL;
+		playerIsRegular = exitCertificate != NULL;
 
 		freeChain(&exitCertificate, NULL);
 		freeChain(&ownedInventory, NULL);
 		freeChain(&inventory, NULL);
 
-		person* playerPtr = getPlayerPtr(gameChains[_person]);
-		if (playerIsRegular)
-		{
+		link* playerLinkPtr = getLinkById(_person, playerId, gameChains[_simulation]);
+		eventType policeControl = getLinkById(_eventType, policeControlEventTypeId, gameChains[_simulation])->elementPtr->eventType_;
+		person player = playerLinkPtr->elementPtr->person_;
 
-		}
+		playerLinkPtr->elementPtr->person_.stats_ = 
+			operateStats(
+				player.stats_,
+				playerIsRegular 
+					? policeControl.onSuccess 
+					: policeControl.onFailure
+			);
+
 	}
-}*/
+	return playerIsRegular;
+}

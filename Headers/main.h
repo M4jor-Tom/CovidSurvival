@@ -1,5 +1,6 @@
 #pragma once
 
+#include <conio.h>
 #ifdef _MSC_VER
 
 	#include <direct.h>
@@ -44,6 +45,7 @@
 #define policeControlEventTypeId 3
 
 #define copsProba 25
+#define timeForConsequence 300
 
 
 #include "dirent.h"

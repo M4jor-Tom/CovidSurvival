@@ -388,13 +388,13 @@ stats operateStats(stats base, stats consequence)
 	//[EDIT_STATS]
 	return (stats)
 	{
-		.health = base.health + consequence.health,
-		.hunger = base.hunger + consequence.hunger,
-		.hygiene = base.hygiene + consequence.hygiene,
-		.karma = base.karma + consequence.karma,
-		.mentalHealth = base.mentalHealth + consequence.mentalHealth,
-		.money = base.money + consequence.money,
-		.stamina = base.stamina + consequence.stamina,
+		.health = returnInRange(0, base.health + consequence.health, 100),
+		.hunger = returnInRange(0, base.hunger + consequence.hunger, 100),
+		.hygiene = returnInRange(0, base.hygiene + consequence.hygiene, 100),
+		.karma = returnInRange(0, base.karma + consequence.karma, 100),
+		.mentalHealth = returnInRange(0, base.mentalHealth + consequence.mentalHealth, 100),
+		.money = (float)returnInRange(0, (int)base.money + (int)consequence.money, 100),
+		.stamina = returnInRange(0, base.stamina + consequence.stamina, 100),
 		.coronaVirus = base.coronaVirus | consequence.coronaVirus
 	};
 }
@@ -406,35 +406,38 @@ bool eventApply(link** gameChains, link* eventLinkPtr, bool forward)
 	eventType happeningType = getLinkById(_eventType, happening.eventTypeId, gameChains[_simulation]) -> elementPtr -> eventType_;
 
 	//Wich item consummed ?
-	item *consumedPtr = &getLinkById(_item, happening.itemId, gameChains[_simulation]) -> elementPtr -> item_;
-	itemType consumedType = getLinkById(_itemType, consumedPtr -> itemTypeId, gameChains[_simulation]) -> elementPtr -> itemType_;
+	link* consumedLinkPtr = getLinkById(_item, happening.itemId, gameChains[_simulation]);
 
 	//Who is targetted ?
-	person *receiverPtr = &getLinkById(_person, happening.receiverId, gameChains[_simulation])->elementPtr->person_;
+	link* receiverLinkPtr = getLinkById(_person, happening.receiverId, gameChains[_simulation]);
+	person receiver = receiverLinkPtr->elementPtr->person_;
 
 	//Where is the event/receiver
-	place
+	link
 		* whereEventPtr = getLinkById(_place, happening.placeId, gameChains[_place]),
-		* wherePersonPtr = getLinkById(_place, receiverPtr -> placeId, gameChains[_simulation]);
+		* wherePersonPtr = getLinkById(_place, receiver.placeId, gameChains[_simulation]);
 
-	if((consumedPtr != NULL || happening.itemId == nullId) && (whereEventPtr == wherePersonPtr || happening.placeId == nullId))
+	if((consumedLinkPtr != NULL || happening.itemId == nullId) && (whereEventPtr == wherePersonPtr || happening.placeId == nullId))
 	{
 		//Success
-		receiverPtr->stats_ = operateStats(receiverPtr->stats_, happeningType.onSuccess);
-		if (consumedPtr != NULL)
+		receiverLinkPtr->elementPtr->person_.stats_ = operateStats(receiver.stats_, happeningType.onSuccess);
+
+		if (consumedLinkPtr != NULL)
 		{
-			consumedPtr->usedCount = consumedPtr->usedCount + happeningType.itemTypeConsumption;
-			if (consumedPtr->usedCount >= consumedType.usesCount)
+			item consumed = consumedLinkPtr->elementPtr->item_;
+			itemType consumedType = getLinkById(_itemType, consumed.itemTypeId, gameChains[_simulation])->elementPtr->itemType_;
+			consumedLinkPtr-> elementPtr -> item_.usedCount = consumed.usedCount + happeningType.itemTypeConsumption;
+			if (consumedLinkPtr->elementPtr->item_.usedCount >= consumedType.usesCount)
 			{
 				//Person's item broke
-				deleteLink(gameChains[_item], getLinkId(consumedPtr));
+				deleteLink(gameChains[_item], getLinkId(consumedLinkPtr));
 			}
 		}
 	}
 	else if(happeningType.executableOnFailure)
 	{
 		//Failure
-		receiverPtr->stats_ = operateStats(receiverPtr->stats_, happeningType.onFailure);
+		receiverLinkPtr->elementPtr->person_.stats_ = operateStats(receiver.stats_, happeningType.onFailure);
 	}
 	else 
 		//Cannot happen
@@ -443,7 +446,7 @@ bool eventApply(link** gameChains, link* eventLinkPtr, bool forward)
 	//Add consequences for particular cases
 	personParticularity cursor;
 	for(cursor = 0; cursor < lastPersonParticularityId; cursor++)
-		receiverPtr->stats_ = operateStats(receiverPtr->stats_, happeningType.consequenceFor[cursor]);
+		receiverLinkPtr->elementPtr->person_.stats_ = operateStats(receiver.stats_, happeningType.consequenceFor[cursor]);
 
 	//Could happen
 	return true;
@@ -467,7 +470,16 @@ void happenEvent(link **gameChains, link *eventLinkPtr, bool forward)
 				break;
 
 			default:
-				eventApply(gameChains, eventLinkPtr, forward);
+				if (eventApply(gameChains, eventLinkPtr, forward))
+				{
+					printf("\nEvent done !\n");
+					getch();
+				}
+				else
+				{
+					printf("\nEvent cancelled...\n");
+					getch();
+				}
 				break;
 		}
 
@@ -482,9 +494,11 @@ void run(link **gameChains, unsigned long long int nextTime, bool forward)
 
 	printf("\nWait from "); displayTime(getTime(gameChains)); printf(" to "); displayTime(nextTime); printf(".");
 
-	if(nextEvent == NULL || getEventTime(nextEvent) > nextTime)
+	if (nextEvent == NULL || getEventTime(nextEvent) > nextTime)
+	{
 		//Set requested time (nothing happend since time has gone)
-		setTime(gameChains, nextTime);
+		idle(gameChains, nextTime - getTime(gameChains), forward);
+	}
 	else while(getEventTime(getIncomingEvent(gameChains)) < nextTime)
 	{
 		nextEvent = getIncomingEvent(gameChains);
@@ -494,7 +508,7 @@ void run(link **gameChains, unsigned long long int nextTime, bool forward)
 		printf("\n");
 
 		//Skip time till it's next event
-		setTime(gameChains, getEventTime(nextEvent));
+		idle(gameChains, getEventTime(nextEvent) - getTime(gameChains), forward);
 
 		//Happen event (time will go to event's end)
 		happenEvent(gameChains, nextEvent, forward);
@@ -622,9 +636,4 @@ link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *coul
 
 		return NULL;
 	}
-}
-
-person* getPlayerPtr(link *personsChain)
-{
-	return &getLinkById(_person, playerId, personsChain)->elementPtr->person_;
 }
