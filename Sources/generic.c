@@ -278,7 +278,7 @@ unsigned long long int grabDateTime(char* instructions)
 	return ret;
 }
 
-unsigned int secondsTo(char *returnType, unsigned int duration_s)
+unsigned int secondsTo(char *returnType, unsigned long long int duration_s)
 {
 	unsigned int ret = 0;
 	

@@ -85,12 +85,14 @@ typedef struct person
 
 typedef struct eventType // <=> action
 {
-	unsigned int 
+	unsigned int
 		ID,
 		requiredItemTypeId,
 		requiredPlaceTypeId,
-		itemTypeConsumption,
-		duration_s;
+		itemTypeConsumption;
+
+	unsigned long long int duration_s;
+
 	char name[wordLength];
 	
 	bool 
@@ -116,7 +118,7 @@ typedef struct event
 		placeId,
 		eventTypeId;
 
-	unsigned long int eventTime;
+	unsigned long long int eventTime;
 }event;
 
 typedef struct simulation

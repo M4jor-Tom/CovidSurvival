@@ -56,7 +56,7 @@ link* filterChainBy(link *gameChain, element criterion);
 link *chain_search(link *chain, long int ID);
 
 //Prints choices for the user to select an Id
-long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId);
+long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId, element choiceFilter);
 
 //Finds the ptr of one or more links from another's ptr and a choosen type. 
 //joinIndex means wich element index of a same type you want from a same type (0 or 1 in normal cases, almost each)

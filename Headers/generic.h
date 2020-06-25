@@ -34,4 +34,4 @@ unsigned long long int grabDateTime(char* instructions);
 
 //Translates a duration in seconds to its corresponding time unity in an amount that can't be over its superior-unit increment
 //Returns 0 if this unit contains more seconds than inputed
-unsigned int secondsTo(char *returnType, unsigned int duration_s);
+unsigned int secondsTo(char *returnType, unsigned long long int duration_s);

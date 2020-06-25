@@ -195,6 +195,7 @@ void inGameActions(link** gameChains, bool *keepPlaying)
 			gameChains[_event] = insertEvent(gameChains, gameChains[_event], newEvent, &couldInsert);
 			printf("[i]Event %s\n\n->\n", couldInsert ? "scheduled" : "unschedulable");
 			getch();
+
 			break;
 
 		case '3':
@@ -391,9 +392,6 @@ void happenEvent(link **gameChains, link *eventLinkPtr, bool forward)
 				shop(gameChains, 3);
 				break;
 
-			case policeControlEventTypeId:
-				break;
-
 			default:
 				break;
 		}
@@ -434,7 +432,7 @@ link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *coul
 	if(couldInsert != NULL)
 		*couldInsert = false;
 
-	if(eventLinkPtr != NULL && eventLinkPtr -> structType == _event)
+	if(gameChains != NULL && eventLinkPtr != NULL && eventLinkPtr -> structType == _event)
 	{
 		//Get/Setting Id for new
 		long int
@@ -452,7 +450,7 @@ link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *coul
 			*ret = NULL;
 
 		//Getting user's events
-		filtered = filterChainBy(gameChains[_event], (element){.event_.transmitterId = playerId, .event_.receiverId = playerId});
+		//filtered = filterChainBy(gameChains[_event], (element){.event_.transmitterId = playerId, .event_.receiverId = playerId});
 
 		//Skipping past
 		while(
@@ -500,6 +498,7 @@ link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *coul
 			else
 			{
 				//[UNSCHEDULABLE]If the event we want to schedule ends after the next one begins, don't insert
+				freeLink(&eventLinkPtr);
 				ret = chain;
 			}
 		}
@@ -510,12 +509,29 @@ link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *coul
 			//Chain header returned
 			ret = chain;
 
-			//eventLinkPtr insertion in the middle
-			previousLinkPtr -> nextLinkPtr = eventLinkPtr;
-			eventLinkPtr -> nextLinkPtr = nextFromNewLinkPtr;
+			if(
+				getEventEnd(previousLinkPtr, gameChains) < getEventTime(eventLinkPtr) 
+				&& 
+				(
+					previousLinkPtr->nextLinkPtr == NULL || 
+					getEventEnd(previousLinkPtr, gameChains) < getEventTime(previousLinkPtr->nextLinkPtr)
+				)
+			)
+			{
+				//eventLinkPtr insertion in the middle
+				previousLinkPtr -> nextLinkPtr = eventLinkPtr;
+				eventLinkPtr -> nextLinkPtr = nextFromNewLinkPtr;
 
-			if(couldInsert != NULL)
-				*couldInsert = true;
+				if(couldInsert != NULL)
+					*couldInsert = true;
+			}
+			else 
+			{
+				freeLink(&eventLinkPtr);
+				if (couldInsert != NULL)
+					*couldInsert = false;
+			}
+
 		}
 		return ret;
 	}
@@ -523,7 +539,7 @@ link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *coul
 	{
 		#ifdef DEBUG
 			//Error return and printing
-			printf("<insertEvent> Error: eventLinkPtr = %llu", (unsigned long long)eventLinkPtr);
+			printf("<insertEvent> Error: gameChains = %llu, eventLinkPtr = %llu", (unsigned long long)gameChains, (unsigned long long)eventLinkPtr);
 			if (eventLinkPtr != NULL)
 				printf(", eventLinkPtr -> structType = %d", eventLinkPtr->structType);
 

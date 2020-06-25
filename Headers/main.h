@@ -10,7 +10,7 @@
 
 
 #define DEBUG
-#define DEBUG_NOTICE
+//#define DEBUG_NOTICE
 
 #define hardcodedMaxId 100
 #define nullId -1

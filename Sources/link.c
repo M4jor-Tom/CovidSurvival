@@ -358,7 +358,7 @@ link* filterChainBy(link* gameChain, element criterion)
 				//-value of filter != criterion's
 				//This means the value is (!= 0) esteemed, and (!= criterion's) unwanted, so filtered
 				case _item:
-					if (
+					if(
 						(criterion.item_.itemTypeId != 0 && filtered.item_.itemTypeId != criterion.item_.itemTypeId)
 						|| (criterion.item_.proprietaryId != 0 && filtered.item_.proprietaryId != criterion.item_.proprietaryId)
 						|| (criterion.item_.locationPersonId != 0 && filtered.item_.locationPersonId != criterion.item_.locationPersonId)
@@ -367,7 +367,7 @@ link* filterChainBy(link* gameChain, element criterion)
 					break;
 
 				case _event:
-					if (
+					if(
 						(criterion.event_.eventTypeId != 0 && filtered.event_.eventTypeId != criterion.event_.eventTypeId)
 						|| (criterion.event_.itemId != 0 && filtered.event_.itemId != criterion.event_.itemId)
 						|| (criterion.event_.placeId != 0 && filtered.event_.placeId != criterion.event_.placeId)
@@ -378,10 +378,17 @@ link* filterChainBy(link* gameChain, element criterion)
 					break;
 
 				case _eventType:
-					if (
+					if(
 						(criterion.eventType_.requiredItemTypeId != 0 && filtered.eventType_.requiredItemTypeId != criterion.eventType_.requiredItemTypeId)
 						|| (criterion.eventType_.requiredPlaceTypeId != 0 && filtered.eventType_.requiredPlaceTypeId != criterion.eventType_.requiredPlaceTypeId)
 						|| (criterion.eventType_.userSelectable != 0 && filtered.eventType_.userSelectable != criterion.eventType_.userSelectable)
+						)
+						filter = true;
+					break;
+
+				case _place:
+					if(
+						(criterion.place_.placeTypeId != 0 && filtered.place_.placeTypeId != criterion.place_.placeTypeId)
 						)
 						filter = true;
 					break;
@@ -433,7 +440,7 @@ link *chain_search(link* chain, long int ID)
 	return NULL;
 }
 
-long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId)
+long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId, element choiceFilter)
 {
 	long int joinId = nullId;
 	link
@@ -457,7 +464,14 @@ long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId)
 	//Particular cases filtering
 	if (retStructId == _eventType)
 	{
-		restrictedChain = filterChainBy(displayedChain, (element){.eventType_.userSelectable = true});
+		restrictedChain = filterChainBy(displayedChain, choiceFilter);
+		freeChain(&displayedChain, NULL);
+		displayedChain = restrictedChain;
+	}
+
+	if (retStructId == _place)
+	{
+		restrictedChain = filterChainBy(displayedChain, choiceFilter);
 		freeChain(&displayedChain, NULL);
 		displayedChain = restrictedChain;
 	}
@@ -471,9 +485,12 @@ long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId)
 	//End
 	freeChain(&displayedChain, NULL);
 	
+	//Good grab case
 	if(joinId != nullId || allowNullId)
 		return joinId;
-	else return grabId(retStructId, currentSimPtr, allowNullId);
+
+	//Recursion for retry
+	else return grabId(retStructId, currentSimPtr, allowNullId, choiceFilter);
 }
 
 link *getJoinedLink(link *mainLink, structId selectedStruct, link *currentSimPtr, unsigned short int joinIndex)
@@ -698,11 +715,11 @@ link grabLink(structId structType, link *currentSimPtr)
 			
 			//eventType
 			printf("\n[event]Event type: ");
-			recipient -> event_.eventTypeId = grabId(_eventType, currentSimPtr, false);
+			recipient->event_.eventTypeId = grabId(_eventType, currentSimPtr, false, (element){.eventType_.userSelectable = true});
 			
 			//person
 			printf("\n\tReceiver: ");
-			recipient -> event_.receiverId = grabId(_person, currentSimPtr, false);
+			recipient->event_.receiverId = grabId(_person, currentSimPtr, false, (element){NULL});
 			
 			//#TODO wtf I'm gettin tired joinedLinkPtr = getJoinedLink(getLinkById(_item, ))
 			//Does a joined structure (eventType) has a non-nullId value for join to itemType ? (means if I need an item of this event)
@@ -712,7 +729,13 @@ link grabLink(structId structType, link *currentSimPtr)
 			if(joinedLinkPtr -> elementPtr -> eventType_.requiredItemTypeId != nullId)
 			{
 				joinedLinkPtr2 = getLinkById(_itemType, joinedLinkPtr -> elementPtr -> eventType_.requiredItemTypeId, currentSimPtr);
-				recipient -> event_.itemId = grabId(_item, currentSimPtr, false);
+				recipient->event_.itemId = 
+					grabId(
+						_item, 
+						currentSimPtr, 
+						false, 
+						(element){.item_.itemTypeId = joinedLinkPtr->elementPtr->eventType_.requiredItemTypeId}
+					);
 			}
 			
 			//Fetch a place ptr from event
@@ -720,10 +743,16 @@ link grabLink(structId structType, link *currentSimPtr)
 			if(joinedLinkPtr -> elementPtr -> eventType_.requiredPlaceTypeId != nullId)
 			{
 				joinedLinkPtr2 = getLinkById(_placeType, joinedLinkPtr -> elementPtr -> eventType_.requiredPlaceTypeId, currentSimPtr);
-				recipient -> event_.placeId = grabId(_place, currentSimPtr, false);
+				recipient -> event_.placeId = 
+					grabId(
+						_place, 
+						currentSimPtr, 
+						false,
+						(element){.place_.placeTypeId = joinedLinkPtr->elementPtr->eventType_.requiredPlaceTypeId}
+					);
 			}
 
-			recipient -> event_.eventTime = (unsigned long int)grabInt("Happening time: ");
+			recipient -> event_.eventTime = (unsigned long int)grabDateTime("Happening time: ");
 			
 			break;
 		
@@ -1055,18 +1084,22 @@ void displayLink(link toDisplay, link *currentSimPtr)
 					elementPtr -> event_.ID
 				);
 				
+				printf("\n\tHappening: From ");
+				displayTime(elementPtr->event_.eventTime);
+
 				//[JOIN] event-eventType
 				joinedLinkPtr = getJoinedLink(&toDisplay, _eventType, currentSimPtr, 1);
 				if(joinedLinkPtr != NULL)
 				{
+					printf(" To ");
+					displayTime(elementPtr->event_.eventTime + joinedLinkPtr->elementPtr->eventType_.duration_s);
+
 					printf(
 						"\n\tEvent type: %s",
 						joinedLinkPtr -> elementPtr -> eventType_.name
 					);
 				}
 
-				printf("\tHappening: ");
-				displayTime(elementPtr->event_.eventTime);
 				
 				//[JOIN] event-person
 				joinedLinkPtr = getJoinedLink(&toDisplay, _person, currentSimPtr, 1);
