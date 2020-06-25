@@ -6,8 +6,8 @@ link* getHardcoded(savesFile save);
 //Gets rid of hardcoded data loaded within the RAM
 link* ommitHardcoded(link* chain, savesFile save);
 
-void getOut(link **gameChains);
+void getOut(link **gameChains, bool forward);
 
-bool shop(link** gameChains, unsigned long int shopId);
+bool shop(link** gameChains, bool forward);
 
-void policeControl(link **gameChains);
+//void policeControl(link **gameChains);

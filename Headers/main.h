@@ -43,6 +43,8 @@
 #define shopEventTypeId 2
 #define policeControlEventTypeId 3
 
+#define copsProba 25
+
 
 #include "dirent.h"
 #include "generic.h"

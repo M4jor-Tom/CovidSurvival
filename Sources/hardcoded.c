@@ -212,7 +212,13 @@ link* ommitHardcoded(link* chain, savesFile save)
 	return chain;
 }
 
-bool shop(link** gameChains, unsigned long int shopId)
+void getOut(link** gameChains, bool forward)
+{
+	if(random(0, 100) < copsProba)
+		eventApply(gameChains, getLinkById(_event, policeControlEventTypeId, gameChains[_simulation]), forward);
+}
+
+bool shop(link** gameChains, bool forward)
 {
 	bool bought = false;
 	if (gameChains != NULL && gameChains[_placeType] != NULL && gameChains[_place] != NULL)
@@ -249,3 +255,26 @@ bool shop(link** gameChains, unsigned long int shopId)
 	}
 	return bought;
 }
+/*
+void policeControl(link** gameChains)
+{
+	if(gameChains)
+	{
+		link
+			*inventory = filterChainBy(gameChains[_item], (element){.item_.locationPersonId = playerId}),
+			*ownedInventory = filterChainBy(inventory, (element) {.item_.proprietaryId = playerId}),
+			*exitCertificate = filterChainBy(ownedInventory, (element){.item_.itemTypeId = 2});
+
+		bool playerIsRegular = exitCertificate != NULL;
+
+		freeChain(&exitCertificate, NULL);
+		freeChain(&ownedInventory, NULL);
+		freeChain(&inventory, NULL);
+
+		person* playerPtr = getPlayerPtr(gameChains[_person]);
+		if (playerIsRegular)
+		{
+
+		}
+	}
+}*/

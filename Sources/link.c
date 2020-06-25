@@ -581,7 +581,10 @@ link *getJoinedLink(link *mainLink, structId selectedStruct, link *currentSimPtr
 				switch(selectedStruct)
 				{
 					case _place:
-						joinId = elementPtr -> person_.houseId;
+						if (joinIndex <= 1)
+							joinId = elementPtr->person_.houseId;
+						else 
+							joinId = elementPtr->person_.placeId;
 						break;
 				}
 				break;
@@ -687,12 +690,12 @@ link grabLink(structId structType, link *currentSimPtr)
 	long int idChoice;
 	
 	//Only for eventTypes
-	personParticularity lastPersonParticularityId_ = lastPersonParticularityId;
+	personParticularity lastPersonParticularityId_ = lastPersonParticularityId, cursor = 0;
 	char 
 		choice[2] = "\0",
 		*instructions = safeMalloc(sizeof(char) * 60, "grabLink/instruction"),
-		**particularityLabels = initParticularityLabels();
-	personParticularity cursor = 0;
+		**particularityLabels = initParticularityLabels(),
+		genderChoice;
 	
 	switch(structType)
 	{
@@ -703,6 +706,15 @@ link grabLink(structId structType, link *currentSimPtr)
 			
 			printf("\tFirst name: ");
 			scanf("%s", recipient -> person_.firstName);
+
+			printf("\tGender: (m/w/else)\n\t");
+			genderChoice = getche();
+			if (genderChoice == 'm')
+				recipient->person_.gender = MAN;
+			else if (genderChoice == 'w')
+				recipient->person_.gender = WOMAN;
+			else
+				recipient->person_.gender = OTHER;
 			
 			recipient -> person_.stats_ = grabStats("person's stats\n");
 			
@@ -1362,16 +1374,29 @@ void displayLink(link toDisplay, link *currentSimPtr)
 						elementPtr -> person_.lastName
 					);
 					
-					//[JOIN] place (house)
+					//[JOIN] person-place (house)
 					joinedLinkPtr = getJoinedLink(&toDisplay, _place, currentSimPtr, 1);
 					if(joinedLinkPtr != NULL)
 					{
-						//[JOIN] placeType (house type (= house ?))
+						//[JOIN] person-place-placeType (house type (= house ?))
 						joinedLinkPtr2 = getJoinedLink(joinedLinkPtr, _placeType, currentSimPtr, 1);
 						printf(
 							"\n\tLiving: %s (%s)",
 							joinedLinkPtr -> elementPtr -> place_.name,
 							joinedLinkPtr2 -> elementPtr -> placeType_.name
+						);
+					}
+
+					//[JOIN] person-place (location)
+					joinedLinkPtr = getJoinedLink(&toDisplay, _place, currentSimPtr, 2);
+					if(joinedLinkPtr != NULL)
+					{
+						//[JOIN] person-placeType (house type)
+						joinedLinkPtr2 = getJoinedLink(joinedLinkPtr, _placeType, currentSimPtr, 1);
+						printf(
+							"\n\tCurrent location: %s (%s)",
+							joinedLinkPtr->elementPtr->place_.name,
+							joinedLinkPtr2->elementPtr->placeType_.name
 						);
 					}
 					

@@ -23,6 +23,12 @@ bool playGame(link **gameChains);
 //Gets simulation time
 unsigned long long int getTime(link** gameChains);
 
+
+bool eventApply(link** gameChains, link* eventLinkPtr, bool forward);
+
 //Like insertLink from link.h, inserts a link in a chain but only for events.
 //Will insert event in the right place so it's time-sorted
 link* insertEvent(link** gameChains, link* chain, link* eventLinkPtr, bool* couldInsert);
+
+//Returns the player's ptr
+person* getPlayerPtr(link* personsChain);

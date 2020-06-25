@@ -135,6 +135,7 @@ link **setupGame()
 		gameChains[_person] = newLink("setupGame/no simulation found/create character", _person, true);
 		*gameChains[_person] = grabLink(_person, NULL);
 		gameChains[_person] -> elementPtr -> person_.houseId = 2;
+		gameChains[_person]->elementPtr->person_.placeId = 2;
 		setLinkId(gameChains[_person], hardcodedMaxId + 1);
 		
 		//Save created character
@@ -221,8 +222,7 @@ void inGameActions(link** gameChains, bool *keepPlaying)
 					chainType = _item;
 					filter = (element)
 					{
-						.item_.locationPersonId = playerId,
-						.item_.proprietaryId = playerId
+						.item_.locationPersonId = playerId
 					};
 					break;
 
@@ -383,6 +383,64 @@ bool inChain(link *chain, link *linkPtr)
 	return found;
 }
 
+stats operateStats(stats base, stats consequence)
+{
+	//[EDIT_STATS]
+	return (stats)
+	{
+		.health = base.health + consequence.health,
+		.hunger = base.hunger + consequence.hunger,
+		.hygiene = base.hygiene + consequence.hygiene,
+		.karma = base.karma + consequence.karma,
+		.mentalHealth = base.mentalHealth + consequence.mentalHealth,
+		.money = base.money + consequence.money,
+		.stamina = base.stamina + consequence.stamina,
+		.coronaVirus = base.coronaVirus | consequence.coronaVirus
+	};
+}
+
+bool eventApply(link** gameChains, link* eventLinkPtr, bool forward)
+{
+	//Wich event ?
+	event happening = eventLinkPtr -> elementPtr -> event_;
+
+	//Wich event type ?
+	eventType happeningType = getLinkById(_eventType, happening.eventTypeId, gameChains[_simulation]) -> elementPtr -> eventType_;
+
+	//Wich item consummed ?
+	item *consumedPtr = getLinkById(_item, happening.itemId, gameChains[_simulation]);
+
+	//Who is targetted ?
+	person *receiverPtr = &getLinkById(_person, happening.receiverId, gameChains[_simulation])->elementPtr->person_;
+
+	//Where is the event/receiver
+	place
+		* whereEventPtr = getLinkById(_place, happening.placeId, gameChains[_place]),
+		* wherePersonPtr = getLinkById(_place, receiverPtr -> placeId, gameChains[_simulation]);
+
+	if((consumedPtr != NULL || happening.itemId == nullId) && (whereEventPtr == wherePersonPtr || happening.placeId == nullId))
+	{
+		//Success
+		receiverPtr->stats_ = operateStats(receiverPtr->stats_, happeningType.onSuccess);
+	}
+	else if(happeningType.executableOnFailure)
+	{
+		//Failure
+		receiverPtr->stats_ = operateStats(receiverPtr->stats_, happeningType.onFailure);
+	}
+	else 
+		//Cannot happen
+		return false;
+
+	//Add consequences for particular cases
+	personParticularity cursor;
+	for(cursor = 0; cursor < lastPersonParticularityId; cursor++)
+		receiverPtr->stats_ = operateStats(receiverPtr->stats_, happeningType.consequenceFor[cursor]);
+
+	//Could happen
+	return true;
+}
+
 void happenEvent(link **gameChains, link *eventLinkPtr, bool forward)
 {
 	if(gameChains != NULL && gameChains[_event] != NULL && eventLinkPtr != NULL)
@@ -393,13 +451,15 @@ void happenEvent(link **gameChains, link *eventLinkPtr, bool forward)
 		switch(getLinkId(eventTypePtr))
 		{
 			case getOutEventTypeId:
+				getOut(gameChains, forward);
 				break;
 
 			case shopEventTypeId:
-				shop(gameChains, 3);
+				shop(gameChains, forward);
 				break;
 
 			default:
+				eventApply(gameChains, eventLinkPtr, forward);
 				break;
 		}
 
@@ -412,7 +472,7 @@ void run(link **gameChains, unsigned long long int nextTime, bool forward)
 {
 	link *nextEvent = getIncomingEvent(gameChains);
 
-	printf("\nRun from "); displayTime(getTime(gameChains)); printf(" to "); displayTime(nextTime); printf(".");
+	printf("\nWait from "); displayTime(getTime(gameChains)); printf(" to "); displayTime(nextTime); printf(".");
 
 	if(nextEvent != NULL && getEventTime(nextEvent) < nextTime)
 	{
@@ -555,4 +615,9 @@ link* insertEvent(link **gameChains, link* chain, link* eventLinkPtr, bool *coul
 
 		return NULL;
 	}
+}
+
+person* getPlayerPtr(link *personsChain)
+{
+	return &getLinkById(_person, playerId, personsChain)->elementPtr->person_;
 }

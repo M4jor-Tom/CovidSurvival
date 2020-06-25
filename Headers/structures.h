@@ -73,13 +73,14 @@ typedef enum personParticularity
 typedef struct person
 {
 	char firstName[wordLength], lastName[wordLength];
-	unsigned int ID, houseId;
+	unsigned int ID, houseId, placeId;
 	unsigned short int 
 		gender, //0, 1, 2
 		sportiness; //0, 1, 2
 	
 	bool smoker, remoteWorking;
 	float salary;
+
 	stats stats_;
 }person;
 
