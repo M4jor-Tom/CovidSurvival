@@ -462,13 +462,16 @@ stats operateStats(stats base, stats consequence)
 
 void consumeItem(link** gameChains, link* consumedLinkPtr, unsigned int amount)
 {
-	item consumed = consumedLinkPtr->elementPtr->item_;
-	itemType consumedType = getLinkById(_itemType, consumed.itemTypeId, gameChains[_simulation])->elementPtr->itemType_;
-	consumedLinkPtr->elementPtr->item_.usedCount = consumed.usedCount + amount;
-	if (consumedLinkPtr->elementPtr->item_.usedCount >= consumedType.usesCount)
+	if (consumedLinkPtr != NULL)
 	{
-		//Person's item broke
-		gameChains[_item] = deleteLink(gameChains[_item], getLinkId(consumedLinkPtr));
+		item consumed = consumedLinkPtr->elementPtr->item_;
+		itemType consumedType = getLinkById(_itemType, consumed.itemTypeId, gameChains[_simulation])->elementPtr->itemType_;
+		consumedLinkPtr->elementPtr->item_.usedCount = consumed.usedCount + amount;
+		if (consumedLinkPtr->elementPtr->item_.usedCount >= consumedType.usesCount)
+		{
+			//Person's item broke
+			gameChains[_item] = deleteLink(gameChains[_item], getLinkId(consumedLinkPtr));
+		}
 	}
 }
 
