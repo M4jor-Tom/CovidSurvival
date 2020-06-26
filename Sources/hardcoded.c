@@ -324,7 +324,9 @@ void risk(link** gameChains, link *eventTypeLinkPtr, bool forward)
 
 	if (random(0, 100) < virusRisk)
 	{
-		getLinkById(_person, playerId, gameChains[_simulation])->elementPtr->person_.stats_.coronaVirus = true;
+		link* playerPtr = getLinkById(_person, playerId, gameChains[_simulation]);
+		if(playerPtr != NULL)
+			playerPtr->elementPtr->person_.stats_.coronaVirus = true;
 		printf("\nYou now have COVID\n");
 		getch();
 	}
@@ -476,7 +478,8 @@ bool policeControl(link** gameChains)
 		freeChain(&inventory, NULL);
 
 		link* playerLinkPtr = getLinkById(_person, playerId, gameChains[_simulation]);
-		eventType policeControl = getLinkById(_eventType, policeControlEventTypeId, gameChains[_simulation])->elementPtr->eventType_;
+		link* policeControlLinkPtr = getLinkById(_eventType, policeControlEventTypeId, gameChains[_simulation]);
+		eventType policeControl = policeControlLinkPtr != NULL ? policeControlLinkPtr->elementPtr->eventType_ : (eventType) { 0 };
 		person player = playerLinkPtr->elementPtr->person_;
 
 		playerLinkPtr->elementPtr->person_.stats_ = 

@@ -275,7 +275,8 @@ void inGameActions(link** gameChains, bool *keepPlaying)
 
 stats getPlayerStats(link** gameChains)
 {
-	return getLinkById(_person, playerId, gameChains[_simulation])->elementPtr->person_.stats_;
+	link* playerLinkPtr = getLinkById(_person, playerId, gameChains[_simulation]);
+	return playerLinkPtr != NULL ? playerLinkPtr->elementPtr->person_.stats_ : (stats) { 0 };
 }
 
 bool deadEnd(stats analyse)
@@ -465,7 +466,8 @@ void consumeItem(link** gameChains, link* consumedLinkPtr, unsigned int amount)
 	if (consumedLinkPtr != NULL)
 	{
 		item consumed = consumedLinkPtr->elementPtr->item_;
-		itemType consumedType = getLinkById(_itemType, consumed.itemTypeId, gameChains[_simulation])->elementPtr->itemType_;
+		link* consumedTypeLink = getLinkById(_itemType, consumed.itemTypeId, gameChains[_simulation]);
+		itemType consumedType = consumedTypeLink != NULL ? consumedTypeLink->elementPtr->itemType_ : (itemType) { 0 };
 		consumedLinkPtr->elementPtr->item_.usedCount = consumed.usedCount + amount;
 		if (consumedLinkPtr->elementPtr->item_.usedCount >= consumedType.usesCount)
 		{
