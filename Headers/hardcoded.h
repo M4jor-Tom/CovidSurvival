@@ -16,3 +16,5 @@ bool shop(link** gameChains, bool forward);
 void idle(link** gameChains, unsigned long long int time, bool forward);
 
 bool policeControl(link **gameChains);
+
+bool medicate(link** gameChains, bool forward);

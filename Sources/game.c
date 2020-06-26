@@ -539,6 +539,10 @@ void happenEvent(link **gameChains, link *eventLinkPtr, bool forward)
 				shop(gameChains, forward);
 				break;
 
+			case 4:
+				medicate(gameChains, forward);
+					break;
+
 			default:
 				if (eventApply(gameChains, eventLinkPtr, forward))
 				{

@@ -280,20 +280,26 @@ void risk(link** gameChains, link *eventTypeLinkPtr, bool forward)
 	eventType risks = eventTypeLinkPtr != NULL ? eventTypeLinkPtr -> elementPtr -> eventType_ : (eventType){0};
 
 	link
-		* playerInventory = filterChainBy(gameChains[_item], (element){.item_.locationPersonId = playerId}),
-		* playerMasks = filterChainBy(playerInventory, (element){.item_.itemTypeId = maskItemTypeId}),
-		* playerhydroGels = filterChainBy(playerInventory, (element){.item_.itemTypeId = hydroItemTypeId});
+		* playerInventory = filterChainBy(gameChains[_item], (element) { .item_.locationPersonId = playerId }),
+		* playerMasks = filterChainBy(playerInventory, (element) { .item_.itemTypeId = maskItemTypeId }),
+		* playerHydroGels = filterChainBy(playerInventory, (element) { .item_.itemTypeId = hydroItemTypeId }),
+		* playerRealMask = getLinkById(_item, getLinkId(playerMasks), gameChains[_simulation]),
+		* playerRealHydroGels = getLinkById(_item, getLinkId(playerHydroGels), gameChains[_simulation]);
+
+	freeChain(&playerInventory, NULL);
+	freeChain(&playerMasks, NULL);
+	freeChain(&playerHydroGels, NULL);
 
 	//Consuming items, deleting them if needed
-	consumeItem(gameChains, playerMasks, 1);
-	consumeItem(gameChains, playerhydroGels, 1);
+	consumeItem(gameChains, playerRealMask, 1);
+	consumeItem(gameChains, playerRealHydroGels, 1);
 
 
-	unsigned short int protectionLevel = playerMasks != NULL || playerhydroGels != NULL
+	unsigned short int protectionLevel = playerRealMask != NULL || playerRealHydroGels != NULL
 		? 1
 		: 0;
 
-	protectionLevel = playerMasks != NULL && playerhydroGels != NULL
+	protectionLevel = playerRealMask != NULL && playerRealHydroGels != NULL
 		? protectionLevel
 		: 2;
 
@@ -370,7 +376,26 @@ bool shop(link** gameChains, bool forward)
 
 bool medicate(link** gameChains, bool forward)
 {
-
+	link* player = getLinkById(_person, playerId, gameChains[_simulation]);
+	if (player != NULL)
+	{
+		link* inventory = filterChainBy(gameChains[_item], (element) { .item_.locationPersonId = playerId }),
+			*playerChlorokin = NULL;
+		if (inventory != NULL)
+			playerChlorokin = filterChainBy(inventory, (element) { .item_.itemTypeId = chlorokinItemTypeId });
+		if (playerChlorokin != NULL)
+		{
+			//Player has chlorokin
+			link* playerRealChlorokin = getLinkById(_item, getLinkId(playerChlorokin), gameChains[_simulation]);
+			if (playerRealChlorokin != NULL)
+			{
+				consumeItem(gameChains, playerRealChlorokin, 1);
+				player->elementPtr->person_.stats_.coronaVirus = false;
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 /*

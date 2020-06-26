@@ -47,6 +47,7 @@
 
 #define maskItemTypeId 3
 #define hydroItemTypeId 4
+#define chlorokinItemTypeId 5
 
 #define copsProba 25
 #define timeForConsequence 1800
