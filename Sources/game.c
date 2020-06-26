@@ -259,13 +259,54 @@ void inGameActions(link** gameChains, bool *keepPlaying)
 	}
 }
 
+stats getPlayerStats(link** gameChains)
+{
+	return getLinkById(_person, playerId, gameChains[_simulation])->elementPtr->person_.stats_;
+}
+
+bool deadEnd(stats analyse)
+{
+	char deathMessage[150] = "\0";
+	bool dead = false;
+	if (analyse.health == 0)
+	{
+		strcat(deathMessage, "You die.\n");
+		dead = true;
+	}
+	if (analyse.hunger == 0)
+	{
+		strcat(deathMessage, "Yes, eating was important.\n");
+		dead = true;
+	}
+	if (analyse.hygiene == 0)
+	{
+		strcat(deathMessage, "You stinked to death.\n");
+		dead = true;
+	}
+	if (analyse.mentalHealth == 0)
+	{
+		strcat(deathMessage, "You suddunly bought a knife, threatened people in the street, and got caught.\n");
+		dead = true;
+	}
+	if (dead)
+	{
+		printf("Death reason: %s", deathMessage);
+		getch();
+	}
+	return dead;
+}
+
 bool playGame(link **gameChains)
 {
 	bool keepPlaying = false;
+	bool dead = false;
 	if (gameChains != NULL)
 	{
 		keepPlaying = true;
 		inGameActions(gameChains, &keepPlaying);
+
+		dead = deadEnd(getLinkById(_person, playerId, gameChains[_simulation]) -> elementPtr -> person_.stats_);
+		keepPlaying = !dead && keepPlaying;
 
 		int i;
 		savesFile* gameFile = setGameFiles(gameChains[_simulation]);
@@ -273,7 +314,13 @@ bool playGame(link **gameChains)
 		for (i = 0; i < lastStructId; i++)
 		{
 			if (&gameFile[i] != NULL)
-				writeChain(gameChains[i], gameFile[i]);
+				if(i != _simulation || !dead)
+					writeChain(/*dead ? NULL :*/ gameChains[i], gameFile[i]);
+
+			if (dead)
+			{
+				//gameChains[_simulation] = gameChains[_simulation]->nextLinkPtr;
+			}
 
 			#ifdef DEBUG
 				else printf("<playGame> Warning: Can't save structId %d\n", i);

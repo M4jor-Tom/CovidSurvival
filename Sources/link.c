@@ -632,12 +632,12 @@ stats grabStats(char *instructions)
 		printf(instructions);
 	
 	//[CREATE_STATS]
-	recipient.health = (int)grabInt("health: ");
-	recipient.hunger = (int)grabInt("hunger: ");
-	recipient.hygiene = (int)grabInt("hygiene: ");
-	recipient.mentalHealth = (int)grabInt("mentalHealth: ");
-	recipient.stamina = (int)grabInt("stamina: ");
-	recipient.karma = (int)grabInt("karma: ");
+	recipient.health = returnInRange(0, (int)grabInt("health: "), 100);
+	recipient.hunger = returnInRange(0, (int)grabInt("hunger: "), 100);
+	recipient.hygiene = returnInRange(0, (int)grabInt("hygiene: "), 100);
+	recipient.mentalHealth = returnInRange(0, (int)grabInt("mentalHealth: "), 100);
+	recipient.stamina = returnInRange(0, (int)grabInt("stamina: "), 100);
+	recipient.karma = returnInRange(0, (int)grabInt("karma: "), 100);
 	recipient.money = (float)grabFloat("money: ");
 
 	printf("CoronaVirus (y/else): ");
@@ -692,8 +692,14 @@ link grabLink(structId structType, link *currentSimPtr)
 				recipient->person_.gender = WOMAN;
 			else
 				recipient->person_.gender = OTHER;
+
+			printf("\n\tSmoker ? (y/else) : ");
+			recipient->person_.smoker = getch() == 'y';
+
+			printf("\n\tRemote worker ? (y/else) : ");
+			recipient->person_.remoteWorking = getch() == 'y';
 			
-			recipient -> person_.stats_ = grabStats("person's stats\n");
+			recipient -> person_.stats_ = grabStats("\n\tperson's stats\n");
 			
 			recipient -> person_.houseId = nullId;
 			break;
@@ -1326,10 +1332,11 @@ void displayLink(link toDisplay, link *currentSimPtr)
 			case _simulation:
 				printf
 				(
-					"[simulation]\n\tID: %u\n\tSimuled time: %llu\n\n",
-					elementPtr -> simulation_.ID,
-					elementPtr -> simulation_.simuledTime
+					"[simulation]\n\tID: %u\n\tSimuled time: ",
+					elementPtr -> simulation_.ID
 				);
+				displayTime(elementPtr->simulation_.simuledTime);
+				printf("\n\n");
 				break;
 				
 			case _person:

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <conio.h>
 
 #include "../Headers/main.h"
 
@@ -241,8 +242,15 @@ void getOut(link** gameChains, bool forward)
 	{
 		policeControl(gameChains);
 		printf("\nCops controlled you\n");
-		getch();
 	}
+
+	if (random(0, 100) < 5)
+	{
+		getLinkById(_person, playerId, gameChains[_simulation])->elementPtr->person_.stats_.coronaVirus = true;
+		printf("\nYou have COVID\n");
+	}
+
+	getch();
 }
 
 bool shop(link** gameChains, bool forward)
@@ -308,9 +316,22 @@ void idle(link** gameChains, unsigned long long int time, bool forward)
 		{
 			for (i = 0, j = 0; i < time; i = i + timeForConsequence, j++)
 			{
-				gameChains[_person]->elementPtr->person_.stats_ =
+				if(personsChain -> elementPtr -> person_.stats_.coronaVirus == true)
+					personsChain->elementPtr->person_.stats_ =
 					operateStats(
-						gameChains[_person]->elementPtr->person_.stats_,
+						personsChain->elementPtr->person_.stats_,
+						(stats)
+						{
+							.hunger = -2,
+							.hygiene = -2,
+							.mentalHealth = -2,
+							.stamina = 0
+						}
+					);
+				else
+				personsChain->elementPtr->person_.stats_ =
+					operateStats(
+						personsChain->elementPtr->person_.stats_,
 						(stats)
 						{
 							.hunger = -1,
@@ -322,8 +343,9 @@ void idle(link** gameChains, unsigned long long int time, bool forward)
 			}
 			personsChain = personsChain -> nextLinkPtr;
 		}
-		printf("You idled enought to loose %d hunger, hygiene, and mentalhealth, and won %d stamina", j, j);
+		printf("\nYou idled enought to loose %d hunger, hygiene, and mentalhealth, and won %d stamina\n", j, j);
 		setTime(gameChains, getTime(gameChains) + time);
+		_getch();
 	}
 }
 
