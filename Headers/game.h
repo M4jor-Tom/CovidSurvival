@@ -27,6 +27,7 @@ void setTime(link** gameChains, unsigned long long int time);
 
 stats operateStats(stats base, stats consequence);
 
+void consumeItem(link** gameChains, link* consumedLinkPtr, unsigned int amount);
 
 bool eventApply(link** gameChains, link* eventLinkPtr, bool forward);
 

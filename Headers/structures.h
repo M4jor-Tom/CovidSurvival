@@ -75,8 +75,8 @@ typedef enum personParticularity
 
 typedef struct person
 {
-	char firstName[wordLength], lastName[wordLength];
-	unsigned int ID;
+	char firstName[wordLength], lastName[wordLength], handicap[wordLength];
+	unsigned int ID, aging;
 	long int houseId, placeId;
 	unsigned short int 
 		gender, //0, 1, 2
@@ -92,7 +92,11 @@ typedef struct eventType // <=> action
 {
 	unsigned int
 		ID,
-		itemTypeConsumption;
+		itemTypeConsumption,
+		copsRisk,
+		unprotectedVirusRisk,
+		protectedVirusRisk,
+		paranoidVirusRisk;
 
 	long int
 		requiredItemTypeId,
@@ -102,7 +106,7 @@ typedef struct eventType // <=> action
 
 	char name[wordLength];
 	
-	bool 
+	bool
 		executableOnFailure,
 		userSelectable;
 	

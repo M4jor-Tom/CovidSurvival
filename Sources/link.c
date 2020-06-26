@@ -625,7 +625,7 @@ char **initParticularityLabels()
 
 stats grabStats(char *instructions)
 {
-	stats recipient;
+	stats recipient = {0};
 	memset(&recipient, 0, sizeof(recipient));
 	
 	if(instructions != NULL)
@@ -640,10 +640,11 @@ stats grabStats(char *instructions)
 	recipient.karma = returnInRange(0, (int)grabInt("karma: "), 100);
 	recipient.money = (float)grabFloat("money: ");
 
-	printf("CoronaVirus (y/else): ");
-	recipient.coronaVirus = getch() == 'y'
+	/*printf("CoronaVirus (y/else): ");
+	recipient.coronaVirus = getche() == 'y'
 		? true
-		: false;
+		: false;*/
+	printf("\n");
 	
 	return recipient;
 }
@@ -694,10 +695,20 @@ link grabLink(structId structType, link *currentSimPtr)
 				recipient->person_.gender = OTHER;
 
 			printf("\n\tSmoker ? (y/else) : ");
-			recipient->person_.smoker = getch() == 'y';
+			recipient->person_.smoker = getche() == 'y';
 
 			printf("\n\tRemote worker ? (y/else) : ");
-			recipient->person_.remoteWorking = getch() == 'y';
+			recipient->person_.remoteWorking = getche() == 'y';
+
+			printf("\n\tSporty ? (0/1/2) : ");
+			scanf("%d", &recipient->person_.sportiness);
+			getchar();
+			recipient->person_.sportiness = returnInRange(0, recipient->person_.sportiness, 2);
+
+			printf("\n\tAge ? (0-100) : ");
+			scanf("%d", &recipient->person_.aging);
+			getchar();
+			recipient->person_.aging = returnInRange(0, recipient->person_.aging, 100);
 			
 			recipient -> person_.stats_ = grabStats("\n\tperson's stats\n");
 			
@@ -714,7 +725,7 @@ link grabLink(structId structType, link *currentSimPtr)
 			
 			//person
 			printf("\n\tReceiver: ");
-			recipient->event_.receiverId = grabId(_person, currentSimPtr, false, (element){NULL});
+			recipient->event_.receiverId = grabId(_person, currentSimPtr, false, (element){0});
 			
 			//#TODO wtf I'm gettin tired joinedLinkPtr = getJoinedLink(getLinkById(_item, ))
 			//Does a joined structure (eventType) has a non-nullId value for join to itemType ? (means if I need an item of this event)
@@ -764,8 +775,35 @@ link grabLink(structId structType, link *currentSimPtr)
 			
 			//Item consumed on eventing
 			idChoice = nullId;
-			printf("Require item type ? (y/any)\n");
+			printf("\n\tRequire item type ? (y/any)\n");
 			scanf("%s", &choice);
+
+			//Risks
+			printf("\n\tRisks to encounter police (%%): ");
+			scanf("%u", &recipient->eventType_.copsRisk);
+			getchar();
+			recipient->eventType_.copsRisk = returnInRange(0, recipient->eventType_.copsRisk, 100);
+
+			printf("\n\tRisks to catch COVID-19 unprotected (%%): ");
+			scanf("%u", &recipient->eventType_.unprotectedVirusRisk);
+			getchar();
+			recipient->eventType_.unprotectedVirusRisk = returnInRange(0, recipient->eventType_.unprotectedVirusRisk, 100);
+			if(recipient->eventType_.unprotectedVirusRisk != 0)
+			{
+				printf("\n\tRisks to catch COVID-19 protected (%%): ");
+				scanf("%u", &recipient->eventType_.protectedVirusRisk);
+				getchar();
+				recipient->eventType_.protectedVirusRisk = returnInRange(0, recipient->eventType_.protectedVirusRisk, 100);
+
+				if (recipient->eventType_.protectedVirusRisk != 0)
+				{
+					printf("\n\tRisks to catch COVID-19 very protected (%%): ");
+					scanf("%u", &recipient->eventType_.paranoidVirusRisk);
+					getchar();
+					recipient->eventType_.paranoidVirusRisk = returnInRange(0, recipient->eventType_.paranoidVirusRisk, 100);
+
+				}
+			}
 			
 			//Ask to the user a choice to make for an itemType's Id
 			if(!strcmp(choice, "y"))
@@ -777,7 +815,7 @@ link grabLink(structId structType, link *currentSimPtr)
 				displayedChain = readChain(globalFile[_itemType]);
 				
 				//Choosing a link, getting its Id
-				chosenLinkPtr = selectLink(displayedChain, true, currentSimPtr, (element){NULL});
+				chosenLinkPtr = selectLink(displayedChain, true, currentSimPtr, (element){0});
 				
 				if (chosenLinkPtr != NULL)
 				{
@@ -818,7 +856,7 @@ link grabLink(structId structType, link *currentSimPtr)
 				displayedChain = readChain(globalFile[_placeType]);
 				
 				//Choosing a link, getting its Id
-				chosenLinkPtr = selectLink(displayedChain, true, NULL, (element){NULL});
+				chosenLinkPtr = selectLink(displayedChain, true, NULL, (element){0});
 				
 				if(chosenLinkPtr != NULL)
 					idChoice = getLinkId(chosenLinkPtr);
@@ -832,13 +870,20 @@ link grabLink(structId structType, link *currentSimPtr)
 			
 			//Success case consequences
 			recipient -> eventType_.onSuccess = grabStats("\tStats added to receiver's on success:\n");
+
+			printf("Make option happenable on failure ? (y/any)\n");
+			recipient->eventType_.executableOnFailure = getche() == 'y';
 			
 			//Failure case consequences
-			if(recipient -> eventType_.requiredItemTypeId != nullId || recipient -> eventType_.requiredPlaceTypeId != nullId)
+			if(
+				(
+					recipient -> eventType_.requiredItemTypeId != nullId
+					|| recipient -> eventType_.requiredPlaceTypeId != nullId
+				) 
+				&& recipient->eventType_.executableOnFailure
+			)
 				recipient -> eventType_.onFailure = grabStats("\tStats added to receiver's on failure:\n");
 			
-			printf("Make option selectable on failure ? (y/any)\n");
-			recipient -> eventType_.executableOnFailure = getche() == 'y';
 			
 			//Particular cases consequences
 			printf("Create particular cases ? (y/any)\n");
@@ -1079,7 +1124,11 @@ void displayLink(link toDisplay, link *currentSimPtr)
 			genderToString[6] = "\0",
 			smokerString[4] = "\0",
 			remoteWorkingString[4] = "\0",
-			weekDay[10] = "\0";
+			weekDay[10] = "\0",
+			copsChanceString[wordLength] = "\0",
+			unprotectedChanceString[wordLength] = "\0",
+			protectedChanceString[wordLength] = "\0",
+			paranoidChanceString[wordLength] = "\0";
 		
 		//What to display ?
 		switch(toDisplay.structType)
@@ -1161,9 +1210,21 @@ void displayLink(link toDisplay, link *currentSimPtr)
 				break;
 				
 			case _eventType:
+				if(elementPtr->eventType_.copsRisk)
+					sprintf(copsChanceString, "Cops encounter chance: %u%%", elementPtr->eventType_.copsRisk);
+
+				if (elementPtr->eventType_.unprotectedVirusRisk)
+					sprintf(unprotectedChanceString, "Unprotected contamination chance: %u%%", elementPtr->eventType_.unprotectedVirusRisk);
+
+				if (elementPtr->eventType_.protectedVirusRisk)
+					sprintf(protectedChanceString, "Protected conamination chance: %u%%", elementPtr->eventType_.protectedVirusRisk);
+
+				if (elementPtr->eventType_.paranoidVirusRisk)
+					sprintf(copsChanceString, "Very protected contamination chance: %u%%", elementPtr->eventType_.paranoidVirusRisk);
+
 				printf
 				(
-					"[event type]\n\tID: %u\n\tName: %s\n\tDuration: %u days, %u hours, %u minutes and %u seconds\n",
+					"[event type]\n\tID: %u\n\tName: %s\n\tDuration: %u days, %u hours, %u minutes and %u seconds",
 					elementPtr -> eventType_.ID,
 					elementPtr -> eventType_.name,
 					secondsTo("days", elementPtr -> eventType_.duration_s),
@@ -1172,22 +1233,19 @@ void displayLink(link toDisplay, link *currentSimPtr)
 					secondsTo("seconds", elementPtr -> eventType_.duration_s)
 				);
 				displayStats(elementPtr -> eventType_.onSuccess, "event type success consequence");
-				displayStats(elementPtr -> eventType_.onFailure, "event type failure consequence");
+
+				if(memcmp(&elementPtr->eventType_.onFailure, &(stats){0}, sizeof(stats)))
+					displayStats(elementPtr -> eventType_.onFailure, "event type failure consequence");
 				
 				
 				char **particularityLabels = initParticularityLabels();
 				personParticularity cursor = 0;
 				
-				//Prepare an empty stats variable to compare with
-				stats emptyStatsBuffer;
-				memset(&emptyStatsBuffer, 0, sizeof(stats));
-				
 				for(cursor = 0; cursor < last; cursor++)
-					if(memcmp(&elementPtr -> eventType_.consequenceFor[cursor], &emptyStatsBuffer, sizeof(stats)))
+					if (memcmp(&elementPtr->eventType_.consequenceFor[cursor], &(stats){0}, sizeof(stats)))
 					{
 						//Display non-empty particulary case stats
-						char tag[50];
-						strcpy(tag, "event type specific consequence for ");
+						char tag[50] = "event type specific consequence for ";
 						strcat(tag, particularityLabels[cursor]);
 						displayStats(elementPtr -> eventType_.consequenceFor[cursor], tag);
 					}
@@ -1361,10 +1419,14 @@ void displayLink(link toDisplay, link *currentSimPtr)
 					//[CREATE_PERSON_PARTICULARITY]
 					printf
 					(
-						"[person]\n\tID: %d\n\tFirst Name: %s\n\tLast Name: %s\n",
+						"[person]\n\tID: %d\n\tFirst Name: %s\n\tLast Name: %s\n\tAging: %u\n%s",
 						elementPtr -> person_.ID,
 						elementPtr -> person_.firstName,
-						elementPtr -> person_.lastName
+						elementPtr -> person_.lastName,
+						elementPtr -> person_.aging,
+						elementPtr->person_.handicap != NULL
+							? elementPtr->person_.handicap
+							: ""
 					);
 					
 					//[JOIN] person-place (house)

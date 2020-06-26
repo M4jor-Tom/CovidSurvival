@@ -55,6 +55,8 @@ link* filterChainBy(link *gameChain, element criterion);
 //Returns a link's ptr from a chain within wich an Id's one has been searched. Returns NULL if Id doesn't exists
 link *chain_search(link *chain, long int ID);
 
+bool inChain(link* chain, link* linkPtr);
+
 //Prints choices for the user to select an Id
 long int grabId(structId retStructId, link *currentSimPtr, bool allowNullId, element choiceFilter);
 

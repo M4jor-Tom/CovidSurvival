@@ -51,7 +51,8 @@ link* getHardcoded(savesFile save)
 		link
 			* getOutPtr = newLink("readChain/getOut", _eventType, true),
 			* shopPtr = newLink("readChain/shop", _eventType, true),
-			* policePtr = newLink("readChain/police", _eventType, true);
+			* policePtr = newLink("readChain/police", _eventType, true),
+			* medicatePtr = newLink("readChain/medicate", _eventType, true);
 		hardcodeHead = getOutPtr;
 
 		//Initialization
@@ -65,13 +66,15 @@ link* getHardcoded(savesFile save)
 				.userSelectable = true,
 				.onSuccess =
 				{
-					.mentalHealth = 30
+					.mentalHealth = 30,
+					.hygiene = -15,
+					.hunger = -15
 				}
 			},
 			shop =
 			{
 				.name = "Shop",
-				.duration_s = 300,
+				.duration_s = 2000,
 				.requiredItemTypeId = nullId,
 				.requiredPlaceTypeId = 2,	//Store
 				.userSelectable = true
@@ -92,28 +95,45 @@ link* getHardcoded(savesFile save)
 					.mentalHealth = -40,
 					.money = -135.0
 				}
+			},
+			medicate =
+			{
+				.name = "Medicate",
+				.duration_s = 300,
+				.requiredItemTypeId = 5,
+				.requiredPlaceTypeId = nullId,
+				.itemTypeConsumption = 1,
+				.onSuccess =
+				{
+					.mentalHealth = 15
+				}
 			};
 
 		//Chaining
 		getOutPtr->nextLinkPtr = shopPtr;
 		shopPtr->nextLinkPtr = policePtr;
+		policePtr->nextLinkPtr = medicatePtr;
 
 		//Pass values
 		getOutPtr->elementPtr->eventType_ = getOut;
 		shopPtr->elementPtr->eventType_ = shop;
 		policePtr->elementPtr->eventType_ = police;
+		medicatePtr->elementPtr->eventType_ = medicate;
 
 		//Setting Ids
 		setLinkId(getOutPtr, getOutEventTypeId);
 		setLinkId(shopPtr, shopEventTypeId);
 		setLinkId(policePtr, policeControlEventTypeId);
+		setLinkId(medicatePtr, medicateEventTypeId);
 	}
 	else if (save.storedElements == _itemType)
 	{
 		link
-			* foodPtr = newLink("readChain/food", _itemType, true),
-			* certPtr = newLink("readChain/cert", _itemType, true),
-			*maskPtr = newLink("readChain/mask", _itemType, true);
+			*foodPtr = newLink("readChain/food", _itemType, true),
+			*certPtr = newLink("readChain/cert", _itemType, true),
+			*maskPtr = newLink("readChain/mask", _itemType, true),
+			*hydroGelPtr = newLink("readChain/hydroGel", _itemType, true),
+			*chlorokinPtr = newLink("readChain/chlorokin", _itemType, true);
 		hardcodeHead = foodPtr;
 
 		//Initialization
@@ -132,22 +152,41 @@ link* getHardcoded(savesFile save)
 			mask =
 			{
 				.name = "Mask",
+				.price = 3,
+				.usesCount = 1
+			},
+			hydroGel =
+			{
+				.name = "Hydroalcoholic gel",
+				.price = 3,
+				.usesCount = 1
+			},
+			chlorokin =
+			{
+				.name = "Chlorokin",
+				.price = 40,
 				.usesCount = 1
 			};
 
 		//Chaining
 		foodPtr->nextLinkPtr = certPtr;
 		certPtr->nextLinkPtr = maskPtr;
+		maskPtr->nextLinkPtr = hydroGelPtr;
+		hydroGelPtr->nextLinkPtr = chlorokinPtr;
 
 		//Pass values
 		foodPtr->elementPtr->itemType_ = food;
 		certPtr->elementPtr->itemType_ = cert;
 		maskPtr->elementPtr->itemType_ = mask;
+		hydroGelPtr->elementPtr->itemType_ = hydroGel;
+		chlorokinPtr->elementPtr->itemType_ = chlorokin;
 
 		//Setting Ids
 		setLinkId(foodPtr, 1);
 		setLinkId(certPtr, 2);
 		setLinkId(maskPtr, 3);
+		setLinkId(hydroGelPtr, 4);
+		setLinkId(chlorokinPtr, 5);
 	}
 	else if (save.storedElements == _place)
 	{
@@ -236,22 +275,58 @@ link* ommitHardcoded(link* chain, savesFile save)
 	return chain;
 }
 
-void getOut(link** gameChains, bool forward)
+void risk(link** gameChains, link *eventTypeLinkPtr, bool forward)
 {
-	if (random(0, 100) < copsProba)
+	eventType risks = eventTypeLinkPtr != NULL ? eventTypeLinkPtr -> elementPtr -> eventType_ : (eventType){0};
+
+	link
+		* playerInventory = filterChainBy(gameChains[_item], (element){.item_.locationPersonId = playerId}),
+		* playerMasks = filterChainBy(playerInventory, (element){.item_.itemTypeId = maskItemTypeId}),
+		* playerhydroGels = filterChainBy(playerInventory, (element){.item_.itemTypeId = hydroItemTypeId});
+
+	//Consuming items, deleting them if needed
+	consumeItem(gameChains, playerMasks, 1);
+	consumeItem(gameChains, playerhydroGels, 1);
+
+
+	unsigned short int protectionLevel = playerMasks != NULL || playerhydroGels != NULL
+		? 1
+		: 0;
+
+	protectionLevel = playerMasks != NULL && playerhydroGels != NULL
+		? protectionLevel
+		: 2;
+
+	unsigned short int virusRisk = 0;
+	if (protectionLevel == 0)
+		virusRisk = risks.unprotectedVirusRisk;
+	else if(protectionLevel == 1)
+		virusRisk = risks.protectedVirusRisk;
+	else if(protectionLevel == 2)
+		virusRisk = risks.paranoidVirusRisk;
+
+	if (random(0, 100) < risks.copsRisk)
 	{
-		policeControl(gameChains);
-		printf("\nCops controlled you\n");
+		printf(
+			"\nCops controlled you. You were %s\n",
+			policeControl(gameChains)
+				? "okay to go"
+				: "verbalized"
+		);
 		getch();
 	}
 
-	if (random(0, 100) < 5)
+	if (random(0, 100) < virusRisk)
 	{
 		getLinkById(_person, playerId, gameChains[_simulation])->elementPtr->person_.stats_.coronaVirus = true;
-		printf("\nYou have COVID\n");
+		printf("\nYou now have COVID\n");
 		getch();
 	}
+}
 
+void getOut(link** gameChains, bool forward)
+{
+	risk(gameChains, getLinkById(_eventType, getOutEventTypeId, gameChains[_simulation]), forward);
 }
 
 bool shop(link** gameChains, bool forward)
@@ -260,7 +335,8 @@ bool shop(link** gameChains, bool forward)
 	if (gameChains != NULL && gameChains[_placeType] != NULL && gameChains[_place] != NULL)
 	{
 		//Get all game itemTypes
-		link* selectedItemType = selectLink(gameChains[_itemType], true, NULL, (element){NULL});
+		risk(gameChains, getLinkById(_eventType, shopEventTypeId, gameChains[_simulation]), forward);
+		link* selectedItemType = selectLink(gameChains[_itemType], true, NULL, (element){0});
 		if(selectedItemType == NULL)
 			return false;
 
@@ -292,20 +368,26 @@ bool shop(link** gameChains, bool forward)
 	return bought;
 }
 
+bool medicate(link** gameChains, bool forward)
+{
+
+}
+
+/*
 void move(link** gameChains, bool forward)
 {
 	//Instruction
 	printf("\nYou choose to move around !\n");
 
 	//Data grab
-	long int placeId = grabId(_place, gameChains[_simulation], true, (element){NULL});
+	long int placeId = grabId(_place, gameChains[_simulation], true, (element){0});
 	if (placeId != nullId)
 	{
 		//Go somewhere
 		getLinkById(_person, playerId, gameChains[_simulation]) -> elementPtr ->person_.placeId = placeId;
 	}
 	else printf("\nWell, you stay where you are...\n");
-}
+}*/
 
 void idle(link** gameChains, unsigned long long int time, bool forward)
 {
@@ -320,16 +402,16 @@ void idle(link** gameChains, unsigned long long int time, bool forward)
 				if(personsChain -> elementPtr -> person_.stats_.coronaVirus == true)
 					//If covid
 					personsChain->elementPtr->person_.stats_ =
-					operateStats(
-						personsChain->elementPtr->person_.stats_,
-						(stats)
-						{
-							.hunger = -2,
-							.hygiene = -2,
-							.mentalHealth = -2,
-							.stamina = 0
-						}
-					);
+						operateStats(
+							personsChain->elementPtr->person_.stats_,
+							(stats)
+							{
+								.hunger = -2,
+								.hygiene = -2,
+								.mentalHealth = -2,
+								.stamina = 0
+							}
+						);
 				else
 					personsChain->elementPtr->person_.stats_ =
 						operateStats(
@@ -347,7 +429,7 @@ void idle(link** gameChains, unsigned long long int time, bool forward)
 		}
 		printf("\nYou idled enought to loose %d hunger, hygiene, and mentalhealth, and won %d stamina\n", j, j);
 		setTime(gameChains, getTime(gameChains) + time);
-		_getch();
+		getch();
 	}
 }
 

@@ -107,7 +107,7 @@ link **setupGame()
 	}
 	else
 	{
-		currentSimPtr = selectLink(simulations, true, NULL, (element){NULL});
+		currentSimPtr = selectLink(simulations, true, NULL, (element){0});
 		if(currentSimPtr == NULL)
 			return NULL;
 
@@ -249,6 +249,20 @@ void inGameActions(link** gameChains, bool *keepPlaying)
 			filteredChain = filterChainBy(gameChains[chainType], filter);
 			displayChain(filteredChain, gameChains[_simulation]);
 			freeChain(&filteredChain, NULL);
+
+			printf("Delete an event ? (y/else)\n");
+			if (getche() == 'y')
+			{
+				system("cls");
+				link *toDelete = selectLink(
+					gameChains[_event],
+					true,
+					gameChains[_simulation],
+					(element) {.event_.receiverId = playerId, .event_.transmitterId = playerId}
+				);
+				gameChains[_event] = deleteLink(gameChains[_event], getLinkId(toDelete));
+			}
+
 			printf("\n->\n");
 			getch();
 			break;
@@ -446,11 +460,27 @@ stats operateStats(stats base, stats consequence)
 	};
 }
 
+void consumeItem(link** gameChains, link* consumedLinkPtr, unsigned int amount)
+{
+	item consumed = consumedLinkPtr->elementPtr->item_;
+	itemType consumedType = getLinkById(_itemType, consumed.itemTypeId, gameChains[_simulation])->elementPtr->itemType_;
+	consumedLinkPtr->elementPtr->item_.usedCount = consumed.usedCount + amount;
+	if (consumedLinkPtr->elementPtr->item_.usedCount >= consumedType.usesCount)
+	{
+		//Person's item broke
+		gameChains[_item] = deleteLink(gameChains[_item], getLinkId(consumedLinkPtr));
+	}
+}
+
 bool eventApply(link** gameChains, link* eventLinkPtr, bool forward)
 {
 	//Wich event ?
 	event happening = eventLinkPtr -> elementPtr -> event_;
-	eventType happeningType = getLinkById(_eventType, happening.eventTypeId, gameChains[_simulation]) -> elementPtr -> eventType_;
+	link* happeningTypeLinkPtr = getLinkById(_eventType, happening.eventTypeId, gameChains[_simulation]);
+	eventType happeningType = happeningTypeLinkPtr != NULL ? happeningTypeLinkPtr->elementPtr->eventType_ : (eventType) { 0 };
+
+	//Risk to et controlled and contamined
+	risk(gameChains, happeningTypeLinkPtr, forward);
 
 	//Wich item consummed ?
 	link* consumedLinkPtr = getLinkById(_item, happening.itemId, gameChains[_simulation]);
@@ -471,14 +501,7 @@ bool eventApply(link** gameChains, link* eventLinkPtr, bool forward)
 
 		if (consumedLinkPtr != NULL)
 		{
-			item consumed = consumedLinkPtr->elementPtr->item_;
-			itemType consumedType = getLinkById(_itemType, consumed.itemTypeId, gameChains[_simulation])->elementPtr->itemType_;
-			consumedLinkPtr-> elementPtr -> item_.usedCount = consumed.usedCount + happeningType.itemTypeConsumption;
-			if (consumedLinkPtr->elementPtr->item_.usedCount >= consumedType.usesCount)
-			{
-				//Person's item broke
-				deleteLink(gameChains[_item], getLinkId(consumedLinkPtr));
-			}
+			consumeItem(gameChains, consumedLinkPtr, happeningType.itemTypeConsumption);
 		}
 	}
 	else if(happeningType.executableOnFailure)

@@ -43,6 +43,10 @@
 #define getOutEventTypeId 1
 #define shopEventTypeId 2
 #define policeControlEventTypeId 3
+#define medicateEventTypeId 4
+
+#define maskItemTypeId 3
+#define hydroItemTypeId 4
 
 #define copsProba 25
 #define timeForConsequence 1800
