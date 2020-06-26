@@ -242,15 +242,16 @@ void getOut(link** gameChains, bool forward)
 	{
 		policeControl(gameChains);
 		printf("\nCops controlled you\n");
+		getch();
 	}
 
 	if (random(0, 100) < 5)
 	{
 		getLinkById(_person, playerId, gameChains[_simulation])->elementPtr->person_.stats_.coronaVirus = true;
 		printf("\nYou have COVID\n");
+		getch();
 	}
 
-	getch();
 }
 
 bool shop(link** gameChains, bool forward)
@@ -317,6 +318,7 @@ void idle(link** gameChains, unsigned long long int time, bool forward)
 			for (i = 0, j = 0; i < time; i = i + timeForConsequence, j++)
 			{
 				if(personsChain -> elementPtr -> person_.stats_.coronaVirus == true)
+					//If covid
 					personsChain->elementPtr->person_.stats_ =
 					operateStats(
 						personsChain->elementPtr->person_.stats_,
@@ -329,17 +331,17 @@ void idle(link** gameChains, unsigned long long int time, bool forward)
 						}
 					);
 				else
-				personsChain->elementPtr->person_.stats_ =
-					operateStats(
-						personsChain->elementPtr->person_.stats_,
-						(stats)
-						{
-							.hunger = -1,
-							.hygiene = -1,
-							.mentalHealth = -1,
-							.stamina = 1
-						}
-					);
+					personsChain->elementPtr->person_.stats_ =
+						operateStats(
+							personsChain->elementPtr->person_.stats_,
+							(stats)
+							{
+								.hunger = -1,
+								.hygiene = -1,
+								.mentalHealth = -1,
+								.stamina = 1
+							}
+						);
 			}
 			personsChain = personsChain -> nextLinkPtr;
 		}

@@ -45,7 +45,7 @@
 #define policeControlEventTypeId 3
 
 #define copsProba 25
-#define timeForConsequence 800
+#define timeForConsequence 1800
 
 
 #include "dirent.h"

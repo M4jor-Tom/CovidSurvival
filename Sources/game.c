@@ -546,16 +546,16 @@ void run(link **gameChains, unsigned long long int nextTime, bool forward)
 		//Set requested time (nothing happend since time has gone)
 		idle(gameChains, nextTime - getTime(gameChains), forward);
 	}
-	else while(getEventTime(getIncomingEvent(gameChains)) < nextTime)
+	else while(getIncomingEvent(gameChains) != NULL && getEventTime(getIncomingEvent(gameChains)) < nextTime)
 	{
 		nextEvent = getIncomingEvent(gameChains);
 		printf("\nBeeep-beeep-beeep ! A schedule alert rings on your phone: ");
 		displayTime(getEventTime(nextEvent)); 
 		getch();
 		printf("\n");
-
+		unsigned long long int nE = getEventTime(nextEvent);
 		//Skip time till it's next event
-		idle(gameChains, getEventTime(nextEvent) - getTime(gameChains), forward);
+		idle(gameChains, nE - getTime(gameChains), forward);
 
 		//Happen event (time will go to event's end)
 		happenEvent(gameChains, nextEvent, forward);
