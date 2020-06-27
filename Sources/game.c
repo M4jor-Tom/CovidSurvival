@@ -275,7 +275,7 @@ void inGameActions(link** gameChains, bool *keepPlaying)
 
 stats getPlayerStats(link** gameChains)
 {
-	link* playerLinkPtr = getLinkById(_person, playerId, gameChains[_simulation]);
+	link* playerLinkPtr = chain_search(gameChains[_person], playerId);
 	return playerLinkPtr != NULL ? playerLinkPtr->elementPtr->person_.stats_ : (stats) { 0 };
 }
 
@@ -320,7 +320,7 @@ bool playGame(link **gameChains)
 		keepPlaying = true;
 		inGameActions(gameChains, &keepPlaying);
 
-		dead = deadEnd(getLinkById(_person, playerId, gameChains[_simulation]) -> elementPtr -> person_.stats_);
+		dead = deadEnd(getPlayerStats(gameChains));
 		keepPlaying = !dead && keepPlaying;
 
 		int i;
@@ -455,7 +455,7 @@ stats operateStats(stats base, stats consequence)
 		.hygiene = returnInRange(0, base.hygiene + consequence.hygiene, 100),
 		.karma = returnInRange(0, base.karma + consequence.karma, 100),
 		.mentalHealth = returnInRange(0, base.mentalHealth + consequence.mentalHealth, 100),
-		.money = (float)returnInRange(0, (int)base.money + (int)consequence.money, 100),
+		.money = base.money + consequence.money,
 		.stamina = returnInRange(0, base.stamina + consequence.stamina, 100),
 		.coronaVirus = base.coronaVirus | consequence.coronaVirus
 	};
@@ -466,7 +466,7 @@ void consumeItem(link** gameChains, link* consumedLinkPtr, unsigned int amount)
 	if (consumedLinkPtr != NULL)
 	{
 		item consumed = consumedLinkPtr->elementPtr->item_;
-		link* consumedTypeLink = getLinkById(_itemType, consumed.itemTypeId, gameChains[_simulation]);
+		link* consumedTypeLink = chain_search(gameChains[_itemType], consumed.itemTypeId);
 		itemType consumedType = consumedTypeLink != NULL ? consumedTypeLink->elementPtr->itemType_ : (itemType) { 0 };
 		consumedLinkPtr->elementPtr->item_.usedCount = consumed.usedCount + amount;
 		if (consumedLinkPtr->elementPtr->item_.usedCount >= consumedType.usesCount)
@@ -481,25 +481,20 @@ bool eventApply(link** gameChains, link* eventLinkPtr, bool forward)
 {
 	//Wich event ?
 	event happening = eventLinkPtr -> elementPtr -> event_;
-	link* happeningTypeLinkPtr = getLinkById(_eventType, happening.eventTypeId, gameChains[_simulation]);
+	link* happeningTypeLinkPtr = chain_search(gameChains[_eventType], happening.eventTypeId);
 	eventType happeningType = happeningTypeLinkPtr != NULL ? happeningTypeLinkPtr->elementPtr->eventType_ : (eventType) { 0 };
 
 	//Risk to et controlled and contamined
 	risk(gameChains, happeningTypeLinkPtr, forward);
 
 	//Wich item consummed ?
-	link* consumedLinkPtr = getLinkById(_item, happening.itemId, gameChains[_simulation]);
+	link* consumedLinkPtr = chain_search(gameChains[_item], happening.itemId);
 
 	//Who is targetted ?
-	link* receiverLinkPtr = getLinkById(_person, happening.receiverId, gameChains[_simulation]);
+	link* receiverLinkPtr = chain_search(gameChains[_person], happening.receiverId);
 	person receiver = receiverLinkPtr->elementPtr->person_;
 
-	//Where is the event/receiver
-	link
-		* whereEventPtr = getLinkById(_place, happening.placeId, gameChains[_place]),
-		* wherePersonPtr = getLinkById(_place, receiver.placeId, gameChains[_simulation]);
-
-	if((consumedLinkPtr != NULL || happening.itemId == nullId) && (whereEventPtr == wherePersonPtr || happening.placeId == nullId))
+	if((consumedLinkPtr != NULL || happening.itemId == nullId) && (receiver.placeId == happening.placeId || happening.placeId == nullId))
 	{
 		//Success
 		receiverLinkPtr->elementPtr->person_.stats_ = operateStats(receiver.stats_, happeningType.onSuccess);
@@ -521,7 +516,7 @@ bool eventApply(link** gameChains, link* eventLinkPtr, bool forward)
 	//Add consequences for particular cases
 	personParticularity cursor;
 	for(cursor = 0; cursor < lastPersonParticularityId; cursor++)
-		receiverLinkPtr->elementPtr->person_.stats_ = operateStats(receiver.stats_, happeningType.consequenceFor[cursor]);
+		receiverLinkPtr->elementPtr->person_.stats_ = operateStats(receiverLinkPtr->elementPtr->person_.stats_, happeningType.consequenceFor[cursor]);
 
 	//Could happen
 	return true;
@@ -544,7 +539,7 @@ void happenEvent(link **gameChains, link *eventLinkPtr, bool forward)
 				shop(gameChains, forward);
 				break;
 
-			case 4:
+			case medicateEventTypeId:
 				medicate(gameChains, forward);
 					break;
 

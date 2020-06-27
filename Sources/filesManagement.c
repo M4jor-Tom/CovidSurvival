@@ -123,7 +123,8 @@ bool writeChain(link* chain, savesFile save)
 		chain = chain -> nextLinkPtr;
 	}
 	
-	fclose(filePtr);
+	if(filePtr != NULL)
+		fclose(filePtr);
 	//fclose(fileTxtPtr);
 	
 	return success;

@@ -701,12 +701,12 @@ link grabLink(structId structType, link *currentSimPtr)
 			recipient->person_.remoteWorking = getche() == 'y';
 
 			printf("\n\tSporty ? (0/1/2) : ");
-			scanf("%d", &recipient->person_.sportiness);
+			scanf("%hu", &recipient->person_.sportiness);
 			getchar();
 			recipient->person_.sportiness = returnInRange(0, recipient->person_.sportiness, 2);
 
 			printf("\n\tAge ? (0-100) : ");
-			scanf("%d", &recipient->person_.aging);
+			scanf("%u", &recipient->person_.aging);
 			getchar();
 			recipient->person_.aging = returnInRange(0, recipient->person_.aging, 100);
 			
@@ -1224,7 +1224,7 @@ void displayLink(link toDisplay, link *currentSimPtr)
 
 				printf
 				(
-					"[event type]\n\tID: %u\n\tName: %s\n\tDuration: %u days, %u hours, %u minutes and %u seconds",
+					"[event type]\n\tID: %u\n\tName: %s\n\tDuration: %u days, %u hours, %u minutes and %u seconds\n",
 					elementPtr -> eventType_.ID,
 					elementPtr -> eventType_.name,
 					secondsTo("days", elementPtr -> eventType_.duration_s),

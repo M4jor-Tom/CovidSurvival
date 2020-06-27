@@ -283,8 +283,8 @@ void risk(link** gameChains, link *eventTypeLinkPtr, bool forward)
 		* playerInventory = filterChainBy(gameChains[_item], (element) { .item_.locationPersonId = playerId }),
 		* playerMasks = filterChainBy(playerInventory, (element) { .item_.itemTypeId = maskItemTypeId }),
 		* playerHydroGels = filterChainBy(playerInventory, (element) { .item_.itemTypeId = hydroItemTypeId }),
-		* playerRealMask = getLinkById(_item, getLinkId(playerMasks), gameChains[_simulation]),
-		* playerRealHydroGels = getLinkById(_item, getLinkId(playerHydroGels), gameChains[_simulation]);
+		* playerRealMask = chain_search(gameChains[_item], getLinkId(playerMasks)),
+		* playerRealHydroGels = chain_search(gameChains[_item], getLinkId(playerHydroGels));
 
 	freeChain(&playerInventory, NULL);
 	freeChain(&playerMasks, NULL);
@@ -324,7 +324,7 @@ void risk(link** gameChains, link *eventTypeLinkPtr, bool forward)
 
 	if (random(0, 100) < virusRisk)
 	{
-		link* playerPtr = getLinkById(_person, playerId, gameChains[_simulation]);
+		link* playerPtr = chain_search(gameChains[_person], playerId);
 		if(playerPtr != NULL)
 			playerPtr->elementPtr->person_.stats_.coronaVirus = true;
 		printf("\nYou now have COVID\n");
@@ -334,7 +334,7 @@ void risk(link** gameChains, link *eventTypeLinkPtr, bool forward)
 
 void getOut(link** gameChains, bool forward)
 {
-	risk(gameChains, getLinkById(_eventType, getOutEventTypeId, gameChains[_simulation]), forward);
+	risk(gameChains, chain_search(gameChains[_eventType], getOutEventTypeId), forward);
 }
 
 bool shop(link** gameChains, bool forward)
@@ -343,7 +343,7 @@ bool shop(link** gameChains, bool forward)
 	if (gameChains != NULL && gameChains[_placeType] != NULL && gameChains[_place] != NULL)
 	{
 		//Get all game itemTypes
-		risk(gameChains, getLinkById(_eventType, shopEventTypeId, gameChains[_simulation]), forward);
+		risk(gameChains, chain_search(gameChains[_eventType], shopEventTypeId), forward);
 		link* selectedItemType = selectLink(gameChains[_itemType], true, NULL, (element){0});
 		if(selectedItemType == NULL)
 			return false;
@@ -352,9 +352,10 @@ bool shop(link** gameChains, bool forward)
 
 
 		//Getting data about bougt item and player's money
-		person* playerPtr = &getLinkById(_person, playerId, gameChains[_simulation]) -> elementPtr -> person_;
+		link* playerLinkPtr = chain_search(gameChains[_person], playerId);
+		person* playerPtr = playerLinkPtr != NULL ? &playerLinkPtr-> elementPtr -> person_ : NULL;
 		float
-			money = playerPtr->stats_.money,
+			money = playerPtr != NULL ? playerPtr->stats_.money : 0,
 			price = selectedItemType->elementPtr->itemType_.price;
 
 		if(price < money)
@@ -378,7 +379,7 @@ bool shop(link** gameChains, bool forward)
 
 bool medicate(link** gameChains, bool forward)
 {
-	link* player = getLinkById(_person, playerId, gameChains[_simulation]);
+	link* player = chain_search(gameChains[_person], playerId);
 	if (player != NULL)
 	{
 		link* inventory = filterChainBy(gameChains[_item], (element) { .item_.locationPersonId = playerId }),
@@ -388,7 +389,7 @@ bool medicate(link** gameChains, bool forward)
 		if (playerChlorokin != NULL)
 		{
 			//Player has chlorokin
-			link* playerRealChlorokin = getLinkById(_item, getLinkId(playerChlorokin), gameChains[_simulation]);
+			link* playerRealChlorokin = chain_search(gameChains[_item], getLinkId(playerChlorokin));
 			if (playerRealChlorokin != NULL)
 			{
 				consumeItem(gameChains, playerRealChlorokin, 1);
@@ -477,8 +478,8 @@ bool policeControl(link** gameChains)
 		freeChain(&ownedInventory, NULL);
 		freeChain(&inventory, NULL);
 
-		link* playerLinkPtr = getLinkById(_person, playerId, gameChains[_simulation]);
-		link* policeControlLinkPtr = getLinkById(_eventType, policeControlEventTypeId, gameChains[_simulation]);
+		link* playerLinkPtr = chain_search(gameChains[_person], playerId);
+		link* policeControlLinkPtr = chain_search(gameChains[_eventType], policeControlEventTypeId);
 		eventType policeControl = policeControlLinkPtr != NULL ? policeControlLinkPtr->elementPtr->eventType_ : (eventType) { 0 };
 		person player = playerLinkPtr->elementPtr->person_;
 
